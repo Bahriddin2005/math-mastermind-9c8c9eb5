@@ -152,8 +152,14 @@ export const MentalMathGenerator = {
   },
 };
 
-export const getSectionInfo = (section: MathSection) => {
-  const sections = {
+export const getSectionInfo = (section: MathSection | string) => {
+  const sections: Record<string, {
+    name: string;
+    shortName: string;
+    icon: string;
+    color: 'primary' | 'accent' | 'success' | 'warning';
+    description: string;
+  }> = {
     'add-sub': {
       name: "Qo'shish va Ayirish",
       shortName: '+−',
@@ -182,8 +188,23 @@ export const getSectionInfo = (section: MathSection) => {
       color: 'warning' as const,
       description: "Barcha amallarni aralash holda mashq qiling",
     },
+    'mental-arithmetic': {
+      name: 'Mental Arifmetika',
+      shortName: '🧠',
+      icon: '🧮',
+      color: 'primary' as const,
+      description: "Abakus yordamida tez hisoblash mashqlari",
+    },
   };
-  return sections[section];
+  
+  // Agar section topilmasa, default qiymat qaytarish
+  return sections[section] || {
+    name: section,
+    shortName: '❓',
+    icon: '📊',
+    color: 'primary' as const,
+    description: section,
+  };
 };
 
 export const getDifficultyLabel = (level: Difficulty): string => {
