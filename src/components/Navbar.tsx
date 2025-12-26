@@ -1,8 +1,10 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Volume2, VolumeX, User, LogOut, BarChart3, Play, Home } from 'lucide-react';
+import { Volume2, VolumeX, User, LogOut, Play, Home, Settings, Moon, Sun } from 'lucide-react';
 import { Logo } from './Logo';
 import { Button } from './ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +22,14 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   
   const isTrainPage = location.pathname === '/train';
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -59,6 +67,23 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
             </Button>
           )}
 
+          {/* Theme toggle */}
+          {mounted && (
+            <Button 
+              variant="icon" 
+              size="icon"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              aria-label={theme === 'dark' ? "Yorug' rejim" : "Qorong'u rejim"}
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5 text-warning" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
+          )}
+
+          {/* Sound toggle */}
           <Button 
             variant="icon" 
             size="icon"
@@ -88,6 +113,10 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
                 <DropdownMenuItem onClick={() => navigate('/train')} className="gap-2">
                   <Play className="h-4 w-4" />
                   Mashq qilish
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/settings')} className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Sozlamalar
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive">

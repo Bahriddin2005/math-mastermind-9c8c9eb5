@@ -11,10 +11,12 @@ import { Achievements } from '@/components/Achievements';
 import { StatsCharts } from '@/components/StatsCharts';
 import { GameHistoryItem } from '@/components/GameHistoryItem';
 import { Leaderboard } from '@/components/Leaderboard';
+import { GuestDashboard } from '@/components/GuestDashboard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSound } from '@/hooks/useSound';
+import { useAchievementNotifications } from '@/hooks/useAchievementNotifications';
 import {
   Trophy,
   Target,
@@ -48,7 +50,7 @@ interface GameSession {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { soundEnabled, toggleSound } = useSound();
 
@@ -57,11 +59,22 @@ const Dashboard = () => {
   const [todaySolved, setTodaySolved] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Achievement notifications hook
+  useAchievementNotifications({
+    totalProblems: profile?.total_problems_solved || 0,
+    bestStreak: profile?.best_streak || 0,
+    totalScore: profile?.total_score || 0,
+    enabled: !!user,
+  });
+
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
+    // If not logged in and auth is done loading, show guest dashboard
+    if (!authLoading && !user) {
+      setLoading(false);
       return;
     }
+
+    if (!user) return;
 
     const fetchData = async () => {
       // Fetch profile
@@ -105,7 +118,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [user, navigate]);
+  }, [user, authLoading]);
 
   const getSessionStats = () => {
     if (sessions.length === 0) return { totalGames: 0, avgAccuracy: 0, totalCorrect: 0 };
@@ -120,10 +133,24 @@ const Dashboard = () => {
 
   const stats = getSessionStats();
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show guest dashboard if not logged in
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+        <main className="flex-1 container px-4 py-6 md:py-8">
+          <div className="max-w-5xl mx-auto">
+            <GuestDashboard />
+          </div>
+        </main>
       </div>
     );
   }
@@ -257,7 +284,7 @@ const Dashboard = () => {
                       <p className="text-muted-foreground mb-4">
                         Hali o'yin o'ynalmagan
                       </p>
-                      <Button variant="default" onClick={() => navigate('/')}>
+                      <Button variant="default" onClick={() => navigate('/train')}>
                         <Play className="h-4 w-4 mr-2" />
                         Birinchi o'yinni boshlash
                       </Button>
