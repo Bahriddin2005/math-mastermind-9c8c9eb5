@@ -1,0 +1,265 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Navbar } from '@/components/Navbar';
+import { useSound } from '@/hooks/useSound';
+import { useAuth } from '@/hooks/useAuth';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
+import { 
+  Check, 
+  Zap, 
+  Crown, 
+  Rocket,
+  Star,
+  Gift,
+  Shield,
+  Clock,
+  Users,
+  BarChart3
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface PricingPlan {
+  id: string;
+  name: string;
+  description: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
+  icon: React.ElementType;
+  color: string;
+  popular?: boolean;
+  features: string[];
+}
+
+const pricingPlans: PricingPlan[] = [
+  {
+    id: 'free',
+    name: 'Bepul',
+    description: "Boshlang'ich foydalanuvchilar uchun",
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    icon: Gift,
+    color: 'bg-secondary text-secondary-foreground',
+    features: [
+      'Kunlik 20 ta mashq',
+      'Asosiy statistika',
+      'Leaderboard raqobat',
+      'Yutuqlar tizimi',
+    ],
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    description: "Faol o'rganuvchilar uchun",
+    monthlyPrice: 29000,
+    yearlyPrice: 249000,
+    icon: Zap,
+    color: 'bg-gradient-to-br from-blue-500 to-blue-600 text-white',
+    popular: true,
+    features: [
+      'Cheksiz mashqlar',
+      "Kengaytirilgan statistika",
+      'Shaxsiy o\'quv rejasi',
+      'Reklama yo\'q',
+      'Priority yordam',
+      'Maxsus yutuqlar',
+    ],
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    description: 'Professional darajaga yetish uchun',
+    monthlyPrice: 49000,
+    yearlyPrice: 399000,
+    icon: Crown,
+    color: 'bg-gradient-to-br from-amber-500 to-orange-600 text-white',
+    features: [
+      'Pro rejadagi barcha imkoniyatlar',
+      'Shaxsiy mentor yordam',
+      'Video darslar',
+      'Sertifikat olish',
+      'Oilaviy paket (3 akkaunt)',
+      'Beta funksiyalarga kirish',
+    ],
+  },
+];
+
+const Pricing = () => {
+  const { soundEnabled, toggleSound } = useSound();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isYearly, setIsYearly] = useState(false);
+
+  const formatPrice = (price: number) => {
+    if (price === 0) return 'Bepul';
+    return new Intl.NumberFormat('uz-UZ').format(price) + " so'm";
+  };
+
+  const handleSubscribe = (plan: PricingPlan) => {
+    if (!user) {
+      toast.info("Avval tizimga kiring", {
+        description: "Obuna bo'lish uchun ro'yxatdan o'ting yoki tizimga kiring.",
+        action: {
+          label: "Kirish",
+          onClick: () => navigate('/auth'),
+        },
+      });
+      return;
+    }
+
+    if (plan.id === 'free') {
+      toast.success("Siz allaqachon bepul rejada foydalanmoqdasiz!");
+      return;
+    }
+
+    toast.info("To'lov tizimi tez orada ishga tushadi", {
+      description: "Hozircha bepul rejada foydalanishingiz mumkin.",
+    });
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+
+      <main className="flex-1 container px-4 py-8 md:py-12">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-primary/10 text-primary hover:bg-primary/20">
+              <Rocket className="h-3 w-3 mr-1" />
+              Tariflar
+            </Badge>
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-4">
+              O'zingizga mos rejani tanlang
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+              Mental arifmetika bo'yicha professional darajaga yeting. 
+              Har bir reja sizning maqsadlaringizga mos keladi.
+            </p>
+
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center gap-3">
+              <Label 
+                htmlFor="billing-toggle" 
+                className={cn("cursor-pointer", !isYearly && "text-foreground font-medium")}
+              >
+                Oylik
+              </Label>
+              <Switch
+                id="billing-toggle"
+                checked={isYearly}
+                onCheckedChange={setIsYearly}
+              />
+              <Label 
+                htmlFor="billing-toggle" 
+                className={cn("cursor-pointer", isYearly && "text-foreground font-medium")}
+              >
+                Yillik
+                <Badge variant="secondary" className="ml-2 bg-green-500/10 text-green-600">
+                  -30%
+                </Badge>
+              </Label>
+            </div>
+          </div>
+
+          {/* Pricing Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+            {pricingPlans.map((plan) => {
+              const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+              const Icon = plan.icon;
+
+              return (
+                <Card 
+                  key={plan.id}
+                  className={cn(
+                    "relative border-border/40 shadow-lg transition-all hover:shadow-xl",
+                    plan.popular && "ring-2 ring-primary scale-105 z-10"
+                  )}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-primary text-primary-foreground px-4 py-1">
+                        <Star className="h-3 w-3 mr-1 fill-current" />
+                        Eng ommabop
+                      </Badge>
+                    </div>
+                  )}
+
+                  <CardHeader className="text-center pt-8">
+                    <div className={cn(
+                      "w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center",
+                      plan.color
+                    )}>
+                      <Icon className="h-8 w-8" />
+                    </div>
+                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    <CardDescription>{plan.description}</CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="text-center">
+                    <div className="mb-6">
+                      <span className="text-4xl font-bold">{formatPrice(price)}</span>
+                      {price > 0 && (
+                        <span className="text-muted-foreground">/{isYearly ? 'yil' : 'oy'}</span>
+                      )}
+                    </div>
+
+                    <ul className="space-y-3 text-left">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                            <Check className="h-3 w-3 text-green-600" />
+                          </div>
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+
+                  <CardFooter>
+                    <Button 
+                      className="w-full" 
+                      variant={plan.popular ? 'default' : 'outline'}
+                      onClick={() => handleSubscribe(plan)}
+                    >
+                      {plan.id === 'free' ? 'Hozirgi reja' : 'Obuna bo\'lish'}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Features Section */}
+          <div className="bg-secondary/30 rounded-3xl p-8 md:p-12">
+            <h2 className="text-2xl font-display font-bold text-center mb-8">
+              Barcha rejalarda mavjud
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { icon: Shield, title: 'Xavfsiz', desc: "Ma'lumotlaringiz himoyalangan" },
+                { icon: Clock, title: '24/7 kirish', desc: "Istalgan vaqtda mashq qiling" },
+                { icon: Users, title: 'Jamoa raqobati', desc: 'Leaderboardda bahslashing' },
+                { icon: BarChart3, title: 'Statistika', desc: "Rivojlanishingizni kuzating" },
+              ].map((item) => (
+                <div key={item.title} className="text-center">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                    <item.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-1">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default Pricing;
