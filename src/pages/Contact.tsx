@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
 import { useSound } from '@/hooks/useSound';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -65,15 +66,31 @@ const Contact = () => {
 
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: result.data.name,
+          email: result.data.email,
+          subject: result.data.subject,
+          message: result.data.message,
+        });
 
-    toast.success("Xabaringiz muvaffaqiyatli yuborildi!", {
-      description: "Tez orada siz bilan bog'lanamiz.",
-    });
+      if (error) throw error;
 
-    setFormData({ name: '', email: '', subject: '', message: '' });
-    setIsSubmitting(false);
+      toast.success("Xabaringiz muvaffaqiyatli yuborildi!", {
+        description: "Tez orada siz bilan bog'lanamiz.",
+      });
+
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error("Xatolik yuz berdi", {
+        description: "Iltimos, qaytadan urinib ko'ring.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const socialLinks = [
