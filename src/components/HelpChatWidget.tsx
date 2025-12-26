@@ -19,7 +19,9 @@ import {
   Target,
   Loader2,
   Bot,
-  ArrowLeft
+  ArrowLeft,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 
 interface FAQItem {
@@ -65,6 +67,7 @@ const iconMap: Record<string, React.ReactNode> = {
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  audioUrl?: string;
 }
 
 // Generate a unique session ID
@@ -87,7 +90,10 @@ export const HelpChatWidget = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [ttsEnabled, setTtsEnabled] = useState(true);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const sessionIdRef = useRef<string>(generateSessionId());
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     fetchFAQs();
@@ -143,8 +149,65 @@ export const HelpChatWidget = () => {
     setChatMode(false);
     setMessages([]);
     setInputMessage('');
+    // Stop any playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setIsPlayingAudio(false);
     // Generate new session ID for next chat
     sessionIdRef.current = generateSessionId();
+  };
+
+  const playTTS = async (text: string) => {
+    if (!ttsEnabled) return;
+    
+    try {
+      setIsPlayingAudio(true);
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('TTS request failed');
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      // Stop previous audio if playing
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      audio.onended = () => {
+        setIsPlayingAudio(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      audio.onerror = () => {
+        setIsPlayingAudio(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      await audio.play();
+    } catch (error) {
+      console.error('TTS error:', error);
+      setIsPlayingAudio(false);
+    }
   };
 
   const saveMessageToDb = async (role: 'user' | 'assistant', content: string) => {
@@ -241,6 +304,9 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
       const assistantMessage = data.response;
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
       
+      // Play TTS for assistant response
+      playTTS(assistantMessage);
+      
       // Save assistant message to database
       await saveMessageToDb('assistant', assistantMessage);
     } catch (error) {
@@ -315,19 +381,36 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
             {chatMode ? (
               /* AI Chat Mode */
               <div className="flex flex-col h-[400px]">
-                {/* Back button */}
-                <div className="p-2 border-b">
+                {/* Back button and TTS toggle */}
+                <div className="p-2 border-b flex items-center justify-between">
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={() => {
                       setChatMode(false);
                       setMessages([]);
+                      if (audioRef.current) {
+                        audioRef.current.pause();
+                        audioRef.current = null;
+                      }
                     }}
                     className="text-muted-foreground"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     FAQ ga qaytish
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setTtsEnabled(!ttsEnabled)}
+                    title={ttsEnabled ? "Ovozni o'chirish" : "Ovozni yoqish"}
+                    className={isPlayingAudio ? "text-primary animate-pulse" : ""}
+                  >
+                    {ttsEnabled ? (
+                      <Volume2 className="h-4 w-4" />
+                    ) : (
+                      <VolumeX className="h-4 w-4 text-muted-foreground" />
+                    )}
                   </Button>
                 </div>
 
