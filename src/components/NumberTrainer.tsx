@@ -387,6 +387,9 @@ export const NumberTrainer = () => {
         setCurrentDisplay(String(result.num));
         setDisplayedNumbers(prev => [...prev, { num: String(result.num), isAdd: result.isAdd }]);
         
+        // Tick sound for each number
+        playSound('tick');
+        
         if (voiceEnabled) {
           speakNumber(String(result.num), result.isAdd, false);
         }
