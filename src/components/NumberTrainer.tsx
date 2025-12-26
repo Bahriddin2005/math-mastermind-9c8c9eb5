@@ -494,33 +494,125 @@ export const NumberTrainer = () => {
   // O'yin davomida
   if (isRunning && currentDisplay !== null) {
     return (
-      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50">
-        {/* Taymer */}
-        <div className="absolute top-6 right-6 flex items-center gap-2 text-2xl font-mono text-muted-foreground">
-          <Clock className="h-6 w-6" />
-          {elapsedTime.toFixed(1)}s
+      <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-primary/5 flex flex-col items-center justify-center z-50 overflow-hidden">
+        {/* Animated background circles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] border border-primary/10 rounded-full" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] border border-primary/5 rounded-full" />
         </div>
-        
-        <div 
-          className="text-[180px] md:text-[250px] font-light text-foreground transition-all duration-100"
-          key={countRef.current}
-        >
-          {!isAddition && countRef.current > 1 ? '-' : ''}{currentDisplay}
+
+        {/* Header info */}
+        <div className="absolute top-6 left-0 right-0 px-6 flex items-center justify-between">
+          {/* Progress */}
+          <div className="flex items-center gap-3 bg-card/80 backdrop-blur-sm px-4 py-2 rounded-2xl border border-border/50 shadow-md">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Target className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Misol</p>
+              <p className="text-lg font-bold text-foreground">{countRef.current} / {problemCount}</p>
+            </div>
+          </div>
+
+          {/* Timer */}
+          <div className="flex items-center gap-3 bg-card/80 backdrop-blur-sm px-4 py-2 rounded-2xl border border-border/50 shadow-md">
+            <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center">
+              <Clock className="h-4 w-4 text-accent" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Vaqt</p>
+              <p className="text-lg font-bold font-mono text-accent">{elapsedTime.toFixed(1)}s</p>
+            </div>
+          </div>
         </div>
-        <div className="absolute bottom-10 flex gap-4">
+
+        {/* Main number display */}
+        <div className="relative">
+          {/* Glow effect behind number */}
+          <div 
+            className={`absolute inset-0 blur-3xl transition-colors duration-300 ${
+              isAddition ? 'bg-primary/20' : 'bg-accent/20'
+            }`} 
+          />
+          
+          {/* Number container */}
+          <div 
+            key={countRef.current}
+            className="relative animate-scale-in"
+          >
+            {/* Operation indicator */}
+            {countRef.current > 1 && (
+              <div className={`absolute -top-16 left-1/2 -translate-x-1/2 flex items-center gap-2 px-6 py-2 rounded-2xl ${
+                isAddition 
+                  ? 'bg-primary/10 text-primary border border-primary/20' 
+                  : 'bg-accent/10 text-accent border border-accent/20'
+              }`}>
+                {isAddition ? (
+                  <>
+                    <span className="text-2xl font-bold">+</span>
+                    <span className="font-medium">Qo'shish</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-2xl font-bold">−</span>
+                    <span className="font-medium">Ayirish</span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* The number */}
+            <div 
+              className={`text-[140px] sm:text-[180px] md:text-[220px] lg:text-[280px] font-display font-bold transition-all duration-200 ${
+                isAddition || countRef.current === 1 ? 'text-foreground' : 'text-accent'
+              }`}
+              style={{
+                textShadow: isAddition || countRef.current === 1 
+                  ? '0 0 60px hsl(var(--primary) / 0.3)' 
+                  : '0 0 60px hsl(var(--accent) / 0.3)'
+              }}
+            >
+              {currentDisplay}
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="absolute bottom-32 left-8 right-8 max-w-lg mx-auto">
+          <div className="h-2 bg-muted/50 rounded-full overflow-hidden backdrop-blur-sm">
+            <div 
+              className="h-full bg-gradient-to-r from-primary to-primary-glow rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${(countRef.current / problemCount) * 100}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+            <span>Boshlash</span>
+            <span>Tugash</span>
+          </div>
+        </div>
+
+        {/* Bottom controls */}
+        <div className="absolute bottom-8 flex gap-4">
           <Button
             onClick={() => setVoiceEnabled(!voiceEnabled)}
             variant="outline"
             size="lg"
-            className="gap-2"
+            className="gap-2 bg-card/80 backdrop-blur-sm border-border/50 hover:bg-card rounded-xl px-6"
           >
-            {voiceEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+            {voiceEnabled ? (
+              <Volume2 className="h-5 w-5 text-primary" />
+            ) : (
+              <VolumeX className="h-5 w-5 text-muted-foreground" />
+            )}
+            <span className="hidden sm:inline">{voiceEnabled ? 'Ovoz yoniq' : 'Ovoz o\'chiq'}</span>
           </Button>
           <Button
             onClick={stopGame}
             variant="destructive"
             size="lg"
-            className="gap-2"
+            className="gap-2 rounded-xl px-6 shadow-lg"
           >
             <Square className="h-5 w-5" />
             To'xtatish
@@ -533,78 +625,111 @@ export const NumberTrainer = () => {
   // Natija sahifasi
   if (isFinished) {
     return (
-      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 p-6">
-        <div className="max-w-md w-full space-y-8 text-center">
-          <div className="flex items-center justify-center gap-4 text-muted-foreground">
-            <Clock className="h-5 w-5" />
-            <span className="font-mono text-lg">{elapsedTime.toFixed(1)}s</span>
+      <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-primary/5 flex flex-col items-center justify-center z-50 p-6 overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative max-w-lg w-full space-y-6 animate-fade-in">
+          {/* Header card */}
+          <div className="bg-card/80 backdrop-blur-sm rounded-3xl border border-border/50 shadow-lg p-6 text-center">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="h-12 w-12 rounded-2xl bg-accent/10 flex items-center justify-center">
+                <Clock className="h-6 w-6 text-accent" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm text-muted-foreground">Umumiy vaqt</p>
+                <p className="text-2xl font-bold font-mono text-accent">{elapsedTime.toFixed(1)}s</p>
+              </div>
+            </div>
+            
+            <h2 className="text-2xl font-display font-bold text-foreground mb-2">Mashq tugadi!</h2>
+            <p className="text-muted-foreground text-sm">Javobingizni kiriting</p>
           </div>
           
-          <h2 className="text-2xl font-bold text-foreground">Mashq tugadi!</h2>
-          
-          <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground mb-2">Ko'rsatilgan sonlar:</p>
-            <p className="text-lg font-mono">
+          {/* Shown numbers */}
+          <div className="bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 p-4">
+            <p className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
+              <BarChart3 className="h-3 w-3" />
+              Ko'rsatilgan sonlar
+            </p>
+            <p className="text-lg font-mono leading-relaxed">
               {displayedNumbers.map((item, i) => (
-                <span key={i}>
-                  {i > 0 ? (item.isAdd ? ' + ' : ' - ') : ''}{item.num}
+                <span key={i} className={i > 0 && !item.isAdd ? 'text-accent' : 'text-foreground'}>
+                  {i > 0 ? (item.isAdd ? ' + ' : ' − ') : ''}{item.num}
                 </span>
               ))}
             </p>
           </div>
 
           {!showResult ? (
-            <div className="space-y-4">
-              <p className="text-lg text-muted-foreground">Natijani kiriting:</p>
-              <Input
-                type="number"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
-                placeholder="Javob"
-                className="text-center text-3xl h-16"
-                autoFocus
-              />
+            <div className="space-y-4 animate-fade-in">
+              <div className="relative">
+                <Input
+                  type="number"
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
+                  placeholder="Javobni kiriting..."
+                  className="text-center text-3xl h-20 rounded-2xl bg-card/80 backdrop-blur-sm border-2 border-primary/20 focus:border-primary shadow-lg font-mono"
+                  autoFocus
+                />
+              </div>
               <Button
                 onClick={checkAnswer}
                 disabled={!userAnswer}
                 size="lg"
-                className="w-full gap-2"
+                className="w-full gap-3 h-14 rounded-2xl bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary text-primary-foreground font-bold text-lg shadow-glow transition-all duration-300 hover:-translate-y-0.5"
               >
-                <Check className="h-5 w-5" />
+                <Check className="h-6 w-6" />
                 Tekshirish
               </Button>
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className={`text-6xl font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-                {isCorrect ? '✓' : '✗'}
+            <div className="space-y-6 animate-scale-in">
+              {/* Result card */}
+              <div className={`p-8 rounded-3xl text-center ${
+                isCorrect 
+                  ? 'bg-gradient-to-br from-success/10 to-success/5 border-2 border-success/30' 
+                  : 'bg-gradient-to-br from-destructive/10 to-destructive/5 border-2 border-destructive/30'
+              }`}>
+                <div className={`text-8xl mb-4 ${isCorrect ? 'animate-celebrate' : 'animate-shake'}`}>
+                  {isCorrect ? '🎉' : '😔'}
+                </div>
+                <p className={`text-2xl font-bold ${isCorrect ? 'text-success' : 'text-destructive'}`}>
+                  {isCorrect ? "Zo'r! To'g'ri javob!" : "Noto'g'ri javob"}
+                </p>
               </div>
-              <div>
-                <p className="text-lg">
-                  {isCorrect ? "To'g'ri javob!" : "Noto'g'ri"}
-                </p>
-                <p className="text-3xl font-bold mt-2">
-                  To'g'ri javob: {runningResultRef.current}
-                </p>
+
+              {/* Answer details */}
+              <div className="bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 p-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">To'g'ri javob:</span>
+                  <span className="text-2xl font-bold text-foreground font-mono">{runningResultRef.current}</span>
+                </div>
                 {!isCorrect && (
-                  <p className="text-muted-foreground mt-1">
-                    Sizning javobingiz: {userAnswer}
-                  </p>
+                  <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                    <span className="text-muted-foreground">Sizning javobingiz:</span>
+                    <span className="text-xl font-bold text-destructive font-mono">{userAnswer}</span>
+                  </div>
                 )}
-                <p className="text-sm text-muted-foreground mt-2">
-                  Javob vaqti: {answerTime.toFixed(1)}s
-                </p>
+                <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                  <span className="text-muted-foreground">Javob vaqti:</span>
+                  <span className="text-lg font-bold text-accent font-mono">{answerTime.toFixed(1)}s</span>
+                </div>
               </div>
             </div>
           )}
 
-          <div className="flex gap-4 justify-center pt-4">
+          {/* Action buttons */}
+          <div className="flex gap-4 pt-2">
             <Button
               onClick={resetGame}
               variant="outline"
               size="lg"
-              className="gap-2"
+              className="flex-1 gap-2 h-14 rounded-2xl bg-card/80 backdrop-blur-sm border-border/50 hover:bg-muted transition-all duration-300"
             >
               <RotateCcw className="h-5 w-5" />
               Orqaga
@@ -612,8 +737,9 @@ export const NumberTrainer = () => {
             <Button
               onClick={startGame}
               size="lg"
-              className="bg-red-600 hover:bg-red-700 text-white gap-2"
+              className="flex-1 gap-2 h-14 rounded-2xl bg-gradient-to-r from-primary to-primary-glow hover:from-primary-glow hover:to-primary text-primary-foreground font-bold shadow-glow transition-all duration-300 hover:-translate-y-0.5"
             >
+              <Play className="h-5 w-5" />
               Yangi mashq
             </Button>
           </div>
