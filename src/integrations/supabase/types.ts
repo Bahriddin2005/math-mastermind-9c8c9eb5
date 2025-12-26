@@ -488,6 +488,101 @@ export type Database = {
           },
         ]
       }
+      multiplayer_participants: {
+        Row: {
+          answer: number | null
+          answer_time: number | null
+          avatar_url: string | null
+          id: string
+          is_correct: boolean | null
+          is_ready: boolean | null
+          joined_at: string
+          room_id: string
+          score: number | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          answer?: number | null
+          answer_time?: number | null
+          avatar_url?: string | null
+          id?: string
+          is_correct?: boolean | null
+          is_ready?: boolean | null
+          joined_at?: string
+          room_id: string
+          score?: number | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          answer?: number | null
+          answer_time?: number | null
+          avatar_url?: string | null
+          id?: string
+          is_correct?: boolean | null
+          is_ready?: boolean | null
+          joined_at?: string
+          room_id?: string
+          score?: number | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "multiplayer_participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "multiplayer_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      multiplayer_rooms: {
+        Row: {
+          created_at: string
+          current_problem: number | null
+          digit_count: number
+          finished_at: string | null
+          formula_type: string
+          host_id: string
+          id: string
+          problem_count: number
+          room_code: string
+          speed: number
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          current_problem?: number | null
+          digit_count?: number
+          finished_at?: string | null
+          formula_type?: string
+          host_id: string
+          id?: string
+          problem_count?: number
+          room_code: string
+          speed?: number
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          current_problem?: number | null
+          digit_count?: number
+          finished_at?: string | null
+          formula_type?: string
+          host_id?: string
+          id?: string
+          problem_count?: number
+          room_code?: string
+          speed?: number
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

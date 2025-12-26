@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Square, Volume2, VolumeX, RotateCcw, Check, Clock, BarChart3, Trophy, Target, Play, Home, Moon, Sun, User, LogOut, Settings, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Square, Volume2, VolumeX, RotateCcw, Check, Clock, BarChart3, Trophy, Target, Play, Home, Moon, Sun, User, LogOut, Settings, ShieldCheck, GraduationCap, Users } from 'lucide-react';
+import { MultiplayerMode } from './MultiplayerMode';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from 'next-themes';
@@ -733,20 +734,28 @@ export const NumberTrainer = () => {
       
       <div className="container py-6 px-4 md:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-6">
+          <TabsList className="grid w-full max-w-lg mx-auto grid-cols-4 mb-6">
             <TabsTrigger value="train" className="gap-2">
               <Play className="h-4 w-4" />
-              Mashq
+              <span className="hidden sm:inline">Mashq</span>
+            </TabsTrigger>
+            <TabsTrigger value="multiplayer" className="gap-2">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Multiplayer</span>
             </TabsTrigger>
             <TabsTrigger value="leaderboard" className="gap-2">
               <Trophy className="h-4 w-4" />
-              Reyting
+              <span className="hidden sm:inline">Reyting</span>
             </TabsTrigger>
             <TabsTrigger value="stats" className="gap-2">
               <BarChart3 className="h-4 w-4" />
-              Statistika
+              <span className="hidden sm:inline">Statistika</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="multiplayer" className="mt-0">
+            <MultiplayerMode onBack={() => setActiveTab('train')} />
+          </TabsContent>
 
           <TabsContent value="train" className="mt-0">
             <div className="max-w-4xl mx-auto space-y-8">
