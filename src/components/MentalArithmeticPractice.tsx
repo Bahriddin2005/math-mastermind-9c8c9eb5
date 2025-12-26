@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { AbacusDisplay } from './AbacusDisplay';
 import { MentalArithmeticHistory } from './MentalArithmeticHistory';
 import { MentalArithmeticLeaderboard } from './MentalArithmeticLeaderboard';
@@ -137,9 +138,12 @@ export const MentalArithmeticPractice = () => {
   // Sozlamalar
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium');
   const [formulaType, setFormulaType] = useState<FormulaType>('basic');
+  const [customSpeed, setCustomSpeed] = useState(1000); // ms
+  const [customCount, setCustomCount] = useState(5); // sonlar soni
   const [showAbacus, setShowAbacus] = useState(true);
   const [showSettings, setShowSettings] = useState(true);
   const [abacusColumns, setAbacusColumns] = useState(1);
+  const [currentProgress, setCurrentProgress] = useState(0);
   
   // O'yin holati
   const [isRunning, setIsRunning] = useState(false);
@@ -238,7 +242,6 @@ export const MentalArithmeticPractice = () => {
 
   // O'yinni boshlash
   const startGame = useCallback(() => {
-    const config = DIFFICULTY_CONFIG[difficulty];
     const initialResult = Math.floor(Math.random() * 10);
     runningResultRef.current = initialResult;
     countRef.current = 1;
@@ -254,11 +257,12 @@ export const MentalArithmeticPractice = () => {
     setUserAnswer('');
     setFeedback(null);
     setShowResult(false);
+    setCurrentProgress((1 / customCount) * 100);
 
     intervalRef.current = setInterval(() => {
       countRef.current += 1;
       
-      if (countRef.current > config.count) {
+      if (countRef.current > customCount) {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
@@ -267,6 +271,7 @@ export const MentalArithmeticPractice = () => {
         setIsRunning(false);
         setIsFinished(true);
         setCurrentNumber(null);
+        setCurrentProgress(100);
         return;
       }
 
@@ -274,9 +279,10 @@ export const MentalArithmeticPractice = () => {
       if (nextNum !== null) {
         setCurrentNumber(nextNum);
         setDisplayedNumbers(prev => [...prev, nextNum]);
+        setCurrentProgress((countRef.current / customCount) * 100);
       }
-    }, config.speed);
-  }, [difficulty, generateNextNumber, playSound]);
+    }, customSpeed);
+  }, [customCount, customSpeed, generateNextNumber, playSound]);
 
   // Javobni tekshirish va saqlash
   const checkAnswer = useCallback(async () => {
@@ -470,15 +476,34 @@ export const MentalArithmeticPractice = () => {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Qiyinlik darajasi</Label>
-                      <Select value={difficulty} onValueChange={(v) => setDifficulty(v as DifficultyLevel)}>
+                      <Label>Sonlar soni</Label>
+                      <Select value={String(customCount)} onValueChange={(v) => setCustomCount(Number(v))}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="easy">Oson (3 son, 1.5s)</SelectItem>
-                          <SelectItem value="medium">O'rta (5 son, 1s)</SelectItem>
-                          <SelectItem value="hard">Qiyin (10 son, 0.7s)</SelectItem>
+                          <SelectItem value="3">3 ta son</SelectItem>
+                          <SelectItem value="5">5 ta son</SelectItem>
+                          <SelectItem value="7">7 ta son</SelectItem>
+                          <SelectItem value="10">10 ta son</SelectItem>
+                          <SelectItem value="15">15 ta son</SelectItem>
+                          <SelectItem value="20">20 ta son</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tezlik (ms)</Label>
+                      <Select value={String(customSpeed)} onValueChange={(v) => setCustomSpeed(Number(v))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="300">300ms (juda tez)</SelectItem>
+                          <SelectItem value="500">500ms (tez)</SelectItem>
+                          <SelectItem value="700">700ms</SelectItem>
+                          <SelectItem value="1000">1000ms (normal)</SelectItem>
+                          <SelectItem value="1500">1500ms (sekin)</SelectItem>
+                          <SelectItem value="2000">2000ms (juda sekin)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -521,7 +546,16 @@ export const MentalArithmeticPractice = () => {
                 )}
 
                 {isRunning && currentNumber !== null && (
-                  <div className="text-center">
+                  <div className="text-center w-full max-w-md">
+                    {/* Progress bar */}
+                    <div className="mb-6">
+                      <div className="flex justify-between text-sm text-muted-foreground mb-2">
+                        <span>Son: {countRef.current} / {customCount}</span>
+                        <span>{customSpeed}ms</span>
+                      </div>
+                      <Progress value={currentProgress} className="h-2" />
+                    </div>
+                    
                     {showAbacus ? (
                       <AbacusDisplay 
                         number={currentNumber} 
@@ -534,9 +568,6 @@ export const MentalArithmeticPractice = () => {
                         {currentNumber}
                       </div>
                     )}
-                    <div className="mt-4 text-sm text-muted-foreground">
-                      {countRef.current} / {config.count}
-                    </div>
                   </div>
                 )}
 
