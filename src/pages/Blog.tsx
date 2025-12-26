@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 import { useSound } from '@/hooks/useSound';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -40,6 +42,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 const categories = ["Barchasi", "Boshlang'ich", "Texnikalar", "Mashqlar", "Maslahatlar", "Dasturlar", "Bolalar uchun"];
 
 const Blog = () => {
+  const navigate = useNavigate();
   const { soundEnabled, toggleSound } = useSound();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Barchasi');
@@ -136,7 +139,11 @@ const Blog = () => {
               {filteredPosts.map((post) => {
                 const Icon = ICON_MAP[post.icon] || BookOpen;
                 return (
-                  <Card key={post.id} className="group border-border/40 shadow-lg hover:shadow-xl transition-all overflow-hidden">
+                  <Card 
+                    key={post.id} 
+                    className="group border-border/40 shadow-lg hover:shadow-xl transition-all overflow-hidden cursor-pointer"
+                    onClick={() => navigate(`/blog/${post.id}`)}
+                  >
                     <div className={`h-32 bg-gradient-to-br ${post.gradient} flex items-center justify-center`}>
                       <Icon className="h-12 w-12 text-white/90" />
                     </div>
@@ -163,6 +170,7 @@ const Blog = () => {
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 };
