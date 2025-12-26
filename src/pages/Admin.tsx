@@ -122,6 +122,7 @@ const Admin = () => {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [adminUsers, setAdminUsers] = useState<string[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalProblems: 0,
@@ -168,8 +169,45 @@ const Admin = () => {
       fetchBlogPosts();
       fetchUsers();
       fetchStats();
+      fetchAdminUsers();
     }
   }, [isAdmin]);
+
+  const fetchAdminUsers = async () => {
+    const { data } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'admin');
+    if (data) {
+      setAdminUsers(data.map(r => r.user_id));
+    }
+  };
+
+  const toggleAdminRole = async (userId: string) => {
+    const isCurrentlyAdmin = adminUsers.includes(userId);
+    
+    if (isCurrentlyAdmin) {
+      const { error } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId)
+        .eq('role', 'admin');
+      
+      if (!error) {
+        setAdminUsers(prev => prev.filter(id => id !== userId));
+        toast.success("Admin huquqi olib tashlandi");
+      }
+    } else {
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userId, role: 'admin' });
+      
+      if (!error) {
+        setAdminUsers(prev => [...prev, userId]);
+        toast.success("Admin huquqi berildi");
+      }
+    }
+  };
 
   const checkAdminRole = async () => {
     if (!user) return;
@@ -470,15 +508,35 @@ const Admin = () => {
                           <div className="flex items-center gap-4">
                             <span className="text-lg font-bold text-muted-foreground w-8">#{index + 1}</span>
                             <div>
-                              <p className="font-semibold">{profile.username}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold">{profile.username}</p>
+                                {adminUsers.includes(profile.user_id) && (
+                                  <Badge variant="default" className="text-xs">Admin</Badge>
+                                )}
+                              </div>
                               <p className="text-sm text-muted-foreground">
                                 {profile.total_problems_solved} masala · {profile.best_streak} seriya
                               </p>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className="text-xl font-bold text-primary">{profile.total_score.toLocaleString()}</p>
-                            <p className="text-xs text-muted-foreground">{formatDate(profile.created_at).split(',')[0]}</p>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-xl font-bold text-primary">{profile.total_score.toLocaleString()}</p>
+                              <p className="text-xs text-muted-foreground">{formatDate(profile.created_at).split(',')[0]}</p>
+                            </div>
+                            {profile.user_id !== user?.id && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => toggleAdminRole(profile.user_id)}
+                              >
+                                {adminUsers.includes(profile.user_id) ? (
+                                  <><X className="h-4 w-4 mr-1" />Admin o'chirish</>
+                                ) : (
+                                  <><ShieldCheck className="h-4 w-4 mr-1" />Admin qilish</>
+                                )}
+                              </Button>
+                            )}
                           </div>
                         </div>
                       ))}

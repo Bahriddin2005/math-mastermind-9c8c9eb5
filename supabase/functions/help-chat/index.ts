@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, faqContext, coursesContext, lessonsContext, userProgressContext } = await req.json();
+    const { message, faqContext, coursesContext, lessonsContext, userProgressContext, imageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
@@ -26,7 +26,20 @@ LANGUAGE DETECTION & RESPONSE RULES:
 - If user writes in Russian → respond in Russian (Русский)
 - If user writes in Uzbek or any other language → respond in Uzbek
 - Always respond in the SAME language the user used
-- Keep responses short (2-3 sentences max)
+- Keep responses short (2-3 sentences max) unless solving a math problem
+
+MATH PROBLEM SOLVING:
+- If user asks to solve a math problem, ALWAYS solve it step by step
+- Show the solution process clearly
+- Format: Problem → Steps → Answer
+- For mental arithmetic problems, explain the technique used
+- Support all basic operations: +, -, ×, ÷, powers, roots, percentages
+- If an image is provided, analyze it for math problems and solve them
+
+IMAGE ANALYSIS:
+- If an image is provided, analyze its content
+- For math problems in images, extract and solve them
+- For other images, describe what you see and relate it to math if possible
 
 PLATFORM INFO:
 - Mental arithmetic learning platform
@@ -57,6 +70,24 @@ INSTRUCTIONS:
 - For English: use simple and clear language
 - For Uzbek: sodda va tushunarli til ishlating`;
 
+    // Build messages array
+    const messages: any[] = [
+      { role: "system", content: systemPrompt },
+    ];
+
+    // If image is provided, use multimodal message
+    if (imageBase64) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: message || "Bu rasmni tahlil qiling va agar matematika masalasi bo'lsa, yeching." },
+          { type: "image_url", image_url: { url: `data:image/jpeg;base64,${imageBase64}` } }
+        ]
+      });
+    } else {
+      messages.push({ role: "user", content: message });
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -64,12 +95,9 @@ INSTRUCTIONS:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: message },
-        ],
-        max_tokens: 300,
+        model: imageBase64 ? "google/gemini-2.5-flash" : "google/gemini-2.5-flash",
+        messages,
+        max_tokens: 1000,
       }),
     });
 
