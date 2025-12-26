@@ -20,7 +20,8 @@ import {
   Eye,
   Trash2,
   Loader2,
-  Calendar
+  Calendar,
+  Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -128,6 +129,47 @@ export const ChatHistoryManager = () => {
     }
   };
 
+  const exportToCSV = async () => {
+    // Fetch all messages
+    const { data: messagesData } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (!messagesData || messagesData.length === 0) {
+      toast.error("Eksport qilish uchun ma'lumot yo'q");
+      return;
+    }
+
+    // Create CSV content
+    const headers = ['Sana', 'Vaqt', 'Session ID', 'Rol', 'Xabar'];
+    const rows = messagesData.map(msg => {
+      const date = new Date(msg.created_at);
+      return [
+        date.toLocaleDateString('uz-UZ'),
+        date.toLocaleTimeString('uz-UZ'),
+        msg.session_id,
+        msg.role === 'user' ? 'Foydalanuvchi' : 'Bot',
+        `"${msg.content.replace(/"/g, '""')}"`
+      ].join(',');
+    });
+
+    const csvContent = '\ufeff' + [headers.join(','), ...rows].join('\n');
+    
+    // Download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chat-tarix-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success("CSV fayl yuklab olindi");
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('uz-UZ', {
       year: 'numeric',
@@ -189,9 +231,15 @@ export const ChatHistoryManager = () => {
 
       {/* Sessions List */}
       <Card>
-        <CardHeader>
-          <CardTitle>Chat tarixi</CardTitle>
-          <CardDescription>Foydalanuvchilar bilan suhbatlar</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Chat tarixi</CardTitle>
+            <CardDescription>Foydalanuvchilar bilan suhbatlar</CardDescription>
+          </div>
+          <Button onClick={exportToCSV} variant="outline" size="sm" className="gap-2">
+            <Download className="h-4 w-4" />
+            CSV eksport
+          </Button>
         </CardHeader>
         <CardContent>
           {loading ? (
