@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -19,7 +19,10 @@ import {
   Loader2,
   Lightbulb,
   BookOpen,
-  Search
+  Search,
+  Upload,
+  FileSpreadsheet,
+  Download
 } from 'lucide-react';
 
 interface MathExample {
@@ -61,6 +64,8 @@ export const ExamplesManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterDifficulty, setFilterDifficulty] = useState<string>('all');
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Form state
   const [isEditing, setIsEditing] = useState(false);
@@ -211,6 +216,97 @@ export const ExamplesManager = () => {
     }
   };
 
+  // CSV/Excel import handler
+  const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    
+    try {
+      const text = await file.text();
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      // Skip header row if exists
+      const startIndex = lines[0].toLowerCase().includes('question') ? 1 : 0;
+      
+      const newExamples = [];
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i];
+        // Support both comma and semicolon delimiters
+        const delimiter = line.includes(';') ? ';' : ',';
+        const parts = line.split(delimiter).map(p => p.trim().replace(/^"|"$/g, ''));
+        
+        if (parts.length >= 2) {
+          const question = parts[0];
+          const answer = parseInt(parts[1]);
+          const difficulty = parts[2] || 'easy';
+          const category = parts[3] || 'add-sub';
+          const hint = parts[4] || null;
+          const explanation = parts[5] || null;
+
+          if (question && !isNaN(answer)) {
+            newExamples.push({
+              question,
+              answer,
+              difficulty: ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'easy',
+              category: ['add-sub', 'multiply', 'divide', 'mix'].includes(category) ? category : 'add-sub',
+              hint,
+              explanation,
+              is_active: true,
+              order_index: examples.length + successCount,
+            });
+            successCount++;
+          } else {
+            errorCount++;
+          }
+        } else {
+          errorCount++;
+        }
+      }
+
+      if (newExamples.length > 0) {
+        const { error } = await supabase
+          .from('math_examples')
+          .insert(newExamples);
+
+        if (error) {
+          toast.error("Import xatoligi: " + error.message);
+        } else {
+          toast.success(`${successCount} ta misol import qilindi${errorCount > 0 ? `, ${errorCount} ta xato` : ''}`);
+          fetchData();
+        }
+      } else {
+        toast.error("Hech qanday misol topilmadi");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Faylni o'qishda xatolik");
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Download sample CSV template
+  const downloadTemplate = () => {
+    const template = `question,answer,difficulty,category,hint,explanation
+"5 + 3 = ?",8,easy,add-sub,"5 ga 3 ni qo'shing","5 + 3 = 8"
+"12 × 4 = ?",48,medium,multiply,"12 ni 4 marta qo'shing","12 × 4 = 48"
+"100 ÷ 5 = ?",20,hard,divide,"100 ni 5 ga bo'ling","100 ÷ 5 = 20"`;
+    
+    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'misollar-shablon.csv';
+    link.click();
+  };
+
   const filteredExamples = examples.filter(example => {
     const matchesSearch = example.question.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || example.category === filterCategory;
@@ -242,6 +338,55 @@ export const ExamplesManager = () => {
 
   return (
     <div className="space-y-6">
+      {/* Import Section */}
+      <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/10 rounded-xl">
+                <FileSpreadsheet className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-semibold">CSV/Excel import</h3>
+                <p className="text-sm text-muted-foreground">
+                  Misollarni fayldan yuklang
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={downloadTemplate}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Shablon
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.txt"
+                onChange={handleFileImport}
+                className="hidden"
+              />
+              <Button 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importing}
+                className="gap-2"
+              >
+                {importing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
+                {importing ? "Yuklanmoqda..." : "Import qilish"}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Form Card */}
       <Card className="border-border/40">
         <CardHeader>
