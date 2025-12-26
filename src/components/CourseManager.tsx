@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadResumableToPublicBucket } from '@/lib/resumableUpload';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,8 +60,6 @@ interface Lesson {
   order_index: number;
   is_published: boolean;
 }
-
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
 
 interface CourseManagerProps {
   isAdmin: boolean;
@@ -170,6 +169,7 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
 
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
@@ -273,6 +273,7 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
 
   const handleLessonThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
@@ -303,43 +304,9 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
     }
   };
 
-  // Chunked upload for large files
-  const uploadFileInChunks = async (file: File, fileName: string): Promise<string> => {
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    const uploadedChunks: Blob[] = [];
-    
-    for (let i = 0; i < totalChunks; i++) {
-      const start = i * CHUNK_SIZE;
-      const end = Math.min(start + CHUNK_SIZE, file.size);
-      const chunk = file.slice(start, end);
-      uploadedChunks.push(chunk);
-      
-      // Update progress
-      const progress = Math.round(((i + 1) / totalChunks) * 90);
-      setUploadProgress(progress);
-    }
-    
-    // Combine all chunks into one file
-    const combinedBlob = new Blob(uploadedChunks, { type: file.type });
-    
-    const { error } = await supabase.storage
-      .from('course-videos')
-      .upload(fileName, combinedBlob);
-
-    if (error) throw error;
-    
-    setUploadProgress(100);
-    
-    const { data: publicUrl } = supabase.storage
-      .from('course-videos')
-      .getPublicUrl(fileName);
-
-    return publicUrl.publicUrl;
-  };
-
   const processVideoFile = async (file: File) => {
-    const maxSize = 500 * 1024 * 1024; // 500MB limit with chunked upload
-    
+    const maxSize = 500 * 1024 * 1024; // 500MB
+
     if (file.size > maxSize) {
       toast.error("Video hajmi 500MB dan oshmasligi kerak");
       return;
@@ -352,50 +319,51 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
 
     setUploadingVideo(true);
     setUploadProgress(0);
-    
+
     try {
-      const fileName = `videos/${Date.now()}-${file.name}`;
-      
+      const safeName = file.name.replace(/\s+/g, '_');
+      const objectName = `videos/${Date.now()}-${safeName}`;
+
       let videoUrl: string;
-      
-      // Use chunked upload for files larger than 50MB
+
+      // Resumable upload for large files (50MB+)
       if (file.size > 50 * 1024 * 1024) {
-        toast.info("Katta fayl - bo'laklarga bo'lib yuklanmoqda...");
-        videoUrl = await uploadFileInChunks(file, fileName);
+        toast.info("Katta fayl - davom ettiriladigan yuklash (resumable) boshlandi...");
+        videoUrl = await uploadResumableToPublicBucket({
+          bucket: 'course-videos',
+          objectName,
+          file,
+          onProgress: (pct) => setUploadProgress(pct),
+        });
       } else {
-        // Regular upload for smaller files with simulated progress
+        // Regular upload (small files)
         const progressInterval = setInterval(() => {
-          setUploadProgress(prev => {
-            if (prev >= 90) {
-              clearInterval(progressInterval);
-              return 90;
-            }
-            return prev + 10;
-          });
-        }, 300);
-        
+          setUploadProgress((prev) => (prev >= 90 ? 90 : prev + 10));
+        }, 250);
+
         const { error } = await supabase.storage
           .from('course-videos')
-          .upload(fileName, file);
+          .upload(objectName, file);
 
         clearInterval(progressInterval);
-        
+
         if (error) throw error;
 
         setUploadProgress(100);
-        
+
         const { data: publicUrl } = supabase.storage
           .from('course-videos')
-          .getPublicUrl(fileName);
-        
+          .getPublicUrl(objectName);
+
         videoUrl = publicUrl.publicUrl;
       }
 
-      setLessonForm(prev => ({ ...prev, video_url: videoUrl }));
+      setLessonForm((prev) => ({ ...prev, video_url: videoUrl }));
       toast.success("Video yuklandi");
     } catch (error) {
       console.error(error);
-      toast.error("Video yuklashda xatolik");
+      const message = error instanceof Error ? error.message : 'Video yuklashda xatolik';
+      toast.error(message);
     } finally {
       setTimeout(() => {
         setUploadingVideo(false);
@@ -406,6 +374,7 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
 
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
     await processVideoFile(file);
   };
