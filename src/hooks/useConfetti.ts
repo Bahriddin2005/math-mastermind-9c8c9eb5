@@ -78,10 +78,37 @@ export const useConfetti = () => {
     lastStreakRef.current = 0;
   }, []);
 
+  const triggerAchievementConfetti = useCallback(() => {
+    // Golden confetti for achievements
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.5 },
+      colors: ['#FFD700', '#FFC107', '#FF9800', '#FFB300', '#FDD835'],
+    });
+    
+    // Extra burst after a small delay
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { x: 0.25, y: 0.5 },
+        colors: ['#FFD700', '#FFC107'],
+      });
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { x: 0.75, y: 0.5 },
+        colors: ['#FFD700', '#FFC107'],
+      });
+    }, 200);
+  }, []);
+
   return {
     triggerStreakConfetti,
     triggerLevelUpConfetti,
     triggerCompletionConfetti,
+    triggerAchievementConfetti,
     resetStreak,
   };
 };
