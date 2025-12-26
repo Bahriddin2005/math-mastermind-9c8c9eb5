@@ -17,17 +17,28 @@ import {
   Search,
   Brain,
   Lightbulb,
+  Eye,
+  ArrowUpDown,
+  Heart,
   Target,
   TrendingUp,
   Calculator,
   Sparkles,
   Loader2
 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface BlogPost {
   id: string;
   title: string;
   excerpt: string;
+  views_count: number | null;
   category: string;
   author: string;
   created_at: string;
@@ -47,11 +58,14 @@ const Blog = () => {
   const { soundEnabled, toggleSound } = useSound();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Barchasi');
+  const [sortBy, setSortBy] = useState<'newest' | 'likes' | 'views'>('newest');
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPosts();
+    fetchLikeCounts();
   }, []);
 
   const fetchPosts = async () => {
@@ -67,12 +81,37 @@ const Blog = () => {
     setLoading(false);
   };
 
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'Barchasi' || post.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const fetchLikeCounts = async () => {
+    const { data } = await supabase
+      .from('blog_likes')
+      .select('post_id');
+    
+    if (data) {
+      const counts: Record<string, number> = {};
+      data.forEach(like => {
+        counts[like.post_id] = (counts[like.post_id] || 0) + 1;
+      });
+      setLikeCounts(counts);
+    }
+  };
+
+  const filteredPosts = posts
+    .filter(post => {
+      const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'Barchasi' || post.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      } else if (sortBy === 'likes') {
+        return (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0);
+      } else if (sortBy === 'views') {
+        return (b.views_count || 0) - (a.views_count || 0);
+      }
+      return 0;
+    });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('uz-UZ', {
@@ -111,7 +150,7 @@ const Blog = () => {
                 className="pl-10"
               />
             </div>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2 items-center">
               {categories.map((category) => (
                 <Button
                   key={category}
@@ -123,6 +162,19 @@ const Blog = () => {
                   {category}
                 </Button>
               ))}
+              <div className="ml-4">
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'newest' | 'likes' | 'views')}>
+                  <SelectTrigger className="w-[160px]">
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Saralash" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Eng yangi</SelectItem>
+                    <SelectItem value="likes">Eng ko'p yoqtirgan</SelectItem>
+                    <SelectItem value="views">Eng ko'p ko'rilgan</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -161,6 +213,7 @@ const Blog = () => {
                       <div className="flex items-center gap-4">
                         <span className="flex items-center gap-1"><User className="h-3.5 w-3.5" />{post.author}</span>
                         <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{post.read_time}</span>
+                        <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{post.views_count || 0}</span>
                         <BlogLikeButton postId={post.id} variant="compact" />
                       </div>
                       <Button variant="ghost" size="sm"><ArrowRight className="h-4 w-4" /></Button>

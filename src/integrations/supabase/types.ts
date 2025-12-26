@@ -102,6 +102,7 @@ export type Database = {
           read_time: string
           title: string
           updated_at: string
+          views_count: number | null
         }
         Insert: {
           author: string
@@ -116,6 +117,7 @@ export type Database = {
           read_time: string
           title: string
           updated_at?: string
+          views_count?: number | null
         }
         Update: {
           author?: string
@@ -130,6 +132,7 @@ export type Database = {
           read_time?: string
           title?: string
           updated_at?: string
+          views_count?: number | null
         }
         Relationships: []
       }
@@ -292,6 +295,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_blog_views: { Args: { post_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
