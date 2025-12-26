@@ -1,4 +1,6 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { 
@@ -15,19 +17,68 @@ import {
   Calculator,
   Award,
   BookOpen,
-  MessageCircle,
   ChevronRight,
   Star,
-  Clock,
   BarChart3,
   Gamepad2,
   HelpCircle,
   Phone,
-  CheckCircle2
+  CheckCircle2,
+  Quote
 } from 'lucide-react';
+
+interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  content: string;
+  rating: number;
+  avatar_url: string | null;
+}
+
+interface PlatformStats {
+  total_users: number;
+  total_problems_solved: number;
+  total_lessons: number;
+  total_courses: number;
+}
 
 export const GuestDashboard = () => {
   const navigate = useNavigate();
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [stats, setStats] = useState<PlatformStats>({
+    total_users: 0,
+    total_problems_solved: 0,
+    total_lessons: 0,
+    total_courses: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // Fetch testimonials
+      const { data: testimonialsData } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+
+      if (testimonialsData) {
+        setTestimonials(testimonialsData);
+      }
+
+      // Fetch platform stats using the function
+      const { data: statsData } = await supabase.rpc('get_platform_stats');
+      
+      if (statsData && statsData.length > 0) {
+        setStats(statsData[0]);
+      }
+
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   const features = [
     {
@@ -80,11 +131,27 @@ export const GuestDashboard = () => {
     }
   ];
 
-  const stats = [
-    { value: "1000+", label: "Foydalanuvchilar", icon: Users },
-    { value: "50K+", label: "Yechilgan masalalar", icon: CheckCircle2 },
-    { value: "20+", label: "Video darslar", icon: GraduationCap },
-    { value: "4.9", label: "Reyting", icon: Star }
+  const displayStats = [
+    { 
+      value: stats.total_users > 0 ? stats.total_users.toLocaleString() : "100+", 
+      label: "Foydalanuvchilar", 
+      icon: Users 
+    },
+    { 
+      value: stats.total_problems_solved > 0 ? stats.total_problems_solved.toLocaleString() : "10K+", 
+      label: "Yechilgan masalalar", 
+      icon: CheckCircle2 
+    },
+    { 
+      value: stats.total_lessons > 0 ? `${stats.total_lessons}+` : "20+", 
+      label: "Video darslar", 
+      icon: GraduationCap 
+    },
+    { 
+      value: "4.9", 
+      label: "Reyting", 
+      icon: Star 
+    }
   ];
 
   const howItWorks = [
@@ -93,6 +160,15 @@ export const GuestDashboard = () => {
     { step: 3, title: "Mashq qiling", description: "Kundalik mashqlarni bajaring", icon: Play },
     { step: 4, title: "Rivojlaning", description: "Statistikani kuzatib boring", icon: BarChart3 }
   ];
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star 
+        key={i} 
+        className={`h-4 w-4 ${i < rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} 
+      />
+    ));
+  };
 
   return (
     <div className="space-y-10">
@@ -127,7 +203,7 @@ export const GuestDashboard = () => {
             <Button 
               variant="outline" 
               size="lg"
-              onClick={() => navigate('/courses')}
+              onClick={() => navigate('/auth')}
               className="gap-2 bg-primary-foreground/10 border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20"
             >
               <GraduationCap className="h-5 w-5" />
@@ -139,7 +215,7 @@ export const GuestDashboard = () => {
 
       {/* Stats Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 opacity-0 animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-        {stats.map((stat, index) => (
+        {displayStats.map((stat, index) => (
           <Card key={index} className="p-4 text-center border-border/40 hover:shadow-md transition-shadow">
             <stat.icon className="h-6 w-6 mx-auto mb-2 text-primary" />
             <div className="text-2xl md:text-3xl font-display font-bold text-foreground">{stat.value}</div>
@@ -213,8 +289,60 @@ export const GuestDashboard = () => {
         </div>
       </div>
 
+      {/* Testimonials Section */}
+      {testimonials.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-3 opacity-0 animate-slide-up" style={{ animationDelay: '480ms', animationFillMode: 'forwards' }}>
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+              <Quote className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-display font-bold text-foreground">Foydalanuvchilar fikri</h2>
+              <p className="text-sm text-muted-foreground">Platformamiz haqida sharhlar</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-0 animate-slide-up" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
+            {testimonials.map((testimonial, index) => (
+              <Card 
+                key={testimonial.id} 
+                className="p-6 border-border/40 hover:shadow-lg transition-all bg-gradient-to-br from-card to-secondary/20"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0">
+                    {testimonial.avatar_url ? (
+                      <img 
+                        src={testimonial.avatar_url} 
+                        alt={testimonial.name} 
+                        className="h-12 w-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-6 w-6 text-primary" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h4 className="font-display font-bold">{testimonial.name}</h4>
+                        <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                      </div>
+                      <div className="flex gap-0.5">
+                        {renderStars(testimonial.rating)}
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      "{testimonial.content}"
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Video Lessons Section */}
-      <Card className="overflow-hidden border-border/40 opacity-0 animate-slide-up" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
+      <Card className="overflow-hidden border-border/40 opacity-0 animate-slide-up" style={{ animationDelay: '520ms', animationFillMode: 'forwards' }}>
         <div className="grid md:grid-cols-2">
           <div className="p-6 md:p-8 bg-gradient-to-br from-purple-500 to-purple-700 text-white">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-sm font-medium mb-4">
@@ -227,7 +355,7 @@ export const GuestDashboard = () => {
             </p>
             <ul className="space-y-2 mb-6">
               <li className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="h-4 w-4" /> 20+ video darslar
+                <CheckCircle2 className="h-4 w-4" /> {stats.total_lessons > 0 ? `${stats.total_lessons}+` : '20+'} video darslar
               </li>
               <li className="flex items-center gap-2 text-sm">
                 <CheckCircle2 className="h-4 w-4" /> Amaliy mashqlar
