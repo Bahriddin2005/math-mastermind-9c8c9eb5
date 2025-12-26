@@ -54,10 +54,13 @@ interface Lesson {
   title: string;
   description: string;
   video_url: string | null;
+  thumbnail_url: string | null;
   duration_minutes: number;
   order_index: number;
   is_published: boolean;
 }
+
+const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
 
 interface CourseManagerProps {
   isAdmin: boolean;
@@ -96,11 +99,13 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
     title: '',
     description: '',
     video_url: '',
+    thumbnail_url: '',
     duration_minutes: 10,
     is_published: false,
   });
   const [savingLesson, setSavingLesson] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadingLessonThumbnail, setUploadingLessonThumbnail] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -248,6 +253,7 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
         title: lesson.title,
         description: lesson.description || '',
         video_url: lesson.video_url || '',
+        thumbnail_url: lesson.thumbnail_url || '',
         duration_minutes: lesson.duration_minutes,
         is_published: lesson.is_published,
       });
@@ -257,6 +263,7 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
         title: '',
         description: '',
         video_url: '',
+        thumbnail_url: '',
         duration_minutes: 10,
         is_published: false,
       });
@@ -264,9 +271,77 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
     setLessonDialogOpen(true);
   };
 
+  const handleLessonThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Rasm hajmi 5MB dan oshmasligi kerak");
+      return;
+    }
+
+    setUploadingLessonThumbnail(true);
+    try {
+      const fileName = `lesson-thumbnails/${Date.now()}-${file.name}`;
+      const { error } = await supabase.storage
+        .from('course-videos')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: publicUrl } = supabase.storage
+        .from('course-videos')
+        .getPublicUrl(fileName);
+
+      setLessonForm(prev => ({ ...prev, thumbnail_url: publicUrl.publicUrl }));
+      toast.success("Rasm yuklandi");
+    } catch (error) {
+      console.error(error);
+      toast.error("Rasm yuklashda xatolik");
+    } finally {
+      setUploadingLessonThumbnail(false);
+    }
+  };
+
+  // Chunked upload for large files
+  const uploadFileInChunks = async (file: File, fileName: string): Promise<string> => {
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const uploadedChunks: Blob[] = [];
+    
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const chunk = file.slice(start, end);
+      uploadedChunks.push(chunk);
+      
+      // Update progress
+      const progress = Math.round(((i + 1) / totalChunks) * 90);
+      setUploadProgress(progress);
+    }
+    
+    // Combine all chunks into one file
+    const combinedBlob = new Blob(uploadedChunks, { type: file.type });
+    
+    const { error } = await supabase.storage
+      .from('course-videos')
+      .upload(fileName, combinedBlob);
+
+    if (error) throw error;
+    
+    setUploadProgress(100);
+    
+    const { data: publicUrl } = supabase.storage
+      .from('course-videos')
+      .getPublicUrl(fileName);
+
+    return publicUrl.publicUrl;
+  };
+
   const processVideoFile = async (file: File) => {
-    if (file.size > 100 * 1024 * 1024) {
-      toast.error("Video hajmi 100MB dan oshmasligi kerak");
+    const maxSize = 500 * 1024 * 1024; // 500MB limit with chunked upload
+    
+    if (file.size > maxSize) {
+      toast.error("Video hajmi 500MB dan oshmasligi kerak");
       return;
     }
 
@@ -279,34 +354,44 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
     setUploadProgress(0);
     
     try {
-      const fileName = `${Date.now()}-${file.name}`;
+      const fileName = `videos/${Date.now()}-${file.name}`;
       
-      // Simulate progress for better UX
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 300);
+      let videoUrl: string;
       
-      const { data, error } = await supabase.storage
-        .from('course-videos')
-        .upload(fileName, file);
+      // Use chunked upload for files larger than 50MB
+      if (file.size > 50 * 1024 * 1024) {
+        toast.info("Katta fayl - bo'laklarga bo'lib yuklanmoqda...");
+        videoUrl = await uploadFileInChunks(file, fileName);
+      } else {
+        // Regular upload for smaller files with simulated progress
+        const progressInterval = setInterval(() => {
+          setUploadProgress(prev => {
+            if (prev >= 90) {
+              clearInterval(progressInterval);
+              return 90;
+            }
+            return prev + 10;
+          });
+        }, 300);
+        
+        const { error } = await supabase.storage
+          .from('course-videos')
+          .upload(fileName, file);
 
-      clearInterval(progressInterval);
-      
-      if (error) throw error;
+        clearInterval(progressInterval);
+        
+        if (error) throw error;
 
-      setUploadProgress(100);
-      
-      const { data: publicUrl } = supabase.storage
-        .from('course-videos')
-        .getPublicUrl(fileName);
+        setUploadProgress(100);
+        
+        const { data: publicUrl } = supabase.storage
+          .from('course-videos')
+          .getPublicUrl(fileName);
+        
+        videoUrl = publicUrl.publicUrl;
+      }
 
-      setLessonForm(prev => ({ ...prev, video_url: publicUrl.publicUrl }));
+      setLessonForm(prev => ({ ...prev, video_url: videoUrl }));
       toast.success("Video yuklandi");
     } catch (error) {
       console.error(error);
@@ -652,6 +737,37 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
               />
             </div>
             <div>
+              <Label>Dars rasmi</Label>
+              <div className="space-y-2">
+                {lessonForm.thumbnail_url && (
+                  <img 
+                    src={lessonForm.thumbnail_url} 
+                    alt="Thumbnail" 
+                    className="w-full h-24 object-cover rounded-lg border"
+                  />
+                )}
+                <div className="flex gap-2">
+                  <Input
+                    value={lessonForm.thumbnail_url}
+                    onChange={(e) => setLessonForm(prev => ({ ...prev, thumbnail_url: e.target.value }))}
+                    placeholder="Rasm URL yoki yuklang..."
+                    className="flex-1"
+                  />
+                  <Button variant="outline" asChild disabled={uploadingLessonThumbnail}>
+                    <label className="cursor-pointer">
+                      {uploadingLessonThumbnail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={handleLessonThumbnailUpload}
+                      />
+                    </label>
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <div>
               <Label>Video</Label>
               <div className="space-y-2">
                 {lessonForm.video_url && (
@@ -684,7 +800,7 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
                         />
                       </label>
                     </div>
-                    <p className="text-xs text-muted-foreground">Maksimum 100MB</p>
+                    <p className="text-xs text-muted-foreground">Maksimum 500MB (chunked upload)</p>
                   </div>
                 </div>
 
@@ -703,7 +819,7 @@ export const CourseManager = ({ isAdmin }: CourseManagerProps) => {
                   <div className="space-y-1">
                     <Progress value={uploadProgress} className="h-2" />
                     <p className="text-xs text-muted-foreground text-center">
-                      Yuklanmoqda... {uploadProgress}%
+                      {uploadProgress < 90 ? 'Yuklanmoqda...' : 'Yakunlanmoqda...'} {uploadProgress}%
                     </p>
                   </div>
                 )}
