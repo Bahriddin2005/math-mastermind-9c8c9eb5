@@ -24,7 +24,9 @@ import {
   Volume2,
   VolumeX,
   Mic,
-  MicOff
+  MicOff,
+  ImagePlus,
+  XCircle
 } from 'lucide-react';
 
 interface FAQItem {
@@ -96,10 +98,13 @@ export const HelpChatWidget = () => {
   const [ttsEnabled, setTtsEnabled] = useState(true);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const sessionIdRef = useRef<string>(generateSessionId());
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     fetchFAQs();
@@ -155,6 +160,8 @@ export const HelpChatWidget = () => {
     setChatMode(false);
     setMessages([]);
     setInputMessage('');
+    setSelectedImage(null);
+    setImagePreview(null);
     // Stop any playing audio
     if (audioRef.current) {
       audioRef.current.pause();
@@ -163,6 +170,38 @@ export const HelpChatWidget = () => {
     setIsPlayingAudio(false);
     // Generate new session ID for next chat
     sessionIdRef.current = generateSessionId();
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Rasm hajmi 5MB dan oshmasligi kerak");
+      return;
+    }
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error("Faqat JPG, PNG yoki WebP formatlar qo'llab-quvvatlanadi");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(',')[1];
+      setSelectedImage(base64);
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const clearImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
   };
 
   const playTTS = async (text: string) => {
@@ -319,15 +358,24 @@ export const HelpChatWidget = () => {
   };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+    if ((!inputMessage.trim() && !selectedImage) || isLoading) return;
 
-    const userMessage = inputMessage.trim();
+    const userMessage = inputMessage.trim() || (selectedImage ? "Bu rasmni tahlil qiling" : "");
+    const imageToSend = selectedImage;
+    
     setInputMessage('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setSelectedImage(null);
+    setImagePreview(null);
+    
+    // Show message with image indicator if image was attached
+    const displayMessage = imageToSend 
+      ? `${userMessage} [📷 Rasm biriktirildi]`
+      : userMessage;
+    setMessages(prev => [...prev, { role: 'user', content: displayMessage }]);
     setIsLoading(true);
 
     // Save user message to database
-    await saveMessageToDb('user', userMessage);
+    await saveMessageToDb('user', displayMessage);
 
     try {
       // Create FAQ context for AI
@@ -368,7 +416,8 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
             faqContext,
             coursesContext,
             lessonsContext,
-            userProgressContext
+            userProgressContext,
+            imageBase64: imageToSend
           }),
         }
       );
@@ -521,9 +570,44 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
                   </div>
                 </ScrollArea>
 
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="px-4 pt-2">
+                    <div className="relative inline-block">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="h-16 w-16 object-cover rounded-lg border"
+                      />
+                      <button
+                        onClick={clearImage}
+                        className="absolute -top-2 -right-2 p-0.5 bg-destructive text-destructive-foreground rounded-full"
+                      >
+                        <XCircle className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Input */}
                 <div className="p-4 border-t">
                   <div className="flex gap-2">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isLoading || isRecording}
+                      title="Rasm yuklash"
+                    >
+                      <ImagePlus className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant={isRecording ? "destructive" : "outline"}
                       size="icon"
@@ -542,13 +626,13 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
                       value={inputMessage}
                       onChange={(e) => setInputMessage(e.target.value)}
                       onKeyPress={handleKeyPress}
-                      placeholder={isRecording ? "Gapiring..." : "Savolingizni yozing..."}
+                      placeholder={isRecording ? "Gapiring..." : selectedImage ? "Rasm haqida so'rang..." : "Savolingizni yozing..."}
                       disabled={isLoading || isRecording}
                       className="flex-1"
                     />
                     <Button 
                       onClick={sendMessage} 
-                      disabled={!inputMessage.trim() || isLoading}
+                      disabled={(!inputMessage.trim() && !selectedImage) || isLoading}
                       size="icon"
                     >
                       <Send className="h-4 w-4" />
