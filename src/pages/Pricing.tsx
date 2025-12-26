@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { useSound } from '@/hooks/useSound';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,9 +20,23 @@ import {
   Shield,
   Clock,
   Users,
-  BarChart3
+  BarChart3,
+  Loader2,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Stripe price and product IDs
+const STRIPE_TIERS = {
+  pro: {
+    price_id: "price_1Sia73HENpONntho0Y4abUeU",
+    product_id: "prod_TfvzOLBhYojy4e",
+  },
+  premium: {
+    price_id: "price_1Sia7HHENpONnthoe10Kiiht",
+    product_id: "prod_Tfvz8P0qtLknhc",
+  }
+};
 
 interface PricingPlan {
   id: string;
@@ -33,6 +48,7 @@ interface PricingPlan {
   color: string;
   popular?: boolean;
   features: string[];
+  stripeTier?: keyof typeof STRIPE_TIERS;
 }
 
 const pricingPlans: PricingPlan[] = [
@@ -63,11 +79,12 @@ const pricingPlans: PricingPlan[] = [
     features: [
       'Cheksiz mashqlar',
       "Kengaytirilgan statistika",
-      'Shaxsiy o\'quv rejasi',
-      'Reklama yo\'q',
+      "Shaxsiy o'quv rejasi",
+      "Reklama yo'q",
       'Priority yordam',
       'Maxsus yutuqlar',
     ],
+    stripeTier: 'pro',
   },
   {
     id: 'premium',
@@ -85,6 +102,7 @@ const pricingPlans: PricingPlan[] = [
       'Oilaviy paket (3 akkaunt)',
       'Beta funksiyalarga kirish',
     ],
+    stripeTier: 'premium',
   },
 ];
 
@@ -93,13 +111,63 @@ const Pricing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isYearly, setIsYearly] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [subscription, setSubscription] = useState<{
+    subscribed: boolean;
+    product_id: string | null;
+    subscription_end: string | null;
+  } | null>(null);
+  const [checkingSubscription, setCheckingSubscription] = useState(false);
+
+  useEffect(() => {
+    // Check URL params for success/cancel
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === 'true') {
+      toast.success("Obuna muvaffaqiyatli amalga oshirildi!", {
+        description: "Premium imkoniyatlardan foydalanishingiz mumkin.",
+      });
+      // Clear URL params
+      window.history.replaceState({}, '', '/pricing');
+    } else if (params.get('canceled') === 'true') {
+      toast.info("To'lov bekor qilindi");
+      window.history.replaceState({}, '', '/pricing');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      checkSubscription();
+    }
+  }, [user]);
+
+  const checkSubscription = async () => {
+    if (!user) return;
+    
+    setCheckingSubscription(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (error) throw error;
+      setSubscription(data);
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    } finally {
+      setCheckingSubscription(false);
+    }
+  };
 
   const formatPrice = (price: number) => {
     if (price === 0) return 'Bepul';
     return new Intl.NumberFormat('uz-UZ').format(price) + " so'm";
   };
 
-  const handleSubscribe = (plan: PricingPlan) => {
+  const getCurrentTier = () => {
+    if (!subscription?.subscribed || !subscription.product_id) return 'free';
+    if (subscription.product_id === STRIPE_TIERS.premium.product_id) return 'premium';
+    if (subscription.product_id === STRIPE_TIERS.pro.product_id) return 'pro';
+    return 'free';
+  };
+
+  const handleSubscribe = async (plan: PricingPlan) => {
     if (!user) {
       toast.info("Avval tizimga kiring", {
         description: "Obuna bo'lish uchun ro'yxatdan o'ting yoki tizimga kiring.",
@@ -116,10 +184,44 @@ const Pricing = () => {
       return;
     }
 
-    toast.info("To'lov tizimi tez orada ishga tushadi", {
-      description: "Hozircha bepul rejada foydalanishingiz mumkin.",
-    });
+    if (!plan.stripeTier) return;
+
+    setLoadingPlan(plan.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId: STRIPE_TIERS[plan.stripeTier].price_id }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      toast.error("Xatolik yuz berdi", {
+        description: "Iltimos, qaytadan urinib ko'ring.",
+      });
+    } finally {
+      setLoadingPlan(null);
+    }
   };
+
+  const handleManageSubscription = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Error opening portal:', error);
+      toast.error("Xatolik yuz berdi");
+    }
+  };
+
+  const currentTier = getCurrentTier();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -166,25 +268,59 @@ const Pricing = () => {
             </div>
           </div>
 
+          {/* Subscription Status */}
+          {subscription?.subscribed && (
+            <div className="mb-8 p-4 bg-green-500/10 border border-green-500/20 rounded-xl text-center">
+              <p className="text-green-600 font-medium">
+                ✓ Siz hozirda {currentTier === 'premium' ? 'Premium' : 'Pro'} rejada obuna bo'lgansiz
+              </p>
+              {subscription.subscription_end && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Keyingi to'lov: {new Date(subscription.subscription_end).toLocaleDateString('uz-UZ')}
+                </p>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-3"
+                onClick={handleManageSubscription}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Obunani boshqarish
+              </Button>
+            </div>
+          )}
+
           {/* Pricing Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
             {pricingPlans.map((plan) => {
               const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
               const Icon = plan.icon;
+              const isCurrentPlan = plan.id === currentTier;
 
               return (
                 <Card 
                   key={plan.id}
                   className={cn(
                     "relative border-border/40 shadow-lg transition-all hover:shadow-xl",
-                    plan.popular && "ring-2 ring-primary scale-105 z-10"
+                    plan.popular && "ring-2 ring-primary scale-105 z-10",
+                    isCurrentPlan && "ring-2 ring-green-500"
                   )}
                 >
-                  {plan.popular && (
+                  {plan.popular && !isCurrentPlan && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                       <Badge className="bg-primary text-primary-foreground px-4 py-1">
                         <Star className="h-3 w-3 mr-1 fill-current" />
                         Eng ommabop
+                      </Badge>
+                    </div>
+                  )}
+
+                  {isCurrentPlan && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-green-500 text-white px-4 py-1">
+                        <Check className="h-3 w-3 mr-1" />
+                        Joriy reja
                       </Badge>
                     </div>
                   )}
@@ -223,10 +359,14 @@ const Pricing = () => {
                   <CardFooter>
                     <Button 
                       className="w-full" 
-                      variant={plan.popular ? 'default' : 'outline'}
+                      variant={isCurrentPlan ? 'outline' : plan.popular ? 'default' : 'outline'}
                       onClick={() => handleSubscribe(plan)}
+                      disabled={loadingPlan === plan.id || isCurrentPlan}
                     >
-                      {plan.id === 'free' ? 'Hozirgi reja' : 'Obuna bo\'lish'}
+                      {loadingPlan === plan.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
+                      {isCurrentPlan ? 'Joriy reja' : plan.id === 'free' ? 'Hozirgi reja' : "Obuna bo'lish"}
                     </Button>
                   </CardFooter>
                 </Card>
