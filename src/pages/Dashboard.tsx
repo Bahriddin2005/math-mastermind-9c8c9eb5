@@ -13,6 +13,7 @@ import { GameHistoryItem } from '@/components/GameHistoryItem';
 import { Leaderboard } from '@/components/Leaderboard';
 import { InfoCarousel } from '@/components/InfoCarousel';
 import { GuestDashboard } from '@/components/GuestDashboard';
+import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -152,6 +153,7 @@ const Dashboard = () => {
             <GuestDashboard />
           </div>
         </main>
+        <Footer />
       </div>
     );
   }
@@ -318,6 +320,7 @@ const Dashboard = () => {
           </Tabs>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

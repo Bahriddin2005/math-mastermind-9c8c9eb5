@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
+import { BlogComments } from '@/components/BlogComments';
 import { useSound } from '@/hooks/useSound';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -161,6 +162,9 @@ const BlogPost = () => {
                 </p>
               ))}
             </div>
+
+            {/* Comments Section */}
+            <BlogComments postId={post.id} />
 
             {/* Share & Navigate */}
             <div className="mt-12 pt-8 border-t flex items-center justify-between">
