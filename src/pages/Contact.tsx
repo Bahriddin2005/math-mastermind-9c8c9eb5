@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 import { useSound } from '@/hooks/useSound';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -303,6 +304,7 @@ const Contact = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };
