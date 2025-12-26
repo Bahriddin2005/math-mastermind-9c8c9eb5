@@ -1,10 +1,11 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Volume2, VolumeX, User, LogOut, Play, Home, Settings, Moon, Sun } from 'lucide-react';
+import { Volume2, VolumeX, User, LogOut, Play, Home, Settings, Moon, Sun, ShieldCheck } from 'lucide-react';
 import { Logo } from './Logo';
 import { Button } from './ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,12 +25,30 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const isTrainPage = location.pathname === '/train';
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+    checkAdmin();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -118,6 +137,12 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
                   <Settings className="h-4 w-4" />
                   Sozlamalar
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate('/admin')} className="gap-2 text-primary">
+                    <ShieldCheck className="h-4 w-4" />
+                    Admin panel
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive">
                   <LogOut className="h-4 w-4" />
