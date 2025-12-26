@@ -13,6 +13,7 @@ import {
   Clock, 
   User, 
   Calendar,
+  Eye,
   BookOpen,
   Brain,
   Calculator,
@@ -34,6 +35,7 @@ interface BlogPost {
   read_time: string;
   icon: string;
   gradient: string;
+  views_count: number | null;
 }
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -63,6 +65,8 @@ const BlogPost = () => {
 
     if (data) {
       setPost(data);
+      // Increment views count
+      await supabase.rpc('increment_blog_views', { post_id: id });
     }
     setLoading(false);
   };
@@ -147,6 +151,10 @@ const BlogPost = () => {
                 <span className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
                   {post.read_time}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  {(post.views_count || 0) + 1} ko'rish
                 </span>
               </div>
             </div>
