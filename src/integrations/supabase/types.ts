@@ -818,6 +818,92 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_challenge_results: {
+        Row: {
+          avatar_url: string | null
+          best_time: number | null
+          challenge_id: string
+          correct_answers: number
+          created_at: string
+          games_played: number
+          id: string
+          total_score: number
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          best_time?: number | null
+          challenge_id: string
+          correct_answers?: number
+          created_at?: string
+          games_played?: number
+          id?: string
+          total_score?: number
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          best_time?: number | null
+          challenge_id?: string
+          correct_answers?: number
+          created_at?: string
+          games_played?: number
+          id?: string
+          total_score?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_challenge_results_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_challenges: {
+        Row: {
+          created_at: string
+          digit_count: number
+          formula_type: string
+          id: string
+          problem_count: number
+          seed: number
+          speed: number
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          digit_count?: number
+          formula_type?: string
+          id?: string
+          problem_count?: number
+          seed?: number
+          speed?: number
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          digit_count?: number
+          formula_type?: string
+          id?: string
+          problem_count?: number
+          seed?: number
+          speed?: number
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
