@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
 import { Input } from './ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { 
   Dialog,
   DialogContent,
@@ -21,9 +22,20 @@ import {
   Trash2,
   Loader2,
   Calendar,
-  Download
+  Download,
+  ArrowLeft,
+  Users
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface UserWithChats {
+  user_id: string | null;
+  username: string;
+  avatar_url: string | null;
+  session_count: number;
+  total_messages: number;
+  last_chat: string;
+}
 
 interface ChatSession {
   id: string;
@@ -32,7 +44,7 @@ interface ChatSession {
   created_at: string;
   updated_at: string;
   message_count?: number;
-  username?: string;
+  first_message?: string;
 }
 
 interface ChatMessage {
@@ -44,22 +56,25 @@ interface ChatMessage {
 }
 
 export const ChatHistoryManager = () => {
+  const [users, setUsers] = useState<UserWithChats[]>([]);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUser, setSelectedUser] = useState<UserWithChats | null>(null);
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(null);
   const [sessionMessages, setSessionMessages] = useState<ChatMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchSessions();
+    fetchUsers();
   }, []);
 
-  const fetchSessions = async () => {
+  const fetchUsers = async () => {
     setLoading(true);
     
-    // Fetch sessions
+    // Fetch all sessions
     const { data: sessionsData, error: sessionsError } = await supabase
       .from('chat_sessions')
       .select('*')
@@ -79,9 +94,9 @@ export const ChatHistoryManager = () => {
     // Fetch profiles for user names
     const { data: profilesData } = await supabase
       .from('profiles')
-      .select('user_id, username');
+      .select('user_id, username, avatar_url');
 
-    const profileMap = new Map(profilesData?.map(p => [p.user_id, p.username]) || []);
+    const profileMap = new Map(profilesData?.map(p => [p.user_id, { username: p.username, avatar_url: p.avatar_url }]) || []);
     
     // Count messages per session
     const messageCounts = new Map<string, number>();
@@ -89,14 +104,84 @@ export const ChatHistoryManager = () => {
       messageCounts.set(m.session_id, (messageCounts.get(m.session_id) || 0) + 1);
     });
 
+    // Group sessions by user
+    const userMap = new Map<string, UserWithChats>();
+    
+    sessionsData?.forEach(session => {
+      const key = session.user_id || 'guest';
+      const profile = session.user_id ? profileMap.get(session.user_id) : null;
+      const msgCount = messageCounts.get(session.session_id) || 0;
+      
+      if (userMap.has(key)) {
+        const existing = userMap.get(key)!;
+        existing.session_count += 1;
+        existing.total_messages += msgCount;
+        if (new Date(session.created_at) > new Date(existing.last_chat)) {
+          existing.last_chat = session.created_at;
+        }
+      } else {
+        userMap.set(key, {
+          user_id: session.user_id,
+          username: profile?.username || (session.user_id ? 'Noma\'lum' : 'Mehmon'),
+          avatar_url: profile?.avatar_url || null,
+          session_count: 1,
+          total_messages: msgCount,
+          last_chat: session.created_at
+        });
+      }
+    });
+
+    // Sort by last chat date
+    const usersArray = Array.from(userMap.values()).sort((a, b) => 
+      new Date(b.last_chat).getTime() - new Date(a.last_chat).getTime()
+    );
+
+    setUsers(usersArray);
+    setLoading(false);
+  };
+
+  const selectUser = async (user: UserWithChats) => {
+    setSelectedUser(user);
+    setLoadingSessions(true);
+
+    // Fetch sessions for this user
+    let query = supabase
+      .from('chat_sessions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (user.user_id) {
+      query = query.eq('user_id', user.user_id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { data: sessionsData } = await query;
+
+    // Fetch message counts and first messages
+    const { data: messagesData } = await supabase
+      .from('chat_messages')
+      .select('session_id, content, role')
+      .order('created_at', { ascending: true });
+
+    const messageCounts = new Map<string, number>();
+    const firstMessages = new Map<string, string>();
+    
+    messagesData?.forEach(m => {
+      messageCounts.set(m.session_id, (messageCounts.get(m.session_id) || 0) + 1);
+      if (!firstMessages.has(m.session_id) && m.role === 'user') {
+        firstMessages.set(m.session_id, m.content);
+      }
+    });
+
     const enrichedSessions = sessionsData?.map(session => ({
       ...session,
       message_count: messageCounts.get(session.session_id) || 0,
-      username: session.user_id ? profileMap.get(session.user_id) || 'Noma\'lum' : 'Mehmon'
+      first_message: firstMessages.get(session.session_id) || 'Xabar yo\'q'
     })) || [];
 
     setSessions(enrichedSessions);
-    setLoading(false);
+    setLoadingSessions(false);
   };
 
   const viewSession = async (session: ChatSession) => {
@@ -124,9 +209,16 @@ export const ChatHistoryManager = () => {
       setSessions(prev => prev.filter(s => s.session_id !== sessionId));
       toast.success("Suhbat o'chirildi");
       setDialogOpen(false);
+      // Refresh user stats
+      fetchUsers();
     } else {
       toast.error("Xatolik yuz berdi");
     }
+  };
+
+  const goBack = () => {
+    setSelectedUser(null);
+    setSessions([]);
   };
 
   const exportToCSV = async () => {
@@ -180,16 +272,24 @@ export const ChatHistoryManager = () => {
     });
   };
 
-  const filteredSessions = sessions.filter(session => 
-    session.session_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    session.username?.toLowerCase().includes(searchQuery.toLowerCase())
+  const formatRelativeDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (days === 0) return 'Bugun';
+    if (days === 1) return 'Kecha';
+    if (days < 7) return `${days} kun oldin`;
+    return date.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'short' });
+  };
+
+  const filteredUsers = users.filter(user => 
+    user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const todaySessions = sessions.filter(s => 
-    new Date(s.created_at).toDateString() === new Date().toDateString()
-  ).length;
-
-  const totalMessages = sessions.reduce((sum, s) => sum + (s.message_count || 0), 0);
+  const totalSessions = users.reduce((sum, u) => sum + u.session_count, 0);
+  const totalMessages = users.reduce((sum, u) => sum + u.total_messages, 0);
 
   return (
     <div className="space-y-6">
@@ -197,16 +297,16 @@ export const ChatHistoryManager = () => {
       <div className="grid grid-cols-3 gap-4">
         <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
           <CardContent className="p-4 text-center">
-            <MessageCircle className="h-5 w-5 text-blue-500 mx-auto mb-1" />
-            <p className="text-xl font-bold">{sessions.length}</p>
-            <p className="text-xs text-muted-foreground">Jami suhbatlar</p>
+            <Users className="h-5 w-5 text-blue-500 mx-auto mb-1" />
+            <p className="text-xl font-bold">{users.length}</p>
+            <p className="text-xs text-muted-foreground">Foydalanuvchilar</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
           <CardContent className="p-4 text-center">
-            <Calendar className="h-5 w-5 text-green-500 mx-auto mb-1" />
-            <p className="text-xl font-bold">{todaySessions}</p>
-            <p className="text-xs text-muted-foreground">Bugungi</p>
+            <MessageCircle className="h-5 w-5 text-green-500 mx-auto mb-1" />
+            <p className="text-xl font-bold">{totalSessions}</p>
+            <p className="text-xs text-muted-foreground">Jami suhbatlar</p>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
@@ -218,98 +318,190 @@ export const ChatHistoryManager = () => {
         </Card>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Suhbat qidirish..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {/* Sessions List */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Chat tarixi</CardTitle>
-            <CardDescription>Foydalanuvchilar bilan suhbatlar</CardDescription>
-          </div>
-          <Button onClick={exportToCSV} variant="outline" size="sm" className="gap-2">
-            <Download className="h-4 w-4" />
-            CSV eksport
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : filteredSessions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>Suhbatlar topilmadi</p>
-            </div>
-          ) : (
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-2">
-                {filteredSessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="flex items-center justify-between p-4 rounded-xl border bg-secondary/30 hover:bg-secondary/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        {session.user_id ? (
-                          <User className="h-5 w-5 text-primary" />
-                        ) : (
-                          <User className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold">{session.username}</p>
-                          {!session.user_id && (
-                            <Badge variant="secondary" className="text-xs">Mehmon</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatDate(session.created_at)}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MessageCircle className="h-3 w-3" />
-                            {session.message_count} xabar
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => viewSession(session)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => deleteSession(session.session_id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+      {selectedUser ? (
+        // User's Sessions View
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={goBack}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center gap-3 flex-1">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={selectedUser.avatar_url || undefined} />
+                <AvatarFallback className="bg-primary/10">
+                  {selectedUser.username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  {selectedUser.username}
+                  {!selectedUser.user_id && (
+                    <Badge variant="secondary" className="text-xs">Mehmon</Badge>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  {selectedUser.session_count} suhbat • {selectedUser.total_messages} xabar
+                </CardDescription>
               </div>
-            </ScrollArea>
-          )}
-        </CardContent>
-      </Card>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loadingSessions ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : sessions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Suhbatlar topilmadi</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-2">
+                  {sessions.map((session) => (
+                    <div
+                      key={session.id}
+                      className="flex items-center justify-between p-4 rounded-xl border bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                      onClick={() => viewSession(session)}
+                    >
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <MessageCircle className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">
+                            {session.first_message?.substring(0, 60)}
+                            {(session.first_message?.length || 0) > 60 ? '...' : ''}
+                          </p>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDate(session.created_at)}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageCircle className="h-3 w-3" />
+                              {session.message_count} xabar
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            viewSession(session);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSession(session.session_id);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        // Users List View
+        <>
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Foydalanuvchi qidirish..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Users List */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Chat tarixi</CardTitle>
+                <CardDescription>Foydalanuvchilar va ularning suhbatlari</CardDescription>
+              </div>
+              <Button onClick={exportToCSV} variant="outline" size="sm" className="gap-2">
+                <Download className="h-4 w-4" />
+                CSV eksport
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p>Foydalanuvchilar topilmadi</p>
+                </div>
+              ) : (
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-2">
+                    {filteredUsers.map((user) => (
+                      <div
+                        key={user.user_id || 'guest'}
+                        className="flex items-center justify-between p-4 rounded-xl border bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                        onClick={() => selectUser(user)}
+                      >
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src={user.avatar_url || undefined} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                              {user.username.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-semibold">{user.username}</p>
+                              {!user.user_id && (
+                                <Badge variant="secondary" className="text-xs">Mehmon</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <MessageCircle className="h-3 w-3" />
+                                {user.session_count} suhbat
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Bot className="h-3 w-3" />
+                                {user.total_messages} xabar
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {formatRelativeDate(user.last_chat)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button variant="ghost" size="icon">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {/* Session Detail Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -317,7 +509,7 @@ export const ChatHistoryManager = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              Suhbat: {selectedSession?.username}
+              Suhbat: {selectedUser?.username}
             </DialogTitle>
           </DialogHeader>
           
