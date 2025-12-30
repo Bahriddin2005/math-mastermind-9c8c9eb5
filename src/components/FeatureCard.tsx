@@ -58,7 +58,7 @@ export const FeatureCard = ({
 
   return (
     <Card
-      className={`group relative overflow-hidden p-4 sm:p-6 bg-gradient-to-br from-card via-card to-secondary/30 border border-border/40 hover:shadow-xl transition-all duration-300 opacity-0 animate-slide-up cursor-pointer hover:-translate-y-1 ${colors.borderHover} ${colors.glow}`}
+      className={`group relative overflow-hidden p-4 sm:p-6 bg-gradient-to-br from-card via-card to-secondary/30 border border-border/40 hover:shadow-xl transition-all duration-300 opacity-0 animate-slide-up cursor-pointer hover:-translate-y-1 h-[260px] flex flex-col ${colors.borderHover} ${colors.glow}`}
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'forwards' }}
       onClick={onClick}
     >
@@ -66,7 +66,7 @@ export const FeatureCard = ({
       <div className="absolute -top-10 -right-10 w-24 sm:w-32 h-24 sm:h-32 bg-gradient-to-bl from-secondary/50 to-transparent rounded-full opacity-50" />
       <div className="absolute -bottom-6 -left-6 w-16 sm:w-20 h-16 sm:h-20 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-xl" />
       
-      <div className="relative space-y-3 sm:space-y-4">
+      <div className="relative space-y-3 sm:space-y-4 flex flex-col flex-1">
         {/* Header with icon and category */}
         <div className="flex items-start justify-between gap-2">
           <div className={`h-12 w-12 sm:h-14 sm:w-14 rounded-xl sm:rounded-2xl ${colors.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
@@ -78,7 +78,7 @@ export const FeatureCard = ({
         </div>
         
         {/* Content */}
-        <div className="space-y-1.5 sm:space-y-2">
+        <div className="space-y-1.5 sm:space-y-2 flex-1">
           <h3 className="font-display font-bold text-base sm:text-xl text-foreground group-hover:text-primary transition-colors">
             {title}
           </h3>

@@ -205,12 +205,12 @@ const Courses = () => {
                   return (
                     <Card 
                       key={course.id} 
-                      className="group relative overflow-hidden border-border/40 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer hover:-translate-y-2 opacity-0 animate-slide-up"
+                      className="group relative overflow-hidden border-border/40 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer hover:-translate-y-2 opacity-0 animate-slide-up h-[420px] flex flex-col"
                       style={{ animationDelay: `${400 + index * 100}ms`, animationFillMode: 'forwards' }}
                       onClick={() => navigate(`/courses/${course.id}`)}
                     >
                       {/* Thumbnail */}
-                      <div className="relative h-48 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/5 overflow-hidden">
+                      <div className="relative h-48 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/5 overflow-hidden flex-shrink-0">
                         {course.thumbnail_url ? (
                           <img 
                             src={course.thumbnail_url} 
@@ -259,8 +259,8 @@ const Courses = () => {
                         </CardTitle>
                       </CardHeader>
                       
-                      <CardContent className="pt-0">
-                        <CardDescription className="line-clamp-2 mb-5">
+                      <CardContent className="pt-0 flex flex-col flex-1">
+                        <CardDescription className="line-clamp-2 mb-5 flex-1">
                           {course.description}
                         </CardDescription>
                         
