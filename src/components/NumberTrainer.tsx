@@ -168,13 +168,49 @@ export const NumberTrainer = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState('train');
   
-  // Sozlamalar
-  const [formulaType, setFormulaType] = useState<FormulaType>('oddiy');
-  const [digitCount, setDigitCount] = useState(1);
-  const [speed, setSpeed] = useState(0.5);
-  const [problemCount, setProblemCount] = useState(5);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  // Sozlamalar - localStorage dan yuklash
+  const [formulaType, setFormulaType] = useState<FormulaType>(() => {
+    const saved = localStorage.getItem('numberTrainer_formulaType');
+    return (saved as FormulaType) || 'oddiy';
+  });
+  const [digitCount, setDigitCount] = useState(() => {
+    const saved = localStorage.getItem('numberTrainer_digitCount');
+    return saved ? parseInt(saved, 10) : 1;
+  });
+  const [speed, setSpeed] = useState(() => {
+    const saved = localStorage.getItem('numberTrainer_speed');
+    return saved ? parseFloat(saved) : 0.5;
+  });
+  const [problemCount, setProblemCount] = useState(() => {
+    const saved = localStorage.getItem('numberTrainer_problemCount');
+    return saved ? parseInt(saved, 10) : 5;
+  });
+  const [voiceEnabled, setVoiceEnabled] = useState(() => {
+    const saved = localStorage.getItem('numberTrainer_voiceEnabled');
+    return saved !== null ? saved === 'true' : true;
+  });
   const [showStats, setShowStats] = useState(false);
+
+  // Sozlamalarni localStorage ga saqlash
+  useEffect(() => {
+    localStorage.setItem('numberTrainer_formulaType', formulaType);
+  }, [formulaType]);
+
+  useEffect(() => {
+    localStorage.setItem('numberTrainer_digitCount', String(digitCount));
+  }, [digitCount]);
+
+  useEffect(() => {
+    localStorage.setItem('numberTrainer_speed', String(speed));
+  }, [speed]);
+
+  useEffect(() => {
+    localStorage.setItem('numberTrainer_problemCount', String(problemCount));
+  }, [problemCount]);
+
+  useEffect(() => {
+    localStorage.setItem('numberTrainer_voiceEnabled', String(voiceEnabled));
+  }, [voiceEnabled]);
 
   // O'yin holati
   const [isRunning, setIsRunning] = useState(false);
@@ -1042,7 +1078,23 @@ export const NumberTrainer = () => {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-sm font-medium text-muted-foreground">Tezligi (soniyada)</Label>
-                      <span className="text-sm font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">{speed}s</span>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min={0.1}
+                          max={10}
+                          step={0.1}
+                          value={speed}
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val >= 0.1 && val <= 10) {
+                              setSpeed(Math.round(val * 10) / 10);
+                            }
+                          }}
+                          className="w-20 h-8 text-center text-sm font-bold bg-primary/10 border-primary/30"
+                        />
+                        <span className="text-sm text-muted-foreground">s</span>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3].map((s) => (
