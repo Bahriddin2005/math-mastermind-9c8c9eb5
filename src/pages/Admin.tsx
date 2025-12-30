@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { CourseManager } from '@/components/CourseManager';
-import { ExamplesManager } from '@/components/ExamplesManager';
+
 import { FAQManager } from '@/components/FAQManager';
 import { ChatHistoryManager } from '@/components/ChatHistoryManager';
 import { AdminUserCharts } from '@/components/AdminUserCharts';
@@ -55,7 +55,7 @@ import {
   TrendingUp,
   Flame,
   GraduationCap,
-  Calculator,
+  
   HelpCircle,
   MessageCircle,
   FolderOpen,
@@ -603,16 +603,12 @@ const Admin = () => {
                     <FolderOpen className="h-4 w-4" />
                     <span className="text-[9px] font-medium">Fayl</span>
                   </TabsTrigger>
-                  <TabsTrigger value="examples" className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg data-[state=active]:bg-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-md">
-                    <Calculator className="h-4 w-4" />
-                    <span className="text-[9px] font-medium">Misol</span>
-                  </TabsTrigger>
-                </TabsList>
-                <TabsList className="grid w-full grid-cols-5 h-auto bg-transparent p-1.5 pt-0 gap-1">
                   <TabsTrigger value="faq" className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg data-[state=active]:bg-indigo-500 data-[state=active]:text-white data-[state=active]:shadow-md">
                     <HelpCircle className="h-4 w-4" />
                     <span className="text-[9px] font-medium">FAQ</span>
                   </TabsTrigger>
+                </TabsList>
+                <TabsList className="grid w-full grid-cols-4 h-auto bg-transparent p-1.5 pt-0 gap-1">
                   <TabsTrigger value="testimonials" className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=active]:shadow-md">
                     <Quote className="h-4 w-4" />
                     <span className="text-[9px] font-medium">Sharh</span>
@@ -638,7 +634,7 @@ const Admin = () => {
             <div className="hidden md:block">
               <Card className="bg-card/60 backdrop-blur-md border-border/50 shadow-lg overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5" />
-                <TabsList className="relative grid w-full grid-cols-10 h-14 gap-0.5 bg-transparent p-1.5">
+                <TabsList className="relative grid w-full grid-cols-9 h-14 gap-0.5 bg-transparent p-1.5">
                   <TabsTrigger value="users" className="relative group flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-300 hover:bg-blue-500/15 hover:-translate-y-0.5 data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
                     <Users className="h-4 w-4 text-blue-500 group-data-[state=active]:text-white" />
                     <span className="text-[10px] font-medium truncate">Users</span>
@@ -654,10 +650,6 @@ const Admin = () => {
                   <TabsTrigger value="files" className="relative group flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-300 hover:bg-amber-500/15 hover:-translate-y-0.5 data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-500 data-[state=active]:to-amber-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
                     <FolderOpen className="h-4 w-4 text-amber-500 group-data-[state=active]:text-white" />
                     <span className="text-[10px] font-medium truncate">Fayllar</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="examples" className="relative group flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-300 hover:bg-cyan-500/15 hover:-translate-y-0.5 data-[state=active]:bg-gradient-to-br data-[state=active]:from-cyan-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                    <Calculator className="h-4 w-4 text-cyan-500 group-data-[state=active]:text-white" />
-                    <span className="text-[10px] font-medium truncate">Misollar</span>
                   </TabsTrigger>
                   <TabsTrigger value="faq" className="relative group flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-300 hover:bg-indigo-500/15 hover:-translate-y-0.5 data-[state=active]:bg-gradient-to-br data-[state=active]:from-indigo-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
                     <HelpCircle className="h-4 w-4 text-indigo-500 group-data-[state=active]:text-white" />
@@ -768,10 +760,6 @@ const Admin = () => {
               </Card>
             </TabsContent>
 
-            {/* Examples Tab */}
-            <TabsContent value="examples">
-              <ExamplesManager />
-            </TabsContent>
 
             {/* FAQ Tab */}
             <TabsContent value="faq">
