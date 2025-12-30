@@ -501,26 +501,11 @@ export const AbacusFlashCard = ({ onComplete }: AbacusFlashCardProps) => {
             {/* Progress Bar */}
             <Progress value={(currentProblem / problemCount) * 100} className="h-2" />
 
-            {/* Main Display Area - Clean minimal design */}
-            <div className="min-h-[300px] sm:min-h-[400px] flex flex-col items-center justify-center relative">
+            {/* Main Display Area - Ultra minimal design */}
+            <div className="min-h-[350px] sm:min-h-[450px] flex items-center justify-center">
               {isDisplaying && currentDisplayIndex >= 0 && currentDisplayIndex < displayNumbers.length && (
-                <div className="text-center animate-fade-in flex flex-col items-center">
-                  {/* Operation badge - shows above number */}
-                  {currentDisplayIndex > 0 && (
-                    <div className="mb-6 px-6 py-2 rounded-full bg-orange-50 border border-orange-200 inline-flex items-center gap-2">
-                      <span className="text-orange-500 font-bold text-xl">
-                        {displayNumbers[currentDisplayIndex] >= 0 ? '+' : '−'}
-                      </span>
-                      <span className="text-orange-500 font-medium text-lg">
-                        {displayNumbers[currentDisplayIndex] >= 0 ? "Qo'shish" : "Ayirish"}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Number display - always positive, sign shown in badge above */}
-                  <div className="text-[120px] sm:text-[180px] font-bold font-display leading-none tracking-tight text-orange-500">
-                    {Math.abs(displayNumbers[currentDisplayIndex])}
-                  </div>
+                <div className="text-[150px] sm:text-[220px] font-bold font-display leading-none tracking-tight text-emerald-800 animate-fade-in">
+                  {Math.abs(displayNumbers[currentDisplayIndex])}
                 </div>
               )}
 
