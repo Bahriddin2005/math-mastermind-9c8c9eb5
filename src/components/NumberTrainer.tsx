@@ -1068,7 +1068,7 @@ export const NumberTrainer = () => {
                       <span className="text-sm font-bold text-accent bg-accent/10 px-3 py-1 rounded-full">{problemCount} ta</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {Array.from({ length: 18 }, (_, i) => i + 3).map((num) => (
+                      {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 40, 50].map((num) => (
                         <button
                           key={num}
                           onClick={() => setProblemCount(num)}
