@@ -7,7 +7,8 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Trophy, Target, Flame, TrendingUp, User, Calendar } from 'lucide-react';
+import { Trophy, Target, Flame, TrendingUp, User, Calendar, Award } from 'lucide-react';
+import { Badge } from './ui/badge';
 
 interface PlayerProfile {
   id: string;
@@ -26,15 +27,42 @@ interface PlayerStats {
   recentGames: number;
 }
 
+interface UserBadge {
+  id: string;
+  badge_type: string;
+  badge_name: string;
+  badge_icon: string;
+  description: string | null;
+  earned_at: string;
+}
+
 interface PlayerProfileDialogProps {
   userId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const BADGE_DEFINITIONS: Record<string, { icon: string; name: string; color: string }> = {
+  daily_winner: { icon: "🥇", name: "Kunlik g'olib", color: "from-yellow-500 to-amber-500" },
+  weekly_winner: { icon: "🏆", name: "Haftalik chempion", color: "from-purple-500 to-pink-500" },
+  streak_7: { icon: "🔥", name: "Haftalik seriya", color: "from-orange-500 to-red-500" },
+  streak_30: { icon: "⭐", name: "Oylik seriya", color: "from-amber-500 to-yellow-500" },
+  best_streak_10: { icon: "⚡", name: "Seriya ustasi", color: "from-blue-500 to-cyan-500" },
+  best_streak_25: { icon: "💎", name: "Super seriya", color: "from-indigo-500 to-purple-500" },
+  solver_100: { icon: "💯", name: "100 masala", color: "from-green-500 to-emerald-500" },
+  solver_500: { icon: "🎯", name: "500 masala", color: "from-teal-500 to-green-500" },
+  solver_1000: { icon: "🏆", name: "Ming masala", color: "from-yellow-500 to-orange-500" },
+  score_1000: { icon: "🌟", name: "Ming ball", color: "from-blue-500 to-indigo-500" },
+  score_5000: { icon: "👑", name: "Besh ming ball", color: "from-amber-500 to-orange-500" },
+  first_game: { icon: "🎮", name: "Birinchi qadam", color: "from-pink-500 to-rose-500" },
+  games_10: { icon: "🎲", name: "Faol o'yinchi", color: "from-violet-500 to-purple-500" },
+  games_50: { icon: "🎖️", name: "Tajribali", color: "from-slate-500 to-zinc-500" },
+};
+
 export const PlayerProfileDialog = ({ userId, open, onOpenChange }: PlayerProfileDialogProps) => {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [stats, setStats] = useState<PlayerStats>({ totalGames: 0, avgAccuracy: 0, recentGames: 0 });
+  const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -74,6 +102,17 @@ export const PlayerProfileDialog = ({ userId, open, onOpenChange }: PlayerProfil
         setStats({ totalGames, avgAccuracy, recentGames });
       }
 
+      // Fetch user badges
+      const { data: badgesData } = await supabase
+        .from('user_badges')
+        .select('*')
+        .eq('user_id', userId)
+        .order('earned_at', { ascending: false });
+
+      if (badgesData) {
+        setBadges(badgesData);
+      }
+
       setLoading(false);
     };
 
@@ -88,9 +127,16 @@ export const PlayerProfileDialog = ({ userId, open, onOpenChange }: PlayerProfil
     });
   };
 
+  // Get unique badge types
+  const uniqueBadgeTypes = [...new Set(badges.map((b) => b.badge_type))];
+  const badgeCounts = badges.reduce((acc, badge) => {
+    acc[badge.badge_type] = (acc[badge.badge_type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-center">O'yinchi profili</DialogTitle>
         </DialogHeader>
@@ -141,6 +187,56 @@ export const PlayerProfileDialog = ({ userId, open, onOpenChange }: PlayerProfil
                 <p className="text-xs text-muted-foreground">Aniqlik</p>
               </div>
             </div>
+
+            {/* Badges Section */}
+            {badges.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-amber-500" />
+                  <h4 className="font-semibold">Mukofotlar</h4>
+                  <Badge variant="secondary" className="ml-auto text-xs">
+                    {badges.length} ta
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  {uniqueBadgeTypes.slice(0, 10).map((type) => {
+                    const definition = BADGE_DEFINITIONS[type];
+                    const count = badgeCounts[type] || 0;
+                    const badge = badges.find((b) => b.badge_type === type);
+
+                    return (
+                      <div
+                        key={type}
+                        className="relative group cursor-pointer"
+                        title={definition?.name || badge?.badge_name}
+                      >
+                        <div
+                          className={`aspect-square rounded-lg bg-gradient-to-br ${
+                            definition?.color || "from-gray-500 to-gray-600"
+                          } p-0.5 shadow-md hover:scale-110 transition-transform`}
+                        >
+                          <div className="w-full h-full rounded-[6px] bg-card flex flex-col items-center justify-center">
+                            <span className="text-xl">
+                              {definition?.icon || badge?.badge_icon || "🏆"}
+                            </span>
+                            {count > 1 && (
+                              <span className="text-[8px] font-bold text-muted-foreground">
+                                x{count}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {uniqueBadgeTypes.length > 10 && (
+                  <p className="text-xs text-center text-muted-foreground">
+                    +{uniqueBadgeTypes.length - 10} ta boshqa mukofot
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Additional Stats */}
             <div className="bg-secondary/50 rounded-xl p-4 space-y-2">
