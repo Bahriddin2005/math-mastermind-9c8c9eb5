@@ -27,7 +27,9 @@ import {
   MicOff,
   ImagePlus,
   XCircle,
-  FileText
+  FileText,
+  Copy,
+  Check
 } from 'lucide-react';
 
 interface FAQItem {
@@ -75,6 +77,7 @@ interface ChatMessage {
   content: string;
   audioUrl?: string;
   fileName?: string;
+  timestamp: Date;
 }
 
 // Generate a unique session ID
@@ -91,6 +94,7 @@ export const HelpChatWidget = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   
   // AI Chat state
   const [chatMode, setChatMode] = useState(false);
@@ -110,6 +114,21 @@ export const HelpChatWidget = () => {
   const audioChunksRef = useRef<Blob[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const pdfInputRef = useRef<HTMLInputElement | null>(null);
+
+  const copyToClipboard = async (text: string, index: number) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIndex(index);
+      toast.success("Nusxalandi!");
+      setTimeout(() => setCopiedIndex(null), 2000);
+    } catch {
+      toast.error("Nusxalashda xatolik");
+    }
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+  };
 
   useEffect(() => {
     fetchFAQs();
@@ -381,7 +400,7 @@ export const HelpChatWidget = () => {
   const startChatMode = async () => {
     setChatMode(true);
     const welcomeMessage = "Salom! Men IQroMax yordamchisiman. Sizga qanday yordam bera olaman?";
-    setMessages([{ role: 'assistant', content: welcomeMessage }]);
+    setMessages([{ role: 'assistant', content: welcomeMessage, timestamp: new Date() }]);
     
     // Create session and save welcome message
     try {
@@ -417,7 +436,7 @@ export const HelpChatWidget = () => {
     } else if (pdfToSend) {
       displayMessage = `${userMessage} [📄 ${pdfName}]`;
     }
-    setMessages(prev => [...prev, { role: 'user', content: displayMessage, fileName: pdfName || undefined }]);
+    setMessages(prev => [...prev, { role: 'user', content: displayMessage, fileName: pdfName || undefined, timestamp: new Date() }]);
     setIsLoading(true);
 
     // Save user message to database
@@ -477,7 +496,7 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
       }
 
       const assistantMessage = data.response;
-      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage, timestamp: new Date() }]);
       
       // Play TTS for assistant response
       playTTS(assistantMessage);
@@ -487,7 +506,7 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
     } catch (error) {
       console.error('Chat error:', error);
       const errorMessage = "Kechirasiz, hozirda javob bera olmadim. Iltimos, keyinroq urinib ko'ring yoki /contact sahifasidan biz bilan bog'laning.";
-      setMessages(prev => [...prev, { role: 'assistant', content: errorMessage }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: errorMessage, timestamp: new Date() }]);
       await saveMessageToDb('assistant', errorMessage);
     } finally {
       setIsLoading(false);
@@ -595,17 +614,37 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
                     {messages.map((msg, index) => (
                       <div
                         key={index}
-                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                       >
-                        <div
-                          className={`max-w-[85%] px-4 py-2 rounded-2xl ${
-                            msg.role === 'user'
-                              ? 'bg-primary text-primary-foreground rounded-br-md shadow-md'
-                              : 'bg-muted dark:bg-muted/80 text-foreground rounded-bl-md shadow-sm border border-border/50'
-                          }`}
-                        >
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                        <div className={`group relative max-w-[85%]`}>
+                          <div
+                            className={`px-4 py-2 rounded-2xl ${
+                              msg.role === 'user'
+                                ? 'bg-primary text-primary-foreground rounded-br-md shadow-md'
+                                : 'bg-muted dark:bg-muted/80 text-foreground rounded-bl-md shadow-sm border border-border/50'
+                            }`}
+                          >
+                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          </div>
+                          {/* Copy button for assistant messages */}
+                          {msg.role === 'assistant' && (
+                            <button
+                              onClick={() => copyToClipboard(msg.content, index)}
+                              className="absolute -right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-muted"
+                              title="Nusxalash"
+                            >
+                              {copiedIndex === index ? (
+                                <Check className="h-3.5 w-3.5 text-success" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                              )}
+                            </button>
+                          )}
                         </div>
+                        {/* Timestamp */}
+                        <span className={`text-[10px] text-muted-foreground mt-1 ${msg.role === 'user' ? 'mr-1' : 'ml-1'}`}>
+                          {formatTime(msg.timestamp)}
+                        </span>
                       </div>
                     ))}
                     {isLoading && (
