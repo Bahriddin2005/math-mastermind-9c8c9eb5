@@ -58,7 +58,7 @@ export const StatsCard = ({
 
   return (
     <Card
-      className={`group relative overflow-hidden p-3 sm:p-4 md:p-5 bg-gradient-to-br from-card via-card to-secondary/20 border border-border/40 opacity-0 animate-slide-up hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${colors.borderHover}`}
+      className={`group relative overflow-hidden p-3 sm:p-4 md:p-5 bg-gradient-to-br from-card via-card to-secondary/20 border border-border/40 opacity-0 animate-slide-up hover:shadow-lg transition-all duration-300 hover:-translate-y-1 h-[100px] flex flex-col justify-center ${colors.borderHover}`}
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'forwards' }}
     >
       {/* Background decoration */}
