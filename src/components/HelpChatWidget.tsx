@@ -503,28 +503,28 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
 
   return (
     <>
-      {/* Floating Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Floating Button - mobile da yuqoriroqda */}
+      <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50">
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
-          className={`rounded-full h-14 w-14 shadow-lg hover:shadow-xl transition-all duration-300 ${
+          className={`rounded-full h-12 w-12 md:h-14 md:w-14 shadow-lg hover:shadow-xl transition-all duration-300 ${
             isOpen ? 'scale-0 opacity-0' : 'scale-100 opacity-100'
           }`}
         >
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5 md:h-6 md:w-6" />
         </Button>
       </div>
 
-      {/* Chat Widget */}
+      {/* Chat Widget - mobile responsive */}
       <div 
-        className={`fixed bottom-6 right-6 z-50 transition-all duration-300 ${
+        className={`fixed z-50 transition-all duration-300 ${
           isOpen 
             ? 'opacity-100 translate-y-0 pointer-events-auto' 
             : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
+        } bottom-24 md:bottom-6 right-2 md:right-6 left-2 md:left-auto`}
       >
-        <Card className="w-[350px] sm:w-[400px] shadow-2xl border-border/50 overflow-hidden">
+        <Card className="w-full md:w-[400px] max-h-[70vh] md:max-h-none shadow-2xl border-border/50 overflow-hidden">
           {/* Header */}
           <CardHeader className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-4">
             <div className="flex items-center justify-between">
@@ -555,7 +555,7 @@ Kunlik maqsad: ${userProgress.daily_goal} masala`
           <CardContent className="p-0">
             {chatMode ? (
               /* AI Chat Mode */
-              <div className="flex flex-col h-[400px]">
+              <div className="flex flex-col h-[50vh] md:h-[400px]">
                 {/* Back button and TTS toggle */}
                 <div className="p-2 border-b flex items-center justify-between">
                   <Button 
