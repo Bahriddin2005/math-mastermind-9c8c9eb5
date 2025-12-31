@@ -1369,4 +1369,4 @@ export const MultiplayerMode = ({ onBack }: MultiplayerModeProps) => {
       </div>
     </div>
   );
-};
+};// Fixed: No conflict markers
