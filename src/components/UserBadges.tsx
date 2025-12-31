@@ -147,7 +147,7 @@ export const UserBadges = ({ userId }: { userId?: string }) => {
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden h-full flex flex-col">
       <CardHeader className="pb-2 bg-gradient-to-r from-amber-500/10 to-orange-500/5">
         <CardTitle className="flex items-center gap-2 text-base md:text-lg">
           <Award className="h-5 w-5 text-amber-500" />
@@ -186,16 +186,18 @@ export const UserBadges = ({ userId }: { userId?: string }) => {
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent className="pt-4 flex-1 flex flex-col">
         {!badges?.length ? (
-          <div className="text-center py-8">
-            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
-              <Trophy className="h-8 w-8 text-amber-500/50" />
+          <div className="text-center py-8 flex-1 flex items-center justify-center">
+            <div className="w-full">
+              <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+                <Trophy className="h-8 w-8 text-amber-500/50" />
+              </div>
+              <h3 className="font-medium mb-1">Hali mukofotlar yo'q</h3>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                Musobaqalarda qatnashing va g'olib bo'lib mukofotlar yutib oling!
+              </p>
             </div>
-            <h3 className="font-medium mb-1">Hali mukofotlar yo'q</h3>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-              Musobaqalarda qatnashing va g'olib bo'lib mukofotlar yutib oling!
-            </p>
           </div>
         ) : (
           <div className="space-y-4">

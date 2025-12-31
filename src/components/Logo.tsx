@@ -1,4 +1,4 @@
-import iqromaxLogo from '@/assets/iqromax-logo.jpg';
+import iqromaxLogo from '@/assets/iqromax-logo.png';
 
 interface LogoProps {
   className?: string;

@@ -616,24 +616,61 @@ export const NumberTrainer = () => {
     : 0;
 
 
-  // O'yin davomida - toza oq fon, markazda katta son
+  // O'yin davomida - sonlar pastroqda alohida oynada
   if (isRunning && currentDisplay !== null) {
     const displayNumber = countRef.current === 1 
       ? currentDisplay 
-      : (isAddition ? currentDisplay : `-${currentDisplay}`);
+      : (isAddition ? `+${currentDisplay}` : `-${currentDisplay}`);
     
     return (
-      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
-        <div 
-          key={countRef.current}
-          className="animate-fade-in"
-        >
-          <span 
-            className="text-[180px] sm:text-[220px] md:text-[280px] lg:text-[350px] font-light text-foreground tracking-tight"
-            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-          >
-            {displayNumber}
-          </span>
+      <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex flex-col">
+        {/* Yuqori qism - bo'sh */}
+        <div className="flex-1" />
+        
+        {/* Pastki qism - sonlar oynasi */}
+        <div className="w-full pb-20 md:pb-24">
+          <div className="container max-w-4xl mx-auto px-4">
+            {/* Alohida oyna */}
+            <div 
+              key={countRef.current}
+              className="relative bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/20 rounded-3xl shadow-2xl p-8 md:p-12 animate-fade-in overflow-hidden"
+            >
+              {/* Background decoration */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+              </div>
+              
+              {/* Son ko'rsatish */}
+              <div className="relative z-10 text-center">
+                <span 
+                  className="text-[120px] sm:text-[150px] md:text-[180px] lg:text-[220px] font-light text-foreground tracking-tight inline-block"
+                  style={{ 
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    textShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  {displayNumber}
+                </span>
+              </div>
+              
+              {/* Progress indicator */}
+              <div className="relative z-10 mt-6 flex items-center justify-center gap-2">
+                <div className="flex gap-1">
+                  {Array.from({ length: problemCount }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        i < countRef.current
+                          ? 'bg-primary w-8'
+                          : 'bg-muted w-2'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

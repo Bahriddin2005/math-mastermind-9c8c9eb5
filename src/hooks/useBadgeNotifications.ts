@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -45,13 +45,40 @@ export const useBadgeNotifications = () => {
   const { user } = useAuth();
   const { triggerAchievementConfetti } = useConfetti();
   const notifiedBadges = useRef<Set<string>>(new Set());
+  const hookInitialized = useRef(false);
+  const initializationTime = useRef<number>(0);
+  const [badgesLoaded, setBadgesLoaded] = useState(false);
 
+  // Mavjud badge'larni yuklash
   useEffect(() => {
-    if (!user) return;
+    if (!user || hookInitialized.current) return;
+
+    hookInitialized.current = true;
+    initializationTime.current = Date.now();
+    
+    // Mavjud badge'larni yuklab, ularni notifiedBadges ga qo'shish
+    // Bu eski badge'lar haqida notification ko'rsatmaslik uchun
+    supabase
+      .from('user_badges')
+      .select('id')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        if (data) {
+          data.forEach((badge) => {
+            notifiedBadges.current.add(badge.id);
+          });
+        }
+        setBadgesLoaded(true);
+      });
+  }, [user]);
+
+  // Realtime subscription - faqat badge'lar yuklangandan keyin
+  useEffect(() => {
+    if (!user || !badgesLoaded) return;
 
     // Subscribe to realtime badge inserts for current user
     const channel = supabase
-      .channel('user-badges-realtime')
+      .channel(`user-badges-realtime-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -65,6 +92,18 @@ export const useBadgeNotifications = () => {
           
           // Prevent duplicate notifications
           if (notifiedBadges.current.has(badge.id)) return;
+          
+          // Faqat hook ishga tushganidan keyin yaratilgan badge'lar uchun notification ko'rsatish
+          const badgeEarnedTime = new Date(badge.earned_at).getTime();
+          
+          // Agar badge hook ishga tushishdan oldin yaratilgan bo'lsa, notification ko'rsatma
+          // 10 soniya buffer - realtime event kechikishi uchun
+          if (badgeEarnedTime < initializationTime.current - 10000) {
+            // Eski badge, notification ko'rsatma
+            notifiedBadges.current.add(badge.id);
+            return;
+          }
+          
           notifiedBadges.current.add(badge.id);
 
           const displayInfo = BADGE_DISPLAY_INFO[badge.badge_type] || {
@@ -88,5 +127,5 @@ export const useBadgeNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, triggerAchievementConfetti]);
+  }, [user, badgesLoaded, triggerAchievementConfetti]);
 };

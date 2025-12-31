@@ -25,7 +25,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSound } from '@/hooks/useSound';
 import { useAchievementNotifications } from '@/hooks/useAchievementNotifications';
-import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
 import {
   Trophy,
   Target,
@@ -91,9 +90,6 @@ const Dashboard = () => {
     totalScore: profile?.total_score || 0,
     enabled: !!user,
   });
-
-  // Badge notifications hook (realtime)
-  useBadgeNotifications();
 
   useEffect(() => {
     // If not logged in and auth is done loading, show guest dashboard
