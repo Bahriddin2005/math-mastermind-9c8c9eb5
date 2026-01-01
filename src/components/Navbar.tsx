@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Volume2, VolumeX, User, LogOut, Play, Home, Settings, Moon, Sun, ShieldCheck, GraduationCap, Sparkles, ChevronDown, Trophy, BookOpen } from 'lucide-react';
+import { Volume2, VolumeX, User, LogOut, Play, Home, Settings, Moon, Sun, ShieldCheck, GraduationCap, Sparkles, ChevronDown, Trophy, BookOpen, CreditCard } from 'lucide-react';
 import { Logo } from './Logo';
 import { Button } from './ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -167,12 +167,12 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
               size="icon"
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               aria-label={theme === 'dark' ? "Yorug' rejim" : "Qorong'u rejim"}
-              className="h-9 w-9 rounded-full hover:bg-secondary/80 transition-colors"
+              className="h-11 w-11 sm:h-9 sm:w-9 rounded-full hover:bg-secondary/80 transition-colors touch-manipulation"
             >
               {theme === 'dark' ? (
-                <Sun className="h-4 w-4 text-warning transition-transform hover:rotate-45" />
+                <Sun className="h-5 w-5 sm:h-4 sm:w-4 text-warning transition-transform hover:rotate-45" />
               ) : (
-                <Moon className="h-4 w-4 transition-transform hover:-rotate-12" />
+                <Moon className="h-5 w-5 sm:h-4 sm:w-4 transition-transform hover:-rotate-12" />
               )}
             </Button>
           )}
@@ -183,12 +183,12 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
             size="icon"
             onClick={onToggleSound}
             aria-label={soundEnabled ? "Ovozni o'chirish" : "Ovozni yoqish"}
-            className="h-9 w-9 rounded-full hover:bg-secondary/80 transition-colors"
+            className="h-11 w-11 sm:h-9 sm:w-9 rounded-full hover:bg-secondary/80 transition-colors touch-manipulation"
           >
             {soundEnabled ? (
-              <Volume2 className="h-4 w-4" />
+              <Volume2 className="h-5 w-5 sm:h-4 sm:w-4" />
             ) : (
-              <VolumeX className="h-4 w-4 text-muted-foreground" />
+              <VolumeX className="h-5 w-5 sm:h-4 sm:w-4 text-muted-foreground" />
             )}
           </Button>
 
@@ -245,6 +245,10 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
                   <DropdownMenuItem onClick={() => navigate('/weekly-game')} className="gap-3 py-2.5 rounded-lg cursor-pointer">
                     <Trophy className="h-4 w-4 text-muted-foreground" />
                     <span>Haftalik musobaqa</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/pricing')} className="gap-3 py-2.5 rounded-lg cursor-pointer">
+                    <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    <span>Narxlar va to'lov</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 

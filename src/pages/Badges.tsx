@@ -138,35 +138,72 @@ const Badges = () => {
           </Button>
 
           {/* Header */}
-          <div className="text-center space-y-2 opacity-0 animate-slide-up" style={{ animationFillMode: 'forwards' }}>
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mx-auto shadow-lg">
-              <Award className="h-10 w-10 text-white" />
+          <div className="text-center space-y-4 opacity-0 animate-slide-up relative" style={{ animationFillMode: 'forwards' }}>
+            {/* Background decorations */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-0 left-1/4 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 right-1/4 w-40 h-40 bg-orange-500/10 rounded-full blur-3xl" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold">Badge Kolleksiyasi</h1>
-            <p className="text-muted-foreground">Barcha mavjud mukofotlar va yutuqlar</p>
+            
+            <div className="relative z-10">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 md:w-28 md:h-28 rounded-3xl bg-gradient-to-br from-amber-500 via-amber-400 to-orange-500 flex items-center justify-center mx-auto shadow-2xl shadow-amber-500/50 animate-pulse-slow">
+                  <Award className="h-12 w-12 md:h-14 md:w-14 text-white" />
+                </div>
+                {/* Floating sparkles */}
+                <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-yellow-400/80 blur-sm animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '2s' }} />
+                <div className="absolute -bottom-2 -left-2 w-4 h-4 rounded-full bg-orange-400/80 blur-sm animate-bounce" style={{ animationDelay: '1s', animationDuration: '2s' }} />
+              </div>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mt-6 bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 bg-clip-text text-transparent">
+                Mukofotlar va Yutuqlar
+              </h1>
+              <p className="text-muted-foreground text-base md:text-lg mt-2">Barcha mavjud mukofotlar va yutuqlar kolleksiyasi</p>
+            </div>
           </div>
 
           {/* Progress Card */}
-          <Card className="overflow-hidden opacity-0 animate-slide-up" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-5 w-5 text-amber-500" />
-                  <span className="font-semibold">Sizning yutuqlaringiz</span>
+          <Card className="overflow-hidden opacity-0 animate-slide-up border-2 border-primary/20 shadow-xl bg-gradient-to-br from-card via-card to-primary/5" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-amber-500/5" />
+            <CardContent className="p-6 md:p-8 relative z-10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/50">
+                    <Trophy className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-lg">Sizning yutuqlaringiz</span>
+                    <p className="text-sm text-muted-foreground">Kolleksiyangizdagi badge'lar</p>
+                  </div>
                 </div>
-                <Badge variant="secondary" className="text-lg px-3 py-1">
-                  {earnedCount} / {totalCount}
+                <Badge variant="secondary" className="text-xl px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-2 border-amber-500/30">
+                  <span className="font-bold text-amber-600 dark:text-amber-400">{earnedCount}</span>
+                  <span className="text-muted-foreground mx-1">/</span>
+                  <span className="font-semibold">{totalCount}</span>
                 </Badge>
               </div>
-              <Progress value={progressPercent} className="h-3" />
-              <p className="text-sm text-muted-foreground mt-2">
-                {totalCount - earnedCount} ta badge yutib olish qoldi
-              </p>
+              <div className="space-y-2">
+                <div className="relative h-4 bg-secondary rounded-full overflow-hidden shadow-inner">
+                  <div 
+                    className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 transition-all duration-1000 shadow-lg shadow-amber-500/50"
+                    style={{ width: `${progressPercent}%` }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-foreground">
+                    {Math.round(progressPercent)}% bajarildi
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {totalCount - earnedCount} ta badge yutib olish qoldi
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 justify-center opacity-0 animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'forwards' }}>
+          <div className="flex flex-wrap gap-3 justify-center opacity-0 animate-slide-up" style={{ animationDelay: '150ms', animationFillMode: 'forwards' }}>
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               const isActive = selectedCategory === cat.id;
@@ -176,64 +213,100 @@ const Badges = () => {
                   variant={isActive ? "default" : "outline"}
                   size="sm"
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`gap-1.5 ${isActive ? "" : "hover:bg-secondary"}`}
+                  className={`gap-2 px-4 py-2 h-auto rounded-xl font-medium transition-all duration-300 ${
+                    isActive 
+                      ? "bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/50 scale-105" 
+                      : "hover:bg-secondary/80 hover:scale-105 border-2"
+                  }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  {cat.name}
+                  <Icon className={`h-4 w-4 ${isActive ? "animate-pulse" : ""}`} />
+                  <span>{cat.name}</span>
                 </Button>
               );
             })}
           </div>
 
           {/* Badges Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 opacity-0 animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
-            {filteredBadges.map((badge) => {
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 opacity-0 animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
+            {filteredBadges.map((badge, index) => {
               const earnedInfo = getBadgeEarnedInfo(badge.type);
               const isEarned = !!earnedInfo;
 
               return (
                 <div
                   key={badge.type}
-                  className={`relative group ${!isEarned ? "opacity-60" : ""}`}
+                  className={`relative group ${!isEarned ? "opacity-70" : ""}`}
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <Card className={`overflow-hidden transition-all hover:scale-105 ${
+                  <Card className={`overflow-visible transition-all duration-500 hover:scale-110 hover:-translate-y-2 cursor-pointer border-2 ${
                     isEarned 
-                      ? "border-primary/30 shadow-lg" 
-                      : "border-border/50"
+                      ? `border-primary/50 shadow-xl shadow-primary/20 bg-gradient-to-br from-card via-card to-primary/5` 
+                      : "border-border/50 bg-card/50 backdrop-blur-sm"
                   }`}>
-                    <div className={`h-2 bg-gradient-to-r ${badge.color}`} />
-                    <CardContent className="p-4 text-center">
-                      <div className="relative mb-3">
+                    {/* Animated gradient border for earned badges */}
+                    {isEarned && (
+                      <div className={`absolute -inset-1 rounded-2xl bg-gradient-to-r ${badge.color} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500 -z-10`} />
+                    )}
+                    
+                    {/* Top gradient line */}
+                    <div className={`h-2 bg-gradient-to-r ${badge.color} ${!isEarned ? "opacity-50" : ""}`} />
+                    
+                    <CardContent className="p-4 md:p-5 text-center">
+                      <div className="relative mb-4">
                         <div
-                          className={`w-16 h-16 mx-auto rounded-xl bg-gradient-to-br ${badge.color} p-0.5 ${
-                            isEarned ? "shadow-md" : "grayscale"
+                          className={`w-20 h-20 md:w-24 md:h-24 mx-auto rounded-2xl bg-gradient-to-br ${badge.color} p-1 transition-all duration-500 ${
+                            isEarned 
+                              ? "shadow-2xl shadow-amber-500/50 group-hover:shadow-amber-500/70 group-hover:scale-110" 
+                              : "grayscale opacity-60 shadow-md"
                           }`}
                         >
-                          <div className="w-full h-full rounded-[10px] bg-card flex items-center justify-center">
-                            <span className={`text-3xl ${!isEarned ? "opacity-50" : ""}`}>
+                          <div className="w-full h-full rounded-xl bg-card/95 backdrop-blur-sm flex items-center justify-center">
+                            <span className={`text-4xl md:text-5xl transition-transform duration-500 ${isEarned ? "group-hover:scale-110" : ""}`}>
                               {badge.icon}
                             </span>
                           </div>
                         </div>
+                        
+                        {/* Status badge */}
                         {isEarned ? (
-                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-md">
-                            <Check className="h-3.5 w-3.5 text-white" />
+                          <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/50 animate-pulse">
+                            <Check className="h-4 w-4 text-white" strokeWidth={3} />
                           </div>
                         ) : (
-                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-muted flex items-center justify-center">
-                            <Lock className="h-3 w-3 text-muted-foreground" />
+                          <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-muted/80 backdrop-blur-sm border-2 border-border flex items-center justify-center shadow-md">
+                            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
                           </div>
                         )}
+                        
+                        {/* Shimmer effect for earned badges */}
+                        {isEarned && (
+                          <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ${badge.color}`} />
+                        )}
                       </div>
-                      <h3 className={`font-semibold text-sm mb-1 ${!isEarned ? "text-muted-foreground" : ""}`}>
+                      
+                      <h3 className={`font-bold text-sm md:text-base mb-2 transition-colors ${
+                        isEarned 
+                          ? "text-foreground group-hover:text-primary" 
+                          : "text-muted-foreground"
+                      }`}>
                         {badge.name}
                       </h3>
-                      <p className="text-[11px] text-muted-foreground line-clamp-2">
+                      <p className={`text-xs md:text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem] ${
+                        isEarned ? "" : "opacity-70"
+                      }`}>
                         {badge.description}
                       </p>
                       {isEarned && earnedInfo && (
-                        <Badge variant="secondary" className="mt-2 text-[10px]">
-                          {new Date(earnedInfo.earned_at).toLocaleDateString("uz-UZ")}
+                        <Badge 
+                          variant="secondary" 
+                          className="mt-3 text-xs px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 text-green-700 dark:text-green-400"
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          {new Date(earnedInfo.earned_at).toLocaleDateString("uz-UZ", { 
+                            day: 'numeric', 
+                            month: 'short',
+                            year: 'numeric'
+                          })}
                         </Badge>
                       )}
                     </CardContent>

@@ -2,21 +2,23 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Square, Volume2, VolumeX, RotateCcw, Check, Clock, BarChart3, Trophy, Target, Play, Home, Moon, Sun, User, LogOut, Settings, ShieldCheck, GraduationCap, Users, Flame, BookOpen } from 'lucide-react';
+import { Square, Volume2, VolumeX, RotateCcw, Check, Clock, BarChart3, Trophy, Target, Play, Home, Moon, Sun, User, LogOut, Settings, ShieldCheck, GraduationCap, Users, Flame, BookOpen, Crown } from 'lucide-react';
 import { MultiplayerMode } from './MultiplayerMode';
 import { Navbar } from './Navbar';
-import { DailyChallenge } from './DailyChallenge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { useTheme } from 'next-themes';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from './Logo';
 import { Leaderboard } from './Leaderboard';
 import { useConfetti } from '@/hooks/useConfetti';
 import { useSound } from '@/hooks/useSound';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -194,6 +196,7 @@ const handleTabClick = (event: React.MouseEvent<HTMLElement>, value: string, set
 
 export const NumberTrainer = () => {
   const { user, signOut } = useAuth();
+  const { hasPro, canSolveMoreProblems, getDailyProblemLimit } = useSubscription();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
@@ -202,7 +205,7 @@ export const NumberTrainer = () => {
   const [prevTab, setPrevTab] = useState('train');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   
-  const tabOrder = ['train', 'learn', 'daily', 'multiplayer', 'leaderboard', 'stats'];
+  const tabOrder = ['train', 'learn', 'multiplayer', 'leaderboard', 'stats'];
   
   const handleTabChange = (newTab: string) => {
     const currentIndex = tabOrder.indexOf(activeTab);
@@ -527,6 +530,31 @@ export const NumberTrainer = () => {
     const totalTime = (Date.now() - startTimeRef.current) / 1000;
     const answerDuration = (Date.now() - answerStartTimeRef.current) / 1000;
     
+    // Kunlik limitni tekshirish (faqat bepul foydalanuvchilar uchun)
+    if (user && !hasPro()) {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todaySessions } = await supabase
+        .from('game_sessions')
+        .select('problems_solved, correct, incorrect')
+        .eq('user_id', user.id)
+        .gte('created_at', `${today}T00:00:00`)
+        .lt('created_at', `${today}T23:59:59`);
+      
+      const todaySolved = todaySessions?.reduce((sum, s) => 
+        sum + (s.problems_solved || 0) + (s.correct || 0) + (s.incorrect || 0), 0) || 0;
+      
+      if (todaySolved >= 20) {
+        toast.error("Kunlik limit", {
+          description: "Siz bugun 20 ta masala yechdingiz. Cheksiz mashq uchun Pro rejaga o'ting!",
+          action: {
+            label: "Pro rejaga o'tish",
+            onClick: () => navigate('/pricing'),
+          },
+        });
+        return;
+      }
+    }
+    
     setIsCorrect(correct);
     setShowResult(true);
     setAnswerTime(answerDuration);
@@ -585,7 +613,7 @@ export const NumberTrainer = () => {
         console.error('Error saving session:', error);
       }
     }
-  }, [userAnswer, user, formulaType, digitCount, problemCount, currentStreak]);
+  }, [userAnswer, user, formulaType, digitCount, problemCount, currentStreak, hasPro, navigate]);
 
   // Qayta boshlash
   const resetGame = useCallback(() => {
@@ -616,58 +644,54 @@ export const NumberTrainer = () => {
     : 0;
 
 
-  // O'yin davomida - sonlar pastroqda alohida oynada
+  // O'yin davomida - sonlar markazda katta ko'rinishda
   if (isRunning && currentDisplay !== null) {
     const displayNumber = countRef.current === 1 
       ? currentDisplay 
       : (isAddition ? `+${currentDisplay}` : `-${currentDisplay}`);
     
     return (
-      <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex flex-col">
-        {/* Yuqori qism - bo'sh */}
-        <div className="flex-1" />
-        
-        {/* Pastki qism - sonlar oynasi */}
-        <div className="w-full pb-20 md:pb-24">
-          <div className="container max-w-4xl mx-auto px-4">
-            {/* Alohida oyna */}
-            <div 
-              key={countRef.current}
-              className="relative bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/20 rounded-3xl shadow-2xl p-8 md:p-12 animate-fade-in overflow-hidden"
-            >
-              {/* Background decoration */}
-              <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-              </div>
-              
-              {/* Son ko'rsatish */}
-              <div className="relative z-10 text-center">
-                <span 
-                  className="text-[120px] sm:text-[150px] md:text-[180px] lg:text-[220px] font-light text-foreground tracking-tight inline-block"
-                  style={{ 
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                    textShadow: '0 4px 20px rgba(0,0,0,0.1)'
-                  }}
-                >
-                  {displayNumber}
-                </span>
-              </div>
-              
-              {/* Progress indicator */}
-              <div className="relative z-10 mt-6 flex items-center justify-center gap-2">
-                <div className="flex gap-1">
-                  {Array.from({ length: problemCount }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        i < countRef.current
-                          ? 'bg-primary w-8'
-                          : 'bg-muted w-2'
-                      }`}
-                    />
-                  ))}
-                </div>
+      <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-7xl mx-auto">
+          {/* Alohida oyna - markazda */}
+          <div 
+            key={countRef.current}
+            className="relative bg-gradient-to-br from-card via-card to-primary/5 border-2 border-primary/20 rounded-3xl shadow-2xl p-4 sm:p-8 md:p-12 lg:p-16 xl:p-20 animate-fade-in overflow-hidden min-h-[50vh] flex items-center justify-center"
+          >
+            {/* Background decoration */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-0 right-0 w-64 h-64 sm:w-80 sm:h-80 md:w-96 md:h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 bg-accent/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+            </div>
+            
+            {/* Son ko'rsatish - markazda va juda katta */}
+            <div className="relative z-10 text-center w-full">
+              <span 
+                className="text-[200px] xs:text-[280px] sm:text-[380px] md:text-[480px] lg:text-[580px] xl:text-[680px] font-light text-foreground tracking-tight inline-block leading-none select-none"
+                style={{ 
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  textShadow: '0 8px 40px rgba(0,0,0,0.15), 0 4px 20px rgba(0,0,0,0.1)',
+                  lineHeight: '0.9',
+                  fontWeight: '300'
+                }}
+              >
+                {displayNumber}
+              </span>
+            </div>
+            
+            {/* Progress indicator - pastda */}
+            <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-10 w-full max-w-md px-4">
+              <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                {Array.from({ length: problemCount }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 sm:h-2 md:h-2.5 rounded-full transition-all duration-300 ${
+                      i < countRef.current
+                        ? 'bg-primary w-6 sm:w-8 md:w-10 shadow-lg shadow-primary/50'
+                        : 'bg-muted/50 w-1.5 sm:w-2 md:w-2.5'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -868,51 +892,64 @@ export const NumberTrainer = () => {
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           {/* Desktop TabsList - tepa qismda */}
-          <TabsList className="hidden md:grid w-full max-w-3xl mx-auto grid-cols-6 mb-8 bg-card/80 backdrop-blur-sm border border-border/50 p-1.5 rounded-2xl shadow-md">
-            <TabsTrigger value="train" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300">
-              <Play className="h-4 w-4" />
-              <span className="font-medium">Mashq</span>
+          <div className="hidden md:flex w-full max-w-3xl mx-auto mb-8 bg-gradient-to-br from-card/90 via-card/80 to-card/90 backdrop-blur-md border border-border/50 p-1.5 rounded-2xl shadow-lg shadow-black/5">
+            <TabsList className="grid w-full grid-cols-6 bg-transparent p-0 flex-1">
+            <TabsTrigger value="train" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
+              <Play className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium truncate">Mashq</span>
             </TabsTrigger>
-            <TabsTrigger value="learn" className="gap-2 data-[state=active]:bg-success data-[state=active]:text-success-foreground rounded-xl transition-all duration-300">
-              <BookOpen className="h-4 w-4" />
-              <span className="font-medium">O'quv</span>
+            <TabsTrigger value="learn" className="gap-2 data-[state=active]:bg-success data-[state=active]:text-success-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
+              <BookOpen className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium truncate">O'quv</span>
             </TabsTrigger>
-            <TabsTrigger value="daily" className="gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground rounded-xl transition-all duration-300">
-              <Flame className="h-4 w-4" />
-              <span className="font-medium">Kunlik</span>
+            <Button
+              onClick={() => navigate('/daily-challenge')}
+              variant="ghost"
+              className="gap-2 relative rounded-xl transition-all duration-300 group overflow-hidden whitespace-nowrap min-w-0
+                hover:bg-gradient-to-r hover:from-accent hover:via-orange-500 hover:to-accent
+                hover:text-accent-foreground hover:shadow-xl hover:shadow-accent/50 hover:ring-2 hover:ring-accent/30
+                hover:scale-105 hover:font-semibold"
+            >
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+              {/* Glow effect on hover */}
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-accent/30 via-orange-500/30 to-accent/30 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+              <Flame className="h-4 w-4 relative z-10 group-hover:animate-pulse group-hover:drop-shadow-lg flex-shrink-0" />
+              <span className="font-medium relative z-10 group-hover:drop-shadow-sm truncate">Kunlik</span>
+            </Button>
+            <TabsTrigger value="multiplayer" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
+              <Users className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium truncate">Multiplayer</span>
             </TabsTrigger>
-            <TabsTrigger value="multiplayer" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300">
-              <Users className="h-4 w-4" />
-              <span className="font-medium">Multiplayer</span>
+            <TabsTrigger value="leaderboard" className="gap-2 data-[state=active]:bg-warning data-[state=active]:text-warning-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
+              <Trophy className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium truncate">Reyting</span>
             </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="gap-2 data-[state=active]:bg-warning data-[state=active]:text-warning-foreground rounded-xl transition-all duration-300">
-              <Trophy className="h-4 w-4" />
-              <span className="font-medium">Reyting</span>
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300">
-              <BarChart3 className="h-4 w-4" />
-              <span className="font-medium">Statistika</span>
+            <TabsTrigger value="stats" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
+              <BarChart3 className="h-4 w-4 flex-shrink-0" />
+              <span className="font-medium truncate">Statistika</span>
             </TabsTrigger>
           </TabsList>
+          </div>
 
           {/* Mobile TabsList - pastki navigatsiya with animations */}
           <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/50 shadow-lg safe-area-bottom">
-            <TabsList className="grid w-full grid-cols-6 p-2 bg-transparent h-auto relative">
+            <div className="grid w-full grid-cols-6 p-2 bg-transparent h-auto relative">
               {/* Animated background indicator */}
               <div 
                 className="absolute h-[calc(100%-16px)] top-2 rounded-2xl bg-gradient-to-r transition-all duration-300 ease-out"
                 style={{
                   width: 'calc((100% - 16px) / 6)',
-                  left: `calc(${['train', 'learn', 'daily', 'multiplayer', 'leaderboard', 'stats'].indexOf(activeTab)} * ((100% - 16px) / 6) + 8px)`,
-                  background: activeTab === 'train' ? 'hsl(var(--primary) / 0.15)' :
-                              activeTab === 'learn' ? 'hsl(var(--success) / 0.15)' :
-                              activeTab === 'daily' ? 'hsl(var(--accent) / 0.15)' :
-                              activeTab === 'multiplayer' ? 'hsl(var(--primary) / 0.15)' :
-                              activeTab === 'leaderboard' ? 'hsl(var(--warning) / 0.15)' :
-                              'hsl(var(--primary) / 0.15)'
+                  left: `calc(${['train', 'learn', 'multiplayer', 'leaderboard', 'stats'].indexOf(activeTab)} * ((100% - 16px) / 6) + 8px)`,
+                  background: activeTab === 'train' ? 'linear-gradient(to right, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.1))' :
+                              activeTab === 'learn' ? 'linear-gradient(to right, hsl(var(--success) / 0.2), hsl(var(--success) / 0.1))' :
+                              activeTab === 'multiplayer' ? 'linear-gradient(to right, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.1))' :
+                              activeTab === 'leaderboard' ? 'linear-gradient(to right, hsl(var(--warning) / 0.2), hsl(var(--warning) / 0.1))' :
+                              'linear-gradient(to right, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.1))'
                 }}
               />
               
+              <TabsList className="grid w-full grid-cols-6 p-0 bg-transparent h-auto relative">
               <TabsTrigger 
                 value="train" 
                 onClick={(e) => { createRipple(e); triggerHaptic(); }}
@@ -929,14 +966,23 @@ export const NumberTrainer = () => {
                 <BookOpen className="h-5 w-5 transition-transform duration-300" />
                 <span className="text-[10px] font-medium transition-all duration-300">O'quv</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="daily" 
-                onClick={(e) => { createRipple(e); triggerHaptic(); }}
-                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-accent rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
+              <Button
+                variant="ghost"
+                onClick={(e) => { 
+                  createRipple(e); 
+                  triggerHaptic(); 
+                  navigate('/daily-challenge');
+                }}
+                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground rounded-xl transition-all duration-300 z-10 group overflow-hidden
+                  hover:text-accent hover:scale-110"
               >
-                <Flame className="h-5 w-5 transition-transform duration-300" />
-                <span className="text-[10px] font-medium transition-all duration-300">Kunlik</span>
-              </TabsTrigger>
+                {/* Gradient glow effect on hover */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-accent/20 via-orange-500/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm" />
+                {/* Shimmer effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 rounded-xl" />
+                <Flame className="h-5 w-5 relative z-10 transition-transform duration-300 group-hover:scale-110 group-hover:animate-pulse" />
+                <span className="text-[10px] font-medium relative z-10 transition-all duration-300 group-hover:font-bold">Kunlik</span>
+              </Button>
               <TabsTrigger 
                 value="multiplayer" 
                 onClick={(e) => { createRipple(e); triggerHaptic(); }}
@@ -961,7 +1007,8 @@ export const NumberTrainer = () => {
                 <BarChart3 className="h-5 w-5 transition-transform duration-300" />
                 <span className="text-[10px] font-medium transition-all duration-300">Stat</span>
               </TabsTrigger>
-            </TabsList>
+              </TabsList>
+            </div>
           </div>
 
           <TabsContent value="learn" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`learn-${activeTab}`}>
@@ -979,65 +1026,145 @@ export const NumberTrainer = () => {
                 </p>
               </div>
               
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Kurs kartasi 1 */}
                 <Card 
-                  className="group bg-card/80 backdrop-blur-sm border-border/50 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden h-[220px] flex flex-col"
+                  className="group relative overflow-visible border-0 shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-3 opacity-0 animate-slide-up bg-gradient-to-br from-card via-card to-secondary/20 backdrop-blur-sm"
+                  style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
                   onClick={() => navigate('/courses')}
                 >
-                  <div className="h-28 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
-                    <div className="h-14 w-14 rounded-2xl bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <BookOpen className="h-7 w-7 text-primary" />
+                  {/* Animated gradient border */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl" />
+                  
+                  {/* Glow effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 via-accent/10 to-primary/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -z-20" />
+                  
+                  {/* Background layer */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/20 z-0" />
+                  
+                  {/* Content wrapper */}
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="h-40 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 flex items-center justify-center flex-shrink-0 rounded-t-2xl relative overflow-hidden">
+                      {/* Decorative circles */}
+                      <div className="absolute top-2 right-2 h-20 w-20 rounded-full bg-gradient-to-br from-primary/30 to-transparent blur-2xl animate-pulse" />
+                      <div className="absolute bottom-2 left-2 h-16 w-16 rounded-full bg-gradient-to-br from-accent/30 to-transparent blur-xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+                      
+                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-2xl shadow-primary/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10">
+                        <BookOpen className="h-8 w-8 text-primary-foreground" />
                     </div>
+                      
+                      {/* Shimmer effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   </div>
-                  <CardContent className="p-4 flex flex-col flex-1">
-                    <h3 className="font-bold text-foreground mb-1 line-clamp-1">Boshlang'ich kurs</h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">Soroban asoslari va oddiy formulalar</p>
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="text-xs text-primary font-medium">Bepul</span>
-                      <span className="text-xs text-muted-foreground">10+ dars</span>
+                    
+                    <CardContent className="p-6 flex flex-col flex-1 relative z-10">
+                      <h3 className="font-bold text-xl text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">Boshlang'ich kurs</h3>
+                      <p className="text-sm text-foreground/80 mb-4 line-clamp-2 flex-1 leading-relaxed">Soroban asoslari va oddiy formulalar</p>
+                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
+                        <Badge className="bg-gradient-to-r from-success to-emerald-500 text-white border-0 shadow-lg shadow-success/30 px-3 py-1">
+                          <span className="font-bold">Bepul</span>
+                        </Badge>
+                        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
+                          <BookOpen className="h-4 w-4 text-primary" />
+                          10+ dars
+                        </span>
                     </div>
                   </CardContent>
+                  </div>
                 </Card>
 
                 {/* Kurs kartasi 2 */}
                 <Card 
-                  className="group bg-card/80 backdrop-blur-sm border-border/50 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden h-[220px] flex flex-col"
+                  className="group relative overflow-visible border-0 shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-3 opacity-0 animate-slide-up bg-gradient-to-br from-card via-card to-secondary/20 backdrop-blur-sm"
+                  style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}
                   onClick={() => navigate('/courses')}
                 >
-                  <div className="h-28 bg-gradient-to-br from-accent/20 to-warning/20 flex items-center justify-center flex-shrink-0">
-                    <div className="h-14 w-14 rounded-2xl bg-accent/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Target className="h-7 w-7 text-accent" />
+                  {/* Animated gradient border */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-accent/30 via-warning/20 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl" />
+                  
+                  {/* Glow effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-br from-accent/20 via-warning/10 to-accent/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -z-20" />
+                  
+                  {/* Background layer */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/20 z-0" />
+                  
+                  {/* Content wrapper */}
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="h-40 bg-gradient-to-br from-accent/20 via-accent/10 to-warning/20 flex items-center justify-center flex-shrink-0 rounded-t-2xl relative overflow-hidden">
+                      {/* Decorative circles */}
+                      <div className="absolute top-2 right-2 h-20 w-20 rounded-full bg-gradient-to-br from-accent/30 to-transparent blur-2xl animate-pulse" />
+                      <div className="absolute bottom-2 left-2 h-16 w-16 rounded-full bg-gradient-to-br from-warning/30 to-transparent blur-xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+                      
+                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-2xl shadow-accent/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10">
+                        <Target className="h-8 w-8 text-accent-foreground" />
                     </div>
+                      
+                      {/* Shimmer effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   </div>
-                  <CardContent className="p-4 flex flex-col flex-1">
-                    <h3 className="font-bold text-foreground mb-1 line-clamp-1">O'rta daraja</h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">Formula 5 va Formula 10</p>
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="text-xs text-accent font-medium">Premium</span>
-                      <span className="text-xs text-muted-foreground">15+ dars</span>
+                    
+                    <CardContent className="p-6 flex flex-col flex-1 relative z-10">
+                      <h3 className="font-bold text-xl text-foreground mb-2 line-clamp-1 group-hover:text-accent transition-colors">O'rta daraja</h3>
+                      <p className="text-sm text-foreground/80 mb-4 line-clamp-2 flex-1 leading-relaxed">Formula 5 va Formula 10</p>
+                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
+                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg shadow-amber-500/30 px-3 py-1">
+                          <Crown className="h-3.5 w-3.5 mr-1" />
+                          <span className="font-bold">Premium</span>
+                        </Badge>
+                        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
+                          <BookOpen className="h-4 w-4 text-accent" />
+                          15+ dars
+                        </span>
                     </div>
                   </CardContent>
+                  </div>
                 </Card>
 
                 {/* Kurs kartasi 3 */}
                 <Card 
-                  className="group bg-card/80 backdrop-blur-sm border-border/50 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden h-[220px] flex flex-col"
+                  className="group relative overflow-visible border-0 shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-3 opacity-0 animate-slide-up bg-gradient-to-br from-card via-card to-secondary/20 backdrop-blur-sm"
+                  style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}
                   onClick={() => navigate('/courses')}
                 >
-                  <div className="h-28 bg-gradient-to-br from-warning/20 to-destructive/20 flex items-center justify-center flex-shrink-0">
-                    <div className="h-14 w-14 rounded-2xl bg-warning/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Trophy className="h-7 w-7 text-warning" />
+                  {/* Animated gradient border */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-warning/30 via-rose/20 to-warning/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl" />
+                  
+                  {/* Glow effect */}
+                  <div className="absolute -inset-1 bg-gradient-to-br from-warning/20 via-rose/10 to-warning/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -z-20" />
+                  
+                  {/* Background layer */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/20 z-0" />
+                  
+                  {/* Content wrapper */}
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="h-40 bg-gradient-to-br from-warning/20 via-warning/10 to-rose/20 flex items-center justify-center flex-shrink-0 rounded-t-2xl relative overflow-hidden">
+                      {/* Decorative circles */}
+                      <div className="absolute top-2 right-2 h-20 w-20 rounded-full bg-gradient-to-br from-warning/30 to-transparent blur-2xl animate-pulse" />
+                      <div className="absolute bottom-2 left-2 h-16 w-16 rounded-full bg-gradient-to-br from-rose/30 to-transparent blur-xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+                      
+                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-warning to-warning/80 flex items-center justify-center shadow-2xl shadow-warning/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10">
+                        <Trophy className="h-8 w-8 text-warning-foreground" />
                     </div>
+                      
+                      {/* Shimmer effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   </div>
-                  <CardContent className="p-4 flex flex-col flex-1">
-                    <h3 className="font-bold text-foreground mb-1 line-clamp-1">Yuqori daraja</h3>
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">Murakkab formulalar va tezlik</p>
-                    <div className="flex items-center justify-between mt-auto">
-                      <span className="text-xs text-warning font-medium">Premium</span>
-                      <span className="text-xs text-muted-foreground">20+ dars</span>
+                    
+                    <CardContent className="p-6 flex flex-col flex-1 relative z-10">
+                      <h3 className="font-bold text-xl text-foreground mb-2 line-clamp-1 group-hover:text-warning transition-colors">Yuqori daraja</h3>
+                      <p className="text-sm text-foreground/80 mb-4 line-clamp-2 flex-1 leading-relaxed">Murakkab formulalar va tezlik</p>
+                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
+                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg shadow-amber-500/30 px-3 py-1">
+                          <Crown className="h-3.5 w-3.5 mr-1" />
+                          <span className="font-bold">Premium</span>
+                        </Badge>
+                        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
+                          <BookOpen className="h-4 w-4 text-warning" />
+                          20+ dars
+                        </span>
                     </div>
                   </CardContent>
+                  </div>
                 </Card>
               </div>
 
@@ -1051,12 +1178,6 @@ export const NumberTrainer = () => {
                   Barcha kurslarni ko'rish
                 </Button>
               </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="daily" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`daily-${activeTab}`}>
-            <div className="max-w-2xl mx-auto">
-              <DailyChallenge />
             </div>
           </TabsContent>
 

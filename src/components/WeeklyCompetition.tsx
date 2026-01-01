@@ -208,58 +208,58 @@ export const WeeklyCompetition = () => {
 
   return (
     <Card className="bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-transparent border-purple-500/20 overflow-hidden relative h-full flex flex-col">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl" />
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-            <Trophy className="h-5 w-5 text-purple-500" />
-            Haftalik Musobaqa
-          </CardTitle>
-          {timeRemaining && (
-            <Badge variant="secondary" className="bg-purple-500/20 text-purple-700 dark:text-purple-300">
-              <Clock className="h-3 w-3 mr-1" />
-              {timeRemaining.days}k {timeRemaining.hours}s qoldi
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4 flex-1 flex flex-col">
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="outline">{getFormulaLabel(currentChallenge.formula_type)}</Badge>
-          <Badge variant="outline">{currentChallenge.digit_count} xonali</Badge>
-          <Badge variant="outline">{currentChallenge.speed}s tezlik</Badge>
-          <Badge variant="outline">{currentChallenge.problem_count} misol</Badge>
-        </div>
-
-        <div className="text-xs text-muted-foreground">
-          {format(new Date(currentChallenge.week_start), "d MMM")} -{" "}
-          {format(new Date(currentChallenge.week_end), "d MMM yyyy")}
-        </div>
-
-        {userResult && (
-          <div className="bg-card/50 rounded-lg p-3 space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Sizning natijangiz</span>
-              <span className="font-bold text-purple-600 dark:text-purple-400">
-                {userRank >= 0 ? `#${userRank + 1}` : "-"}
-              </span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <div className="text-lg font-bold">{userResult.total_score}</div>
-                <div className="text-[10px] text-muted-foreground">Ball</div>
-              </div>
-              <div>
-                <div className="text-lg font-bold">{userResult.games_played}</div>
-                <div className="text-[10px] text-muted-foreground">O'yin</div>
-              </div>
-              <div>
-                <div className="text-lg font-bold">{userResult.correct_answers}</div>
-                <div className="text-[10px] text-muted-foreground">To'g'ri</div>
-              </div>
-            </div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl" />
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+              <Trophy className="h-5 w-5 text-purple-500" />
+              Haftalik Musobaqa
+            </CardTitle>
+            {timeRemaining && (
+              <Badge variant="secondary" className="bg-purple-500/20 text-purple-700 dark:text-purple-300">
+                <Clock className="h-3 w-3 mr-1" />
+                {timeRemaining.days}k {timeRemaining.hours}s qoldi
+              </Badge>
+            )}
           </div>
-        )}
+        </CardHeader>
+      <CardContent className="space-y-4 flex-1 flex flex-col">
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline">{getFormulaLabel(currentChallenge.formula_type)}</Badge>
+            <Badge variant="outline">{currentChallenge.digit_count} xonali</Badge>
+            <Badge variant="outline">{currentChallenge.speed}s tezlik</Badge>
+            <Badge variant="outline">{currentChallenge.problem_count} misol</Badge>
+          </div>
+
+          <div className="text-xs text-muted-foreground">
+            {format(new Date(currentChallenge.week_start), "d MMM")} -{" "}
+            {format(new Date(currentChallenge.week_end), "d MMM yyyy")}
+          </div>
+
+          {userResult && (
+            <div className="bg-card/50 rounded-lg p-3 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Sizning natijangiz</span>
+                <span className="font-bold text-purple-600 dark:text-purple-400">
+                  {userRank >= 0 ? `#${userRank + 1}` : "-"}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div>
+                  <div className="text-lg font-bold">{userResult.total_score}</div>
+                  <div className="text-[10px] text-muted-foreground">Ball</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold">{userResult.games_played}</div>
+                  <div className="text-[10px] text-muted-foreground">O'yin</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold">{userResult.correct_answers}</div>
+                  <div className="text-[10px] text-muted-foreground">To'g'ri</div>
+                </div>
+              </div>
+            </div>
+          )}
 
         {/* Leaderboard Section */}
         <div className="flex-1 flex flex-col min-h-0">
@@ -268,45 +268,45 @@ export const WeeklyCompetition = () => {
             <span className="text-sm font-semibold">Haftalik reyting</span>
           </div>
           <div className="flex-1 overflow-y-auto max-h-32">
-            {!leaderboard?.length ? (
+          {!leaderboard?.length ? (
               <div className="text-center py-4 text-muted-foreground text-xs">
                 Hali ishtirokchilar yo'q
-              </div>
-            ) : (
+            </div>
+          ) : (
               <div className="space-y-1.5">
                 {leaderboard.slice(0, 3).map((result, index) => {
-                  const isCurrentUser = result.user_id === user?.id;
-                  return (
-                    <div
-                      key={result.id}
+                const isCurrentUser = result.user_id === user?.id;
+                return (
+                  <div
+                    key={result.id}
                       className={`flex items-center gap-2 p-1.5 rounded-lg text-xs transition-all ${
-                        isCurrentUser
+                      isCurrentUser
                           ? "bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/40"
-                          : index < 3
-                          ? "bg-secondary/50"
-                          : "hover:bg-secondary/30"
-                      }`}
-                    >
+                        : index < 3
+                        ? "bg-secondary/50"
+                        : "hover:bg-secondary/30"
+                    }`}
+                  >
                       <div className="w-5 flex items-center justify-center">{getRankIcon(index)}</div>
                       <Avatar className={`h-6 w-6 ${isCurrentUser ? "ring-1 ring-primary" : ""}`}>
-                        <AvatarImage src={result.avatar_url || undefined} />
+                      <AvatarImage src={result.avatar_url || undefined} />
                         <AvatarFallback className="text-[10px]">
-                          {result.username.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
+                        {result.username.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
                         <div className={`font-medium truncate ${isCurrentUser ? "text-primary font-bold" : ""}`}>
-                          {result.username}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={`font-bold ${isCurrentUser ? "text-primary" : ""}`}>
-                          {result.total_score}
-                        </div>
+                        {result.username}
                       </div>
                     </div>
-                  );
-                })}
+                    <div className="text-right">
+                        <div className={`font-bold ${isCurrentUser ? "text-primary" : ""}`}>
+                        {result.total_score}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
               </div>
             )}
           </div>
@@ -325,9 +325,9 @@ export const WeeklyCompetition = () => {
         {!user && (
           <div className="text-center py-2 mt-auto">
             <p className="text-sm text-muted-foreground mb-2">Ishtirok etish uchun tizimga kiring</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+            </div>
+          )}
+        </CardContent>
+      </Card>
   );
 };

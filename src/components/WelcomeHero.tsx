@@ -17,7 +17,7 @@ export const WelcomeHero = ({ username }: WelcomeHeroProps) => {
 
   return (
     <div 
-      className="relative overflow-hidden rounded-3xl gradient-primary p-8 md:p-10 text-primary-foreground opacity-0 animate-slide-up" 
+      className="relative overflow-hidden rounded-2xl sm:rounded-3xl gradient-primary p-6 sm:p-8 md:p-10 text-primary-foreground opacity-0 animate-slide-up" 
       style={{ animationFillMode: 'forwards' }}
     >
       {/* Animated background decorations */}
@@ -47,7 +47,7 @@ export const WelcomeHero = ({ username }: WelcomeHeroProps) => {
           </div>
           
           {/* Main heading */}
-          <h1 className="text-3xl md:text-4xl font-display font-bold mb-3 leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold mb-3 leading-tight">
             {username ? (
               <>
                 Salom, <span className="relative">
@@ -61,7 +61,7 @@ export const WelcomeHero = ({ username }: WelcomeHeroProps) => {
           </h1>
           
           {/* Description */}
-          <p className="text-base md:text-lg opacity-90 max-w-lg leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg opacity-90 max-w-lg leading-relaxed">
             Mental arifmetika bo'yicha treninglarni davom ettiring va o'z natijalaringizni kuzating.
           </p>
         </div>

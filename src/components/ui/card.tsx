@@ -9,10 +9,10 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const variants = {
-      default: "rounded-2xl border bg-card text-card-foreground shadow-md card-hover-glow",
-      game: "rounded-3xl border-2 border-primary/20 bg-card text-card-foreground shadow-lg hover:shadow-glow transition-all duration-300 dark-glow-card",
-      stat: "rounded-2xl border border-border/50 bg-gradient-to-br from-card to-secondary/30 text-card-foreground shadow-sm hover:shadow-md transition-all duration-200 card-hover-glow",
-      section: "rounded-3xl border-2 border-transparent bg-card text-card-foreground shadow-md hover:border-primary/30 hover:shadow-lg cursor-pointer transition-all duration-300 active:scale-[0.98] dark-glow-card",
+      default: "rounded-xl sm:rounded-2xl border bg-card text-card-foreground shadow-md card-hover-glow",
+      game: "rounded-2xl sm:rounded-3xl border-2 border-primary/20 bg-card text-card-foreground shadow-lg hover:shadow-glow transition-all duration-300 dark-glow-card",
+      stat: "rounded-xl sm:rounded-2xl border border-border/50 bg-gradient-to-br from-card to-secondary/30 text-card-foreground shadow-sm hover:shadow-md transition-all duration-200 card-hover-glow",
+      section: "rounded-2xl sm:rounded-3xl border-2 border-transparent bg-card text-card-foreground shadow-md hover:border-primary/30 hover:shadow-lg cursor-pointer transition-all duration-300 active:scale-[0.98] touch-manipulation dark-glow-card",
     };
 
     return (
@@ -32,7 +32,7 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    className={cn("flex flex-col space-y-1.5 p-4 sm:p-5 md:p-6", className)}
     {...props}
   />
 ));
@@ -45,7 +45,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-2xl font-bold leading-none tracking-tight font-display",
+      "text-xl sm:text-2xl font-bold leading-none tracking-tight font-display",
       className
     )}
     {...props}
@@ -59,7 +59,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-xs sm:text-sm text-muted-foreground", className)}
     {...props}
   />
 ));
@@ -69,7 +69,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("p-4 sm:p-5 md:p-6 pt-0", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
 
@@ -79,7 +79,7 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
+    className={cn("flex items-center p-4 sm:p-5 md:p-6 pt-0", className)}
     {...props}
   />
 ));

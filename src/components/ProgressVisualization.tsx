@@ -47,15 +47,15 @@ export const ProgressVisualization = ({
           {/* Daily Goal Progress */}
           <div className="flex flex-col items-center group">
             <div className="relative mb-2">
-              <ActivityRing
-                progress={goalProgress}
-                size={100}
-                strokeWidth={8}
-                color="primary"
-                value={problemsSolved}
-                label={`/${dailyGoal} maqsad`}
-                icon={<Target className="h-4 w-4" />}
-              />
+            <ActivityRing
+              progress={goalProgress}
+              size={100}
+              strokeWidth={8}
+              color="primary"
+              value={problemsSolved}
+              label={`/${dailyGoal} maqsad`}
+              icon={<Target className="h-4 w-4" />}
+            />
             </div>
             <div className="text-center mt-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -67,15 +67,15 @@ export const ProgressVisualization = ({
           {/* Accuracy Ring */}
           <div className="flex flex-col items-center group">
             <div className="relative mb-2">
-              <ActivityRing
-                progress={accuracy}
-                size={100}
-                strokeWidth={8}
-                color="success"
-                value={`${accuracy}%`}
-                label="aniqlik"
-                icon={<TrendingUp className="h-4 w-4" />}
-              />
+            <ActivityRing
+              progress={accuracy}
+              size={100}
+              strokeWidth={8}
+              color="success"
+              value={`${accuracy}%`}
+              label="aniqlik"
+              icon={<TrendingUp className="h-4 w-4" />}
+            />
             </div>
             <div className="text-center mt-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -87,15 +87,15 @@ export const ProgressVisualization = ({
           {/* Streak Progress */}
           <div className="flex flex-col items-center group">
             <div className="relative mb-2">
-              <ActivityRing
-                progress={Math.min(100, streak * 10)}
-                size={100}
-                strokeWidth={8}
-                color="warning"
-                value={streak}
-                label="kunlik seriya"
-                icon={<Zap className="h-4 w-4" />}
-              />
+            <ActivityRing
+              progress={Math.min(100, streak * 10)}
+              size={100}
+              strokeWidth={8}
+              color="warning"
+              value={streak}
+              label="kunlik seriya"
+              icon={<Zap className="h-4 w-4" />}
+            />
             </div>
             <div className="text-center mt-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -107,15 +107,15 @@ export const ProgressVisualization = ({
           {/* Level Progress */}
           <div className="flex flex-col items-center group">
             <div className="relative mb-2">
-              <ActivityRing
-                progress={levelProgress}
-                size={100}
-                strokeWidth={8}
-                color="accent"
-                value={`Lv.${level}`}
-                label="daraja"
-                icon={<Award className="h-4 w-4" />}
-              />
+            <ActivityRing
+              progress={levelProgress}
+              size={100}
+              strokeWidth={8}
+              color="accent"
+              value={`Lv.${level}`}
+              label="daraja"
+              icon={<Award className="h-4 w-4" />}
+            />
             </div>
             <div className="text-center mt-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

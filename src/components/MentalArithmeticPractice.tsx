@@ -15,8 +15,10 @@ import { MultiplayerCompetition } from './MultiplayerCompetition';
 import { Play, RotateCcw, Check, Settings2, Zap, BarChart3, Trophy, Lightbulb, Swords } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { useSound } from '@/hooks/useSound';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 // Formulasiz qoidalar: har bir natija uchun qo'shish/ayirish mumkin bo'lgan sonlar
 const RULES_BASIC: Record<number, { add: number[]; subtract: number[] }> = {
@@ -163,7 +165,9 @@ interface PracticeStats {
 
 export const MentalArithmeticPractice = () => {
   const { user } = useAuth();
+  const { hasPro } = useSubscription();
   const { playSound } = useSound();
+  const navigate = useNavigate();
   
   // Sozlamalar
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium');
@@ -368,6 +372,31 @@ export const MentalArithmeticPractice = () => {
     const isCorrect = userNum === correctAnswer;
     const timeTaken = (Date.now() - startTimeRef.current) / 1000;
     
+    // Kunlik limitni tekshirish (faqat bepul foydalanuvchilar uchun)
+    if (user && !hasPro()) {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todaySessions } = await supabase
+        .from('game_sessions')
+        .select('problems_solved, correct, incorrect')
+        .eq('user_id', user.id)
+        .gte('created_at', `${today}T00:00:00`)
+        .lt('created_at', `${today}T23:59:59`);
+      
+      const todaySolved = todaySessions?.reduce((sum, s) => 
+        sum + (s.problems_solved || 0) + (s.correct || 0) + (s.incorrect || 0), 0) || 0;
+      
+      if (todaySolved >= 20) {
+        toast.error("Kunlik limit", {
+          description: "Siz bugun 20 ta masala yechdingiz. Cheksiz mashq uchun Pro rejaga o'ting!",
+          action: {
+            label: "Pro rejaga o'tish",
+            onClick: () => navigate('/pricing'),
+          },
+        });
+        return;
+      }
+    }
+    
     setFeedback(isCorrect ? 'correct' : 'incorrect');
     setShowResult(true);
     
@@ -430,7 +459,7 @@ export const MentalArithmeticPractice = () => {
     if (isCorrect) {
       toast.success("To'g'ri javob! 🎉", { duration: 2000 });
     }
-  }, [userAnswer, user, difficulty, currentStreak, playSound]);
+  }, [userAnswer, user, difficulty, currentStreak, playSound, hasPro, navigate]);
 
   // Qayta boshlash
   const resetGame = useCallback(() => {

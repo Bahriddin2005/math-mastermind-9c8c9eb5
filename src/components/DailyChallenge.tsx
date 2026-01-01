@@ -373,21 +373,32 @@ export const DailyChallenge = () => {
   // O'yin davomida - Mobile optimized
   if (view === 'playing' && currentDisplay !== null) {
     return (
-      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 p-4">
-        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex items-center gap-2 text-xl sm:text-2xl font-mono text-muted-foreground bg-muted/50 px-3 sm:px-4 py-2 rounded-xl">
-          <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
-          {elapsedTime.toFixed(1)}s
+      <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-primary/5 dark:from-background dark:via-background dark:to-primary/10 flex flex-col items-center justify-start z-50 p-4 sm:p-6 overflow-hidden">
+        {/* Header section - fixed at top */}
+        <div className="w-full max-w-2xl mx-auto flex items-center justify-between mb-8 sm:mb-12 md:mb-16 pt-8 sm:pt-12">
+          <Badge className="inline-flex items-center gap-2 text-sm sm:text-base px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-accent/10 via-orange-500/10 to-accent/10 border-2 border-accent/30 text-accent shadow-lg shadow-accent/20">
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="font-bold">Kunlik musobaqa</span>
+          </Badge>
+          
+          <div className="flex items-center gap-2 text-xl sm:text-2xl md:text-3xl font-mono text-foreground bg-card/80 backdrop-blur-md px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border-2 border-border/50 shadow-lg">
+            <Clock className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-accent" />
+            <span className="font-bold text-accent">{elapsedTime.toFixed(1)}s</span>
+          </div>
         </div>
         
-        <Badge className="absolute top-4 sm:top-6 left-4 sm:left-6 text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2">
-          <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-          Kunlik musobaqa
-        </Badge>
-        
-        <div 
-          className="text-[120px] sm:text-[180px] md:text-[250px] font-light text-foreground transition-all duration-100 leading-none"
-        >
-          {!isAddition && countRef.current > 1 ? '-' : ''}{currentDisplay}
+        {/* Number display - centered below header */}
+        <div className="flex-1 flex items-center justify-center w-full px-4">
+          <div 
+            className="text-[120px] sm:text-[180px] md:text-[250px] lg:text-[300px] font-light text-foreground transition-all duration-100 leading-none text-center"
+            style={{
+              textShadow: '0 4px 20px rgba(0,0,0,0.1), 0 8px 40px rgba(0,0,0,0.05)',
+            }}
+          >
+            <span className={!isAddition && countRef.current > 1 ? 'text-destructive' : 'text-primary'}>
+              {!isAddition && countRef.current > 1 ? '-' : ''}{currentDisplay}
+            </span>
+          </div>
         </div>
       </div>
     );
@@ -396,53 +407,89 @@ export const DailyChallenge = () => {
   // Javob kiritish - Mobile optimized
   if (view === 'answer') {
     return (
-      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 p-4 sm:p-6">
-        <div className="max-w-md w-full space-y-4 sm:space-y-6 text-center">
-          <Badge className="text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2">
-            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-            Kunlik musobaqa
+      <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-primary/5 dark:from-background dark:via-background dark:to-primary/10 flex flex-col items-center justify-start z-50 p-4 sm:p-6 md:p-8 overflow-y-auto">
+        <div className="max-w-lg sm:max-w-xl md:max-w-2xl w-full space-y-5 sm:space-y-6 md:space-y-8 text-center pt-6 sm:pt-10 md:pt-16 relative z-10">
+          <Badge className="inline-flex items-center gap-2 text-base sm:text-lg md:text-xl px-5 sm:px-6 md:px-7 py-2.5 sm:py-3 md:py-3.5 bg-gradient-to-r from-accent/20 via-orange-500/20 to-accent/20 border-2 border-accent/50 text-accent shadow-lg shadow-accent/30 backdrop-blur-sm">
+            <Calendar className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7" />
+            <span className="font-bold">Kunlik musobaqa</span>
           </Badge>
           
-          <h2 className="text-xl sm:text-2xl font-bold">Javobingizni kiriting!</h2>
-          
-          <div className="flex items-center justify-center gap-2 text-muted-foreground bg-muted/50 px-4 py-2 rounded-xl mx-auto w-fit">
-            <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
-            <span className="font-mono text-lg sm:text-xl font-bold">{elapsedTime.toFixed(1)}s</span>
+          <div className="space-y-4 sm:space-y-5 md:space-y-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground drop-shadow-sm">Javobingizni kiriting!</h2>
+            
+            <div className="flex items-center justify-center gap-3 text-foreground bg-card/90 backdrop-blur-md px-5 sm:px-6 md:px-7 py-3 sm:py-3.5 md:py-4 rounded-xl mx-auto w-fit border-2 border-border/70 shadow-xl">
+              <Clock className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-accent" />
+              <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-accent">{elapsedTime.toFixed(1)}s</span>
+            </div>
+            
+            <div className="p-6 sm:p-8 md:p-10 lg:p-12 rounded-3xl bg-gradient-to-br from-card/98 via-card/95 to-primary/5 border-2 border-border/80 shadow-2xl backdrop-blur-xl">
+              <div className="space-y-6 sm:space-y-8 text-left">
+                <div className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-6 sm:mb-8 text-center drop-shadow-lg">
+                  Ko'rsatilgan sonlar:
+                </div>
+                <div className="font-mono flex flex-wrap items-center justify-center gap-4 sm:gap-5 md:gap-6">
+                  {displayedNumbers.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 sm:gap-3">
+                      {idx > 0 && (
+                        <span 
+                          className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold ${
+                            item.isAdd ? 'text-primary' : 'text-destructive'
+                          } drop-shadow-lg`}
+                        >
+                          {item.isAdd ? '+' : '-'}
+                        </span>
+                      )}
+                      <div
+                        className={`
+                          inline-flex items-center justify-center 
+                          px-6 sm:px-8 md:px-10 lg:px-12 
+                          py-4 sm:py-5 md:py-6 lg:py-7
+                          rounded-2xl sm:rounded-3xl
+                          font-bold 
+                          shadow-xl shadow-black/10
+                          text-4xl sm:text-5xl md:text-6xl lg:text-7xl
+                          min-w-[80px] sm:min-w-[100px] md:min-w-[120px] lg:min-w-[140px]
+                          transition-all duration-300
+                          ${
+                            item.isAdd 
+                              ? 'bg-gradient-to-br from-primary/30 via-primary/25 to-primary/20 text-primary border-2 border-primary/60 hover:shadow-2xl hover:shadow-primary/30 hover:scale-105' 
+                              : 'bg-gradient-to-br from-destructive/30 via-destructive/25 to-destructive/20 text-destructive border-2 border-destructive/60 hover:shadow-2xl hover:shadow-destructive/30 hover:scale-105'
+                          }
+                        `}
+                      >
+                        {item.num}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
           
-          <div className="bg-muted/50 rounded-xl p-3 sm:p-4">
-            <p className="text-xs sm:text-sm text-muted-foreground mb-2">Ko'rsatilgan sonlar:</p>
-            <p className="text-base sm:text-lg font-mono leading-relaxed">
-              {displayedNumbers.map((item, i) => (
-                <span key={i}>
-                  {i > 0 ? (item.isAdd ? ' + ' : ' - ') : ''}{item.num}
-                </span>
-              ))}
-            </p>
+          <div className="w-full space-y-5 sm:space-y-6">
+            <Input
+              type="number"
+              value={userAnswer}
+              onChange={(e) => setUserAnswer(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && userAnswer && submitAnswer()}
+              placeholder="Javob"
+              className="text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl h-20 sm:h-24 md:h-28 lg:h-32 font-mono border-2 border-primary/50 focus:border-primary focus:ring-4 focus:ring-primary/30 rounded-2xl bg-card/95 backdrop-blur-md shadow-xl text-foreground font-bold"
+              autoFocus
+            />
+            
+            <Button 
+              onClick={submitAnswer} 
+              disabled={!userAnswer || !user} 
+              size="lg" 
+              className="w-full h-16 sm:h-20 md:h-24 text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary hover:from-primary/90 hover:via-primary hover:to-primary/90 text-primary-foreground shadow-xl shadow-primary/40 hover:shadow-2xl hover:shadow-primary/60 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Check className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 mr-3" />
+              Yuborish
+            </Button>
           </div>
-          
-          <Input
-            type="number"
-            value={userAnswer}
-            onChange={(e) => setUserAnswer(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && userAnswer && submitAnswer()}
-            placeholder="Javob"
-            className="text-center text-3xl sm:text-4xl h-16 sm:h-20 text-primary font-bold"
-            autoFocus
-          />
-          
-          <Button 
-            onClick={submitAnswer} 
-            disabled={!userAnswer || !user} 
-            size="lg" 
-            className="w-full h-14 sm:h-12 text-lg sm:text-base"
-          >
-            <Check className="h-5 w-5 sm:h-5 sm:w-5 mr-2" />
-            Yuborish
-          </Button>
           
           {!user && (
-            <p className="text-xs sm:text-sm text-muted-foreground">
+            <p className="text-sm sm:text-base md:text-lg text-foreground font-medium bg-card/80 backdrop-blur-md px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-border/50 shadow-md">
               Natijani saqlash uchun tizimga kiring
             </p>
           )}
