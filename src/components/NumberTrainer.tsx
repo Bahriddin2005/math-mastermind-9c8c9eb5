@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Square, Volume2, VolumeX, RotateCcw, Check, Clock, BarChart3, Trophy, Target, Play, Home, Moon, Sun, User, LogOut, Settings, ShieldCheck, GraduationCap, Users, Flame, BookOpen, Crown, Brain } from 'lucide-react';
+import { Square, Volume2, VolumeX, RotateCcw, Check, Clock, BarChart3, Trophy, Target, Play, Home, Moon, Sun, User, LogOut, Settings, ShieldCheck, GraduationCap, Users, Flame, BookOpen, Crown, Brain, Calendar, Plus, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MultiplayerMode } from './MultiplayerMode';
 import { Navbar } from './Navbar';
+import { Footer } from './Footer';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -861,9 +862,9 @@ export const NumberTrainer = () => {
     <div className="min-h-screen">
       <Navbar soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       
-      <div className="container py-8 px-4 md:px-8">
+      <div className="container py-2 md:py-4 px-4 md:px-8">
         {/* Hero Section */}
-        <div className="relative text-center mb-10 py-8 animate-fade-in">
+        <div className="relative text-center mb-4 md:mb-6 py-2 md:py-4 animate-fade-in">
           {/* Background decorations */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
@@ -894,40 +895,41 @@ export const NumberTrainer = () => {
 
           {/* Main content */}
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-sm text-primary font-medium mb-4">
-              <Flame className="h-4 w-4" />
-              Kundalik mashq qiling
+            {/* Banner */}
+            <div className="inline-flex items-center gap-3 px-4 sm:px-6 py-3 bg-green-50 dark:bg-green-950/30 rounded-2xl mb-6 mx-auto">
+              <span className="text-2xl">🧮</span>
+              <span className="text-base sm:text-lg font-medium text-green-700 dark:text-green-400">Kundalik mashq qiling</span>
+              <span className="text-2xl">🧠</span>
             </div>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-4">
               Mental Arifmetika{' '}
-              <span className="relative">
-                <span className="text-gradient-primary">Treneri</span>
-                <svg className="absolute -bottom-2 left-0 w-full" height="8" viewBox="0 0 200 8" fill="none">
-                  <path d="M2 6C50 2 150 2 198 6" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" className="opacity-50"/>
+              <span className="relative inline-block">
+                <span className="text-green-600 dark:text-green-500">Treneri</span>
+                <svg className="absolute -bottom-1 left-0 w-full" height="4" viewBox="0 0 200 4" fill="none">
+                  <path d="M0 2L200 2" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-green-600 dark:text-green-500"/>
                 </svg>
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              Aql hisoblash ko&apos;nikmalarini rivojlantiring va{' '}
-              <span className="text-foreground font-medium">o&apos;z darajangizni</span> oshiring
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed mb-6">
+              Aql hisoblash ko&apos;nikmalarini rivojlantiring va o&apos;z darajangizni oshiring
             </p>
 
             {/* Stats badges */}
             {user && stats.totalProblems > 0 && (
-              <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-sm">
-                  <Target className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium">{stats.totalProblems} mashq</span>
+              <div className="flex items-center justify-center gap-3 mt-4 flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-card rounded-xl border border-border/50 shadow-sm">
+                  <Target className="h-4 w-4 text-green-600 dark:text-green-500" />
+                  <span className="text-sm font-medium text-foreground">{stats.totalProblems} mashq</span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-sm">
-                  <Trophy className="h-4 w-4 text-warning" />
-                  <span className="text-sm font-medium">{accuracy}% aniqlik</span>
+                <div className="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-card rounded-xl border border-border/50 shadow-sm">
+                  <Trophy className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
+                  <span className="text-sm font-medium text-foreground">{accuracy}% aniqlik</span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-sm">
-                  <Flame className="h-4 w-4 text-accent" />
-                  <span className="text-sm font-medium">{stats.bestStreak} seriya</span>
+                <div className="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-card rounded-xl border border-border/50 shadow-sm">
+                  <Flame className="h-4 w-4 text-orange-500 dark:text-orange-400" />
+                  <span className="text-sm font-medium text-foreground">{stats.bestStreak} seriya</span>
                 </div>
               </div>
             )}
@@ -935,93 +937,37 @@ export const NumberTrainer = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          {/* Desktop TabsList - tepa qismda */}
-          <div className="hidden md:flex w-full max-w-5xl mx-auto mb-8 bg-gradient-to-br from-card/90 via-card/80 to-card/90 backdrop-blur-md border border-border/50 p-1.5 rounded-2xl shadow-lg shadow-black/5">
-            <TabsList className="grid w-full grid-cols-5 bg-transparent p-0 flex-1">
-            <TabsTrigger value="train" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
-              <Play className="h-4 w-4 flex-shrink-0" />
-              <span className="font-medium truncate">Mashq</span>
+          {/* Desktop va Mobile TabsList */}
+          <div className="flex w-full max-w-5xl mx-auto mb-3 md:mb-4 bg-transparent p-0">
+            <TabsList className="grid w-full grid-cols-5 bg-transparent p-0 flex-1 gap-3 md:gap-4 lg:gap-5">
+            <TabsTrigger value="train" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
+              <Play className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
+              <span className="font-semibold text-xs leading-tight text-center relative z-10">Mashq</span>
             </TabsTrigger>
-            <TabsTrigger value="learn" className="gap-2 data-[state=active]:bg-success data-[state=active]:text-success-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
-              <BookOpen className="h-4 w-4 flex-shrink-0" />
-              <span className="font-medium truncate">O'quv</span>
+            <TabsTrigger value="learn" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
+              <BookOpen className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
+              <span className="font-semibold text-xs leading-tight text-center relative z-10">O'quv</span>
             </TabsTrigger>
-            <TabsTrigger value="multiplayer" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
-              <Users className="h-4 w-4 flex-shrink-0" />
-              <span className="font-medium truncate">Multiplayer</span>
+            <TabsTrigger value="multiplayer" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
+              <Users className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
+              <span className="font-semibold text-xs leading-tight text-center relative z-10">Ko'p</span>
             </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="gap-2 data-[state=active]:bg-warning data-[state=active]:text-warning-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
-              <Trophy className="h-4 w-4 flex-shrink-0" />
-              <span className="font-medium truncate">Reyting</span>
+            <TabsTrigger value="leaderboard" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
+              <Trophy className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
+              <span className="font-semibold text-xs leading-tight text-center relative z-10">Reyting</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
-              <BarChart3 className="h-4 w-4 flex-shrink-0" />
-              <span className="font-medium truncate">Statistika</span>
+            <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
+              <BarChart3 className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
+              <span className="font-semibold text-xs leading-tight text-center relative z-10">Statistika</span>
             </TabsTrigger>
           </TabsList>
           </div>
 
-          {/* Mobile TabsList - pastki navigatsiya with animations */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/50 shadow-lg safe-area-bottom">
-            <div className="grid w-full grid-cols-5 p-2 bg-transparent h-auto relative">
-              {/* Animated background indicator */}
-              <div 
-                className="absolute h-[calc(100%-16px)] top-2 rounded-2xl bg-gradient-to-r transition-all duration-300 ease-out"
-                style={{
-                  width: 'calc((100% - 16px) / 5)',
-                  left: `calc(${['train', 'learn', 'multiplayer', 'leaderboard', 'stats'].indexOf(activeTab)} * ((100% - 16px) / 5) + 8px)`,
-                  background: activeTab === 'train' ? 'linear-gradient(to right, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.1))' :
-                              activeTab === 'learn' ? 'linear-gradient(to right, hsl(var(--success) / 0.2), hsl(var(--success) / 0.1))' :
-                              activeTab === 'multiplayer' ? 'linear-gradient(to right, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.1))' :
-                              activeTab === 'leaderboard' ? 'linear-gradient(to right, hsl(var(--warning) / 0.2), hsl(var(--warning) / 0.1))' :
-                              'linear-gradient(to right, hsl(var(--primary) / 0.2), hsl(var(--primary) / 0.1))'
-                }}
-              />
-              
-              <TabsList className="grid w-full grid-cols-5 p-0 bg-transparent h-auto relative">
-              <TabsTrigger 
-                value="train" 
-                onClick={(e) => { createRipple(e); triggerHaptic(); }}
-                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-primary rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
-              >
-                <Play className="h-5 w-5 transition-transform duration-300 data-[state=active]:scale-110" />
-                <span className="text-[10px] font-medium transition-all duration-300">Mashq</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="learn" 
-                onClick={(e) => { createRipple(e); triggerHaptic(); }}
-                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-success rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
-              >
-                <BookOpen className="h-5 w-5 transition-transform duration-300" />
-                <span className="text-[10px] font-medium transition-all duration-300">O'quv</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="multiplayer" 
-                onClick={(e) => { createRipple(e); triggerHaptic(); }}
-                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-primary rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
-              >
-                <Users className="h-5 w-5 transition-transform duration-300" />
-                <span className="text-[10px] font-medium transition-all duration-300">Ko'p</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="leaderboard" 
-                onClick={(e) => { createRipple(e); triggerHaptic(); }}
-                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-warning rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
-              >
-                <Trophy className="h-5 w-5 transition-transform duration-300" />
-                <span className="text-[10px] font-medium transition-all duration-300">Reyting</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="stats" 
-                onClick={(e) => { createRipple(e); triggerHaptic(); }}
-                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-primary rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
-              >
-                <BarChart3 className="h-5 w-5 transition-transform duration-300" />
-                <span className="text-[10px] font-medium transition-all duration-300">Stat</span>
-              </TabsTrigger>
-            </TabsList>
-            </div>
-          </div>
 
           <TabsContent value="learn" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`learn-${activeTab}`}>
             <div className="max-w-4xl mx-auto">
@@ -1198,51 +1144,51 @@ export const NumberTrainer = () => {
           </TabsContent>
 
           <TabsContent value="train" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`train-${activeTab}`}>
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-4xl mx-auto space-y-6 pt-16 md:pt-20">
               {/* Mini statistika */}
               {user && stats.totalProblems > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="group relative p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <Target className="h-5 w-5 text-primary" />
+                <div className="grid grid-cols-2 gap-4 md:gap-6">
+                  <div className="group relative p-5 bg-white dark:bg-card rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="flex flex-col gap-3">
+                      <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <Target className="h-6 w-6 text-green-600 dark:text-green-500" />
                       </div>
                       <div>
-                        <p className="text-xl font-bold text-foreground">{stats.totalProblems}</p>
-                        <p className="text-xs text-muted-foreground">Jami mashqlar</p>
+                        <p className="text-3xl font-bold text-foreground mb-1">{stats.totalProblems}</p>
+                        <p className="text-sm text-muted-foreground">Jami mashqlar</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center">
-                        <Check className="h-5 w-5 text-success" />
+                  <div className="group relative p-5 bg-white dark:bg-card rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="flex flex-col gap-3">
+                      <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <Check className="h-6 w-6 text-green-600 dark:text-green-500" />
                       </div>
                       <div>
-                        <p className="text-xl font-bold text-success">{accuracy}%</p>
-                        <p className="text-xs text-muted-foreground">Aniqlik</p>
+                        <p className="text-3xl font-bold text-green-600 dark:text-green-500 mb-1">{accuracy}%</p>
+                        <p className="text-sm text-muted-foreground">Aniqlik</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                        <Clock className="h-5 w-5 text-blue-500" />
+                  <div className="group relative p-5 bg-white dark:bg-card rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="flex flex-col gap-3">
+                      <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                        <Clock className="h-6 w-6 text-blue-600 dark:text-blue-500" />
                       </div>
                       <div>
-                        <p className="text-xl font-bold text-blue-500">{stats.averageTime.toFixed(1)}s</p>
-                        <p className="text-xs text-muted-foreground">O'rtacha vaqt</p>
+                        <p className="text-3xl font-bold text-blue-600 dark:text-blue-500 mb-1">{stats.averageTime.toFixed(1)}s</p>
+                        <p className="text-sm text-muted-foreground">O'rtacha vaqt</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
-                        <Flame className="h-5 w-5 text-warning" />
+                  <div className="group relative p-5 bg-white dark:bg-card rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="flex flex-col gap-3">
+                      <div className="h-12 w-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                        <Flame className="h-6 w-6 text-orange-600 dark:text-orange-500" />
                       </div>
                       <div>
-                        <p className="text-xl font-bold text-warning">{stats.bestStreak}</p>
-                        <p className="text-xs text-muted-foreground">Eng uzun seriya</p>
+                        <p className="text-3xl font-bold text-orange-600 dark:text-orange-500 mb-1">{stats.bestStreak}</p>
+                        <p className="text-sm text-muted-foreground">Eng uzun seriya</p>
                       </div>
                     </div>
                   </div>
@@ -1250,49 +1196,51 @@ export const NumberTrainer = () => {
               )}
 
               {/* Settings Cards */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-6 pt-8 md:pt-12">
                 {/* Misol turi */}
-                <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-md overflow-hidden h-[280px] flex flex-col">
-                  <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Square className="h-4 w-4 text-primary" />
+                <Card className="bg-white dark:bg-card border-border/50 shadow-md overflow-hidden flex flex-col">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                      <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <Square className="h-4 w-4 text-green-600 dark:text-green-500" />
                       </div>
                       Misol turi
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-3">
+                  <CardContent className="pt-0">
                     <RadioGroup
                       value={formulaType}
                       onValueChange={(v) => setFormulaType(v as FormulaType)}
-                      className="grid grid-cols-2 gap-2"
+                      className="grid grid-cols-2 gap-3"
                     >
                       {[
-                        { value: 'oddiy', label: 'Oddiy', icon: '📘' },
-                        { value: 'formula5', label: 'Formula 5', icon: '🔢' },
-                        { value: 'formula10plus', label: 'Formula 10+', icon: '➕' },
-                        { value: 'formula10minus', label: 'Formula 10-', icon: '➖' },
-                        { value: 'hammasi', label: 'Hammasi', icon: '🎯' },
-                      ].map((item) => (
-                        <div key={item.value} className="flex items-center">
-                          <RadioGroupItem
-                            value={item.value}
-                            id={`formula-${item.value}`}
-                            className="peer sr-only"
-                          />
-                          <Label
-                            htmlFor={`formula-${item.value}`}
-                            className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 border-2 
-                              ${formulaType === item.value 
-                                ? 'bg-primary text-primary-foreground border-primary shadow-glow' 
-                                : 'bg-muted/50 border-transparent hover:bg-muted hover:border-border'
-                              }`}
-                          >
-                            <span className="text-lg">{item.icon}</span>
-                            <span className="font-medium text-sm">{item.label}</span>
-                          </Label>
-                        </div>
-                      ))}
+                        { value: 'oddiy', label: 'Oddiy', icon: BookOpen },
+                        { value: 'formula5', label: 'Formula 5', icon: Calendar },
+                        { value: 'formula10plus', label: 'Formula 10+', icon: Plus },
+                        { value: 'formula10minus', label: 'Formula 10-', icon: Minus },
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <div key={item.value} className="flex items-center">
+                            <RadioGroupItem
+                              value={item.value}
+                              id={`formula-${item.value}`}
+                              className="peer sr-only"
+                            />
+                            <Label
+                              htmlFor={`formula-${item.value}`}
+                              className={`flex items-center gap-2.5 w-full px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 border-2 
+                                ${formulaType === item.value 
+                                  ? 'bg-green-600 text-white border-green-600 shadow-md' 
+                                  : 'bg-gray-100 dark:bg-gray-800 border-transparent hover:bg-gray-200 dark:hover:bg-gray-700'
+                                }`}
+                            >
+                              <Icon className={`h-5 w-5 ${formulaType === item.value ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
+                              <span className="font-medium text-sm">{item.label}</span>
+                            </Label>
+                          </div>
+                        );
+                      })}
                     </RadioGroup>
                   </CardContent>
                 </Card>
@@ -1464,9 +1412,9 @@ export const NumberTrainer = () => {
           </TabsContent>
 
           <TabsContent value="stats" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`stats-${activeTab}`}>
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-4xl mx-auto space-y-6 pt-8 md:pt-12">
               {/* Statistika kartalar */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden h-[160px] flex flex-col relative">
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary-glow" />
                   <CardContent className="p-5 text-center flex flex-col items-center justify-center flex-1">
@@ -1565,6 +1513,8 @@ export const NumberTrainer = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <Footer />
     </div>
   );
 };

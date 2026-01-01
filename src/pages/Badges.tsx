@@ -123,8 +123,8 @@ const Badges = () => {
     <PageBackground className="flex flex-col">
       <Navbar soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       
-      <main className="flex-1 container px-4 py-6 md:py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <main className="flex-1 container px-3 sm:px-4 py-4 sm:py-6 md:py-8">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {/* Back button */}
           <Button
             variant="ghost"
@@ -154,28 +154,28 @@ const Badges = () => {
                 <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-yellow-400/80 blur-sm animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '2s' }} />
                 <div className="absolute -bottom-2 -left-2 w-4 h-4 rounded-full bg-orange-400/80 blur-sm animate-bounce" style={{ animationDelay: '1s', animationDuration: '2s' }} />
               </div>
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mt-6 bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold mt-4 sm:mt-6 bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 bg-clip-text text-transparent px-2">
                 Mukofotlar va Yutuqlar
               </h1>
-              <p className="text-muted-foreground text-base md:text-lg mt-2">Barcha mavjud mukofotlar va yutuqlar kolleksiyasi</p>
+              <p className="text-muted-foreground text-sm sm:text-base md:text-lg mt-2 px-2">Barcha mavjud mukofotlar va yutuqlar kolleksiyasi</p>
             </div>
           </div>
 
           {/* Progress Card */}
           <Card className="overflow-hidden opacity-0 animate-slide-up border-2 border-primary/20 shadow-xl bg-gradient-to-br from-card via-card to-primary/5" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-amber-500/5" />
-            <CardContent className="p-6 md:p-8 relative z-10">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/50">
-                    <Trophy className="h-6 w-6 text-white" />
+            <CardContent className="p-4 sm:p-6 md:p-8 relative z-10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/50">
+                    <Trophy className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
                   <div>
-                    <span className="font-bold text-lg">Sizning yutuqlaringiz</span>
-                    <p className="text-sm text-muted-foreground">Kolleksiyangizdagi badge'lar</p>
+                    <span className="font-bold text-base sm:text-lg">Sizning yutuqlaringiz</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Kolleksiyangizdagi badge'lar</p>
                   </div>
                 </div>
-                <Badge variant="secondary" className="text-xl px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-2 border-amber-500/30">
+                <Badge variant="secondary" className="text-base sm:text-xl px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-2 border-amber-500/30">
                   <span className="font-bold text-amber-600 dark:text-amber-400">{earnedCount}</span>
                   <span className="text-muted-foreground mx-1">/</span>
                   <span className="font-semibold">{totalCount}</span>
