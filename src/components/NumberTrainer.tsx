@@ -950,8 +950,8 @@ export const NumberTrainer = () => {
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           {/* Desktop TabsList - tepa qismda */}
-          <div className="hidden md:flex w-full max-w-3xl mx-auto mb-8 bg-gradient-to-br from-card/90 via-card/80 to-card/90 backdrop-blur-md border border-border/50 p-1.5 rounded-2xl shadow-lg shadow-black/5">
-            <TabsList className="grid w-full grid-cols-6 bg-transparent p-0 flex-1">
+          <div className="hidden md:flex w-full max-w-5xl mx-auto mb-8 bg-gradient-to-br from-card/90 via-card/80 to-card/90 backdrop-blur-md border border-border/50 p-1.5 rounded-2xl shadow-lg shadow-black/5">
+            <TabsList className="grid w-full grid-cols-5 bg-transparent p-0 flex-1">
             <TabsTrigger value="train" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
               <Play className="h-4 w-4 flex-shrink-0" />
               <span className="font-medium truncate">Mashq</span>
@@ -960,21 +960,6 @@ export const NumberTrainer = () => {
               <BookOpen className="h-4 w-4 flex-shrink-0" />
               <span className="font-medium truncate">O'quv</span>
             </TabsTrigger>
-            <Button
-              onClick={() => navigate('/daily-challenge')}
-              variant="ghost"
-              className="gap-2 relative rounded-xl transition-all duration-300 group overflow-hidden whitespace-nowrap min-w-0
-                hover:bg-gradient-to-r hover:from-accent hover:via-orange-500 hover:to-accent
-                hover:text-accent-foreground hover:shadow-xl hover:shadow-accent/50 hover:ring-2 hover:ring-accent/30
-                hover:scale-105 hover:font-semibold"
-            >
-              {/* Shimmer effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              {/* Glow effect on hover */}
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-accent/30 via-orange-500/30 to-accent/30 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
-              <Flame className="h-4 w-4 relative z-10 group-hover:animate-pulse group-hover:drop-shadow-lg flex-shrink-0" />
-              <span className="font-medium relative z-10 group-hover:drop-shadow-sm truncate">Kunlik</span>
-            </Button>
             <TabsTrigger value="multiplayer" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300 whitespace-nowrap min-w-0">
               <Users className="h-4 w-4 flex-shrink-0" />
               <span className="font-medium truncate">Multiplayer</span>
@@ -992,7 +977,7 @@ export const NumberTrainer = () => {
 
           {/* Mobile TabsList - pastki navigatsiya with animations */}
           <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/50 shadow-lg safe-area-bottom">
-            <div className="grid w-full grid-cols-6 p-2 bg-transparent h-auto relative">
+            <div className="grid w-full grid-cols-5 p-2 bg-transparent h-auto relative">
               {/* Animated background indicator */}
               <div 
                 className="absolute h-[calc(100%-16px)] top-2 rounded-2xl bg-gradient-to-r transition-all duration-300 ease-out"
@@ -1007,7 +992,7 @@ export const NumberTrainer = () => {
                 }}
               />
               
-              <TabsList className="grid w-full grid-cols-6 p-0 bg-transparent h-auto relative">
+              <TabsList className="grid w-full grid-cols-5 p-0 bg-transparent h-auto relative">
               <TabsTrigger 
                 value="train" 
                 onClick={(e) => { createRipple(e); triggerHaptic(); }}

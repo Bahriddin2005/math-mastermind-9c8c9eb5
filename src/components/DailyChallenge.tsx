@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, Clock, Trophy, Check, Play, Medal, Award, Flame, Timer } from 'lucide-react';
+import { Calendar, Clock, Trophy, Check, Play, Medal, Award, Flame, Timer, Volume2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -375,108 +375,59 @@ export const DailyChallenge = () => {
     const progress = (countRef.current / (challenge?.problem_count || 1)) * 100;
     
     return (
-      <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden">
-        {/* Animated background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] sm:w-[800px] sm:h-[800px] md:w-[1000px] md:h-[1000px] rounded-full bg-gradient-radial from-primary/10 via-primary/5 to-transparent animate-pulse" />
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        </div>
+      <div className="fixed inset-0 bg-gradient-to-br from-background to-background z-50 flex flex-col overflow-hidden">
+        {/* Top bar with stats */}
+        <div className="relative z-10 w-full px-4 sm:px-6 pt-4 sm:pt-6">
+          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
+            {/* Stats row */}
+            <div className="flex items-center justify-between gap-3 sm:gap-4">
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <span className="text-sm font-medium text-muted-foreground">Misol</span>
+                <span className="text-base sm:text-lg font-bold text-foreground">{countRef.current}/{challenge?.problem_count || 0}</span>
+              </div>
+              
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                <Trophy className="h-4 w-4 text-amber-500" />
+                <span className="text-base sm:text-lg font-bold text-foreground">0</span>
+              </div>
+              
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-base sm:text-lg font-bold text-muted-foreground">{elapsedTime.toFixed(0)}s</span>
+              </div>
+            </div>
 
-        {/* Top bar with timer and progress */}
-        <div className="relative z-10 w-full px-4 sm:px-8 pt-6 sm:pt-10">
-          <div className="max-w-4xl mx-auto">
             {/* Progress bar */}
-            <div className="h-2 sm:h-3 bg-muted/30 rounded-full overflow-hidden mb-4 sm:mb-6 backdrop-blur-sm">
+            <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-primary via-accent to-primary rounded-full transition-all duration-300 ease-out"
+                className="h-full bg-gradient-to-r from-primary to-success rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            
-            {/* Info row */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 sm:gap-3 text-muted-foreground">
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-card/50 backdrop-blur-md rounded-xl border border-border/30">
-                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
-                  <span className="text-sm sm:text-base font-medium">Kunlik</span>
-                </div>
-                <div className="px-3 sm:px-4 py-2 bg-card/50 backdrop-blur-md rounded-xl border border-border/30">
-                  <span className="text-sm sm:text-base font-bold text-foreground">{countRef.current}/{challenge?.problem_count}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-card/80 backdrop-blur-md rounded-xl border border-accent/30 shadow-lg shadow-accent/10">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-accent animate-pulse" />
-                <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-accent tabular-nums">
-                  {elapsedTime.toFixed(1)}s
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Main number display - centered */}
-        <div className="flex-1 flex items-center justify-center px-4 relative z-10">
-          <div className="relative">
-            {/* Glow effect behind number */}
-            <div 
-              className={cn(
-                "absolute inset-0 blur-3xl opacity-40 transition-colors duration-200",
-                isAddition || countRef.current === 1 ? "bg-primary" : "bg-destructive"
-              )}
-              style={{ transform: 'scale(1.5)' }}
-            />
-            
-            {/* Number with operation sign */}
-            <div className="relative flex items-center justify-center gap-2 sm:gap-4">
-              {/* Operation sign for non-first numbers */}
-              {countRef.current > 1 && (
-                <span 
-                  className={cn(
-                    "text-[80px] sm:text-[120px] md:text-[160px] lg:text-[200px] font-extralight transition-all duration-200",
-                    isAddition ? "text-primary" : "text-destructive"
-                  )}
-                >
-                  {isAddition ? '+' : '−'}
-                </span>
-              )}
-              
-              {/* Main number */}
-              <span 
-                className={cn(
-                  "text-[120px] sm:text-[180px] md:text-[240px] lg:text-[320px] xl:text-[380px] font-extralight tracking-tight transition-all duration-200 tabular-nums",
-                  isAddition || countRef.current === 1 ? "text-primary" : "text-destructive"
-                )}
-                style={{
-                  textShadow: isAddition || countRef.current === 1 
-                    ? '0 0 80px hsl(var(--primary) / 0.3), 0 0 160px hsl(var(--primary) / 0.2)' 
-                    : '0 0 80px hsl(var(--destructive) / 0.3), 0 0 160px hsl(var(--destructive) / 0.2)',
-                }}
-              >
-                {currentDisplay}
-              </span>
-            </div>
           </div>
         </div>
 
-        {/* Bottom decorative element */}
-        <div className="relative z-10 w-full px-4 sm:px-8 pb-6 sm:pb-10">
-          <div className="max-w-4xl mx-auto flex justify-center">
-            <div className="flex gap-1.5 sm:gap-2">
-              {Array.from({ length: challenge?.problem_count || 0 }).map((_, i) => (
-                <div 
-                  key={i}
-                  className={cn(
-                    "w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300",
-                    i < countRef.current 
-                      ? "bg-primary shadow-lg shadow-primary/50" 
-                      : "bg-muted/30"
-                  )}
-                />
-              ))}
-            </div>
+        {/* Number display - centered */}
+        <div className="relative z-10 flex-1 flex items-center justify-center px-4">
+          <div 
+            className="text-[100px] sm:text-[150px] md:text-[200px] lg:text-[250px] font-bold text-foreground transition-all duration-100 leading-none text-center"
+          >
+            <span className={!isAddition && countRef.current > 1 ? 'text-destructive' : 'text-primary'}>
+              {!isAddition && countRef.current > 1 ? '-' : ''}{currentDisplay}
+            </span>
           </div>
+        </div>
+
+        {/* Audio player button at bottom */}
+        <div className="relative z-10 w-full px-4 pb-4 sm:pb-6 flex justify-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border-2 border-primary/30 hover:border-primary/50 bg-background hover:bg-primary/5"
+          >
+            <Volume2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+          </Button>
         </div>
       </div>
     );
@@ -484,68 +435,60 @@ export const DailyChallenge = () => {
 
   // Javob kiritish - Fullscreen answer input
   if (view === 'answer') {
+    const progress = ((countRef.current - 1) / (challenge?.problem_count || 1)) * 100;
+    
     return (
-      <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-y-auto">
-        {/* Background decoration */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-radial from-accent/10 to-transparent animate-pulse" />
+      <div className="fixed inset-0 bg-gradient-to-br from-background to-background z-50 flex flex-col overflow-y-auto">
+        {/* Top bar with stats */}
+        <div className="relative z-10 w-full px-4 sm:px-6 pt-4 sm:pt-6">
+          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
+            {/* Stats row */}
+            <div className="flex items-center justify-between gap-3 sm:gap-4">
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <span className="text-sm font-medium text-muted-foreground">Misol</span>
+                <span className="text-base sm:text-lg font-bold text-foreground">{countRef.current - 1}/{challenge?.problem_count || 0}</span>
+              </div>
+              
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                <Trophy className="h-4 w-4 text-amber-500" />
+                <span className="text-base sm:text-lg font-bold text-foreground">0</span>
+              </div>
+              
+              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-base sm:text-lg font-bold text-muted-foreground">{elapsedTime.toFixed(0)}s</span>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-primary to-success rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
           <div className="w-full max-w-2xl space-y-6 sm:space-y-8">
-            {/* Header */}
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-accent/10 border border-accent/30 rounded-full">
-                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
-                <span className="text-sm sm:text-base font-medium text-accent">Kunlik musobaqa</span>
-              </div>
-              
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-foreground">
-                Javobingizni kiriting
-              </h2>
-              
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/80 backdrop-blur-sm rounded-xl border border-border/50">
-                <Clock className="h-5 w-5 text-accent" />
-                <span className="font-mono text-lg sm:text-xl font-bold text-accent tabular-nums">{elapsedTime.toFixed(1)}s</span>
-              </div>
-            </div>
-
-            {/* Displayed numbers summary */}
-            <div className="bg-card/50 backdrop-blur-sm border border-border/30 rounded-2xl p-4 sm:p-6">
-              <p className="text-sm sm:text-base text-muted-foreground text-center mb-4">Ko'rsatilgan sonlar</p>
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 font-mono">
-                {displayedNumbers.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-1 sm:gap-2">
-                    {idx > 0 && (
-                      <span className={cn(
-                        "text-xl sm:text-2xl md:text-3xl font-light",
-                        item.isAdd ? "text-primary" : "text-destructive"
-                      )}>
-                        {item.isAdd ? '+' : '−'}
-                      </span>
-                    )}
-                    <span className={cn(
-                      "text-xl sm:text-2xl md:text-3xl font-medium px-2 py-1 rounded-lg",
-                      item.isAdd 
-                        ? "bg-primary/10 text-primary" 
-                        : "bg-destructive/10 text-destructive"
-                    )}>
-                      {item.num}
-                    </span>
-                  </div>
-                ))}
-              </div>
+            {/* Answer prompt */}
+            <div className="text-center">
+              <p className="text-lg sm:text-xl md:text-2xl font-medium text-primary mb-6 sm:mb-8">
+                Javobingizni kiriting:
+              </p>
             </div>
             
             {/* Answer input */}
-            <div className="space-y-4">
+            <div className="space-y-4 sm:space-y-6">
               <Input
                 type="number"
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && userAnswer && submitAnswer()}
-                placeholder="Javobni kiriting..."
-                className="text-center text-3xl sm:text-4xl md:text-5xl h-20 sm:h-24 md:h-28 font-mono border-2 border-primary/30 focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-2xl bg-card text-foreground font-bold"
+                placeholder="?"
+                className="text-center text-4xl sm:text-5xl md:text-6xl h-20 sm:h-24 md:h-28 font-mono border-2 border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl bg-[#FAF9F6] text-foreground font-bold"
                 autoFocus
               />
               
@@ -553,10 +496,10 @@ export const DailyChallenge = () => {
                 onClick={submitAnswer} 
                 disabled={!userAnswer || !user} 
                 size="lg" 
-                className="w-full h-14 sm:h-16 md:h-18 text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-accent via-orange-500 to-accent hover:from-accent/90 hover:via-orange-500/90 hover:to-accent/90 text-white shadow-xl shadow-accent/30 hover:shadow-2xl hover:shadow-accent/50 transition-all duration-300 hover:scale-[1.01]"
+                className="w-full h-14 sm:h-16 md:h-18 text-lg sm:text-xl md:text-2xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                <Check className="h-6 w-6 sm:h-7 sm:w-7 mr-2" />
-                Yuborish
+                <Check className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
+                Tekshirish
               </Button>
             </div>
             
@@ -566,6 +509,17 @@ export const DailyChallenge = () => {
               </p>
             )}
           </div>
+        </div>
+
+        {/* Audio player button at bottom */}
+        <div className="relative z-10 w-full px-4 pb-4 sm:pb-6 flex justify-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border-2 border-primary/30 hover:border-primary/50 bg-background hover:bg-primary/5"
+          >
+            <Volume2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+          </Button>
         </div>
       </div>
     );
