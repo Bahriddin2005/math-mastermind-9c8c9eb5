@@ -14,6 +14,8 @@ interface PaymentFormProps {
   planName: string;
   planDescription?: string;
   instructorName?: string;
+  planId?: string;
+  isYearly?: boolean;
   amount: number;
   discount?: number;
   onPaymentSuccess?: () => void;

@@ -47,8 +47,9 @@ export const PricingManager = () => {
   const fetchPlans = async () => {
     setLoading(true);
     try {
+      // @ts-ignore - pricing_plans table may not exist in database yet
       const { data, error } = await supabase
-        .from('pricing_plans')
+        .from('pricing_plans' as any)
         .select('*')
         .order('sort_order', { ascending: true });
 
@@ -129,16 +130,16 @@ export const PricingManager = () => {
       }
 
       // Convert features from JSONB to array
-      const plansWithFeatures = data?.map(plan => ({
+      const plansWithFeatures = (data as any[] || []).map((plan: any) => ({
         ...plan,
         features: Array.isArray(plan.features) ? plan.features : (typeof plan.features === 'string' ? JSON.parse(plan.features) : []),
-      })) || [];
+      }));
 
       if (plansWithFeatures.length === 0) {
         toast.info("Rejalar topilmadi. Iltimos, database migration'ni ishga tushiring.");
       }
 
-      setPlans(plansWithFeatures);
+      setPlans(plansWithFeatures as PricingPlan[]);
     } catch (error) {
       console.error('Error fetching plans:', error);
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -155,8 +156,9 @@ export const PricingManager = () => {
     setSaving(plan.id);
     try {
       // Check if table exists first
+      // @ts-ignore - pricing_plans table may not exist in database yet
       const { error: checkError } = await supabase
-        .from('pricing_plans')
+        .from('pricing_plans' as any)
         .select('id')
         .eq('id', plan.id)
         .limit(1);
@@ -172,8 +174,9 @@ export const PricingManager = () => {
         throw checkError;
       }
 
+      // @ts-ignore - pricing_plans table may not exist in database yet
       const { error } = await supabase
-        .from('pricing_plans')
+        .from('pricing_plans' as any)
         .update({
           name: plan.name,
           description: plan.description,
