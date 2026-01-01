@@ -782,6 +782,8 @@ export const MultiplayerMode = ({ onBack }: MultiplayerModeProps) => {
       if (!a.is_correct && b.is_correct) return 1;
       return (a.answer_time || 999) - (b.answer_time || 999);
     });
+    
+    const otherParticipants = sortedParticipants.slice(3);
 
     const getPodiumHeight = (position: number) => {
       if (position === 0) return 'h-32'; // 1-o'rin - eng baland
