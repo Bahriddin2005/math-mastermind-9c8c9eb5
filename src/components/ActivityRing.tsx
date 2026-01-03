@@ -13,27 +13,27 @@ interface ActivityRingProps {
 const colorMap = {
   primary: {
     stroke: 'stroke-primary',
-    bg: 'stroke-primary/20',
+    bg: 'stroke-primary/20 dark:stroke-primary/30',
     text: 'text-primary',
-    glow: 'drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]',
+    glow: 'drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)] dark:drop-shadow-[0_0_12px_hsl(var(--primary)/0.6)]',
   },
   accent: {
     stroke: 'stroke-accent',
-    bg: 'stroke-accent/20',
+    bg: 'stroke-accent/20 dark:stroke-accent/30',
     text: 'text-accent',
-    glow: 'drop-shadow-[0_0_8px_hsl(var(--accent)/0.5)]',
+    glow: 'drop-shadow-[0_0_8px_hsl(var(--accent)/0.5)] dark:drop-shadow-[0_0_12px_hsl(var(--accent)/0.6)]',
   },
   success: {
     stroke: 'stroke-success',
-    bg: 'stroke-success/20',
+    bg: 'stroke-success/20 dark:stroke-success/30',
     text: 'text-success',
-    glow: 'drop-shadow-[0_0_8px_hsl(var(--success)/0.5)]',
+    glow: 'drop-shadow-[0_0_8px_hsl(var(--success)/0.5)] dark:drop-shadow-[0_0_12px_hsl(var(--success)/0.6)]',
   },
   warning: {
     stroke: 'stroke-warning',
-    bg: 'stroke-warning/20',
+    bg: 'stroke-warning/20 dark:stroke-warning/30',
     text: 'text-warning',
-    glow: 'drop-shadow-[0_0_8px_hsl(var(--warning)/0.5)]',
+    glow: 'drop-shadow-[0_0_8px_hsl(var(--warning)/0.5)] dark:drop-shadow-[0_0_12px_hsl(var(--warning)/0.6)]',
   },
 };
 
@@ -93,16 +93,16 @@ export const ActivityRing = ({
         />
       </svg>
       
-      {/* Center content */}
+      {/* Center content - Enhanced dark mode */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {icon && <div className={`mb-1 ${colors.text}`}>{icon}</div>}
+        {icon && <div className={`mb-1 ${colors.text} opacity-80`}>{icon}</div>}
         {value !== undefined && (
           <span className={`text-2xl font-display font-bold ${colors.text}`}>
             {value}
           </span>
         )}
         {label && (
-          <span className="text-xs text-muted-foreground font-medium">
+          <span className="text-xs text-muted-foreground dark:text-muted-foreground/80 font-medium text-center px-1">
             {label}
           </span>
         )}

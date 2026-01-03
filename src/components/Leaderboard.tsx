@@ -136,25 +136,25 @@ export const Leaderboard = ({ currentUserId }: LeaderboardProps) => {
     switch (rank) {
       case 1:
         return (
-          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 dark:from-yellow-500 dark:to-amber-600 flex items-center justify-center shadow-lg dark:shadow-yellow-500/30">
             <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
         );
       case 2:
         return (
-          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-md">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-400 dark:to-gray-500 flex items-center justify-center shadow-md dark:shadow-gray-500/30">
             <Medal className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
         );
       case 3:
         return (
-          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center shadow-md">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 dark:from-amber-600 dark:to-amber-800 flex items-center justify-center shadow-md dark:shadow-amber-600/30">
             <Award className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
         );
       default:
         return (
-          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-secondary flex items-center justify-center">
+          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-secondary dark:bg-secondary/60 flex items-center justify-center border border-border/30 dark:border-border/20">
             <span className="text-sm sm:text-lg font-display font-bold text-muted-foreground">{rank}</span>
           </div>
         );
@@ -162,30 +162,30 @@ export const Leaderboard = ({ currentUserId }: LeaderboardProps) => {
   };
 
   const getRankStyles = (rank: number, isCurrentUser: boolean) => {
-    const baseStyles = 'border transition-all duration-300 cursor-pointer hover:shadow-lg';
+    const baseStyles = 'border transition-all duration-300 cursor-pointer hover:shadow-lg dark:hover:shadow-xl dark:hover:shadow-black/20';
     
     if (isCurrentUser) {
-      return cn(baseStyles, 'ring-2 ring-primary ring-offset-2 ring-offset-background bg-primary/5 border-primary/30');
+      return cn(baseStyles, 'ring-2 ring-primary ring-offset-2 ring-offset-background bg-primary/5 dark:bg-primary/10 border-primary/30 dark:border-primary/40');
     }
     
     switch (rank) {
       case 1:
-        return cn(baseStyles, 'bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent border-yellow-500/30 hover:border-yellow-500/50');
+        return cn(baseStyles, 'bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent dark:from-yellow-500/15 dark:via-amber-500/10 dark:to-transparent border-yellow-500/30 dark:border-yellow-500/40 hover:border-yellow-500/50');
       case 2:
-        return cn(baseStyles, 'bg-gradient-to-r from-gray-400/10 via-gray-400/5 to-transparent border-gray-400/30 hover:border-gray-400/50');
+        return cn(baseStyles, 'bg-gradient-to-r from-gray-400/10 via-gray-400/5 to-transparent dark:from-gray-400/15 dark:via-gray-400/10 dark:to-transparent border-gray-400/30 dark:border-gray-400/40 hover:border-gray-400/50');
       case 3:
-        return cn(baseStyles, 'bg-gradient-to-r from-amber-600/10 via-amber-600/5 to-transparent border-amber-600/30 hover:border-amber-600/50');
+        return cn(baseStyles, 'bg-gradient-to-r from-amber-600/10 via-amber-600/5 to-transparent dark:from-amber-600/15 dark:via-amber-600/10 dark:to-transparent border-amber-600/30 dark:border-amber-600/40 hover:border-amber-600/50');
       default:
-        return cn(baseStyles, 'bg-card hover:bg-secondary/50 border-border/40');
+        return cn(baseStyles, 'bg-card dark:bg-card/80 hover:bg-secondary/50 dark:hover:bg-secondary/30 border-border/40 dark:border-border/30');
     }
   };
 
   if (loading) {
     return (
-      <Card className="border-border/40 shadow-md">
+      <Card className="border-border/40 dark:border-border/20 shadow-md dark:shadow-lg dark:shadow-black/20">
         <CardContent className="py-12 sm:py-16 text-center">
           <div className="animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground text-sm sm:text-base">Reyting yuklanmoqda...</p>
+          <p className="text-muted-foreground dark:text-muted-foreground/80 text-sm sm:text-base">Reyting yuklanmoqda...</p>
         </CardContent>
       </Card>
     );
@@ -193,16 +193,16 @@ export const Leaderboard = ({ currentUserId }: LeaderboardProps) => {
 
   return (
     <>
-      <Card className="border-border/40 shadow-md overflow-hidden">
-        <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6 bg-gradient-to-r from-warning/5 via-accent/5 to-transparent">
+      <Card className="border-border/40 dark:border-border/20 shadow-md dark:shadow-lg dark:shadow-black/20 overflow-hidden bg-card dark:bg-card/95">
+        <CardHeader className="pb-3 sm:pb-4 px-3 sm:px-6 bg-gradient-to-r from-warning/5 via-accent/5 to-transparent dark:from-warning/10 dark:via-accent/10 dark:to-transparent">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 sm:gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl gradient-primary flex items-center justify-center">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-primary to-primary/80 dark:from-primary dark:to-primary/70 flex items-center justify-center shadow-sm dark:shadow-primary/30">
                 <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
               </div>
               <div>
                 <span className="text-base sm:text-lg">Eng yaxshi o'yinchilar</span>
-                <p className="text-[10px] sm:text-xs text-muted-foreground font-normal mt-0.5">
+                <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/70 font-normal mt-0.5">
                   {entries.length} ta o'yinchi
                 </p>
               </div>
@@ -210,18 +210,18 @@ export const Leaderboard = ({ currentUserId }: LeaderboardProps) => {
           </div>
           
           <Tabs value={timeFilter} onValueChange={(v) => setTimeFilter(v as TimeFilter)} className="mt-3 sm:mt-4">
-            <TabsList className="grid w-full grid-cols-3 bg-secondary/60 p-0.5 sm:p-1 h-9 sm:h-10">
-              <TabsTrigger value="all" className="flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs data-[state=active]:bg-card px-1 sm:px-2">
+            <TabsList className="grid w-full grid-cols-3 bg-secondary/60 dark:bg-secondary/40 p-0.5 sm:p-1 h-9 sm:h-10 border border-border/20 dark:border-border/30">
+              <TabsTrigger value="all" className="flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs data-[state=active]:bg-card dark:data-[state=active]:bg-card/90 data-[state=active]:shadow-sm px-1 sm:px-2">
                 <Trophy className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="hidden xs:inline">Hammasi</span>
                 <span className="xs:hidden">All</span>
               </TabsTrigger>
-              <TabsTrigger value="weekly" className="flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs data-[state=active]:bg-card px-1 sm:px-2">
+              <TabsTrigger value="weekly" className="flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs data-[state=active]:bg-card dark:data-[state=active]:bg-card/90 data-[state=active]:shadow-sm px-1 sm:px-2">
                 <CalendarDays className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="hidden xs:inline">Haftalik</span>
                 <span className="xs:hidden">Hafta</span>
               </TabsTrigger>
-              <TabsTrigger value="monthly" className="flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs data-[state=active]:bg-card px-1 sm:px-2">
+              <TabsTrigger value="monthly" className="flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs data-[state=active]:bg-card dark:data-[state=active]:bg-card/90 data-[state=active]:shadow-sm px-1 sm:px-2">
                 <CalendarRange className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 <span className="hidden xs:inline">Oylik</span>
                 <span className="xs:hidden">Oy</span>
@@ -233,14 +233,14 @@ export const Leaderboard = ({ currentUserId }: LeaderboardProps) => {
         <CardContent className="pt-3 sm:pt-4 px-2 sm:px-6">
           {entries.length === 0 ? (
             <div className="text-center py-12 sm:py-16">
-              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-3xl bg-secondary flex items-center justify-center mx-auto mb-3 sm:mb-4">
+              <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-3xl bg-secondary dark:bg-secondary/40 flex items-center justify-center mx-auto mb-3 sm:mb-4 border border-border/20 dark:border-border/30">
                 <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
               </div>
               <h3 className="font-display font-bold text-base sm:text-lg mb-2">Hali o'yinchilar yo'q</h3>
-              <p className="text-muted-foreground text-xs sm:text-sm">Birinchi bo'lib reytingga kiring!</p>
+              <p className="text-muted-foreground dark:text-muted-foreground/70 text-xs sm:text-sm">Birinchi bo'lib reytingga kiring!</p>
             </div>
           ) : (
-            <div className="space-y-2 sm:space-y-3 max-h-[400px] sm:max-h-[500px] overflow-y-auto pr-1 sm:pr-2">
+            <div className="space-y-2 sm:space-y-3 max-h-[400px] sm:max-h-[500px] overflow-y-auto pr-1 sm:pr-2 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
               {entries.map((entry, index) => {
                 const rank = index + 1;
                 const isCurrentUser = entry.user_id === currentUserId;
@@ -257,10 +257,10 @@ export const Leaderboard = ({ currentUserId }: LeaderboardProps) => {
                     {/* Rank */}
                     {getRankIcon(rank)}
                     
-                    {/* Avatar */}
-                    <Avatar className="h-9 w-9 sm:h-12 sm:w-12 border-2 border-border shadow-sm flex-shrink-0">
+                    {/* Avatar - Enhanced dark mode */}
+                    <Avatar className="h-9 w-9 sm:h-12 sm:w-12 border-2 border-border dark:border-border/50 shadow-sm dark:shadow-md flex-shrink-0">
                       <AvatarImage src={entry.avatar_url || undefined} alt={entry.username} />
-                      <AvatarFallback className="bg-primary/10 font-semibold text-xs sm:text-base">
+                      <AvatarFallback className="bg-primary/10 dark:bg-primary/20 font-semibold text-xs sm:text-base">
                         {entry.username.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -275,26 +275,26 @@ export const Leaderboard = ({ currentUserId }: LeaderboardProps) => {
                           {entry.username}
                         </p>
                         {isCurrentUser && (
-                          <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0">siz</Badge>
+                          <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0 dark:bg-secondary/60">siz</Badge>
                         )}
                         {rank <= 3 && (
                           <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-warning hidden sm:block" />
                         )}
                       </div>
                       <div className="flex items-center gap-2 sm:gap-3 mt-0.5 sm:mt-1">
-                        <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/70 flex items-center gap-1">
                           <Flame className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-accent" />
                           {entry.best_streak}
                         </span>
                       </div>
                     </div>
                     
-                    {/* Score */}
+                    {/* Score - Enhanced */}
                     <div className="text-right flex-shrink-0">
                       <p className="text-lg sm:text-2xl font-display font-bold text-primary">
                         {entry.total_score.toLocaleString()}
                       </p>
-                      <p className="text-[10px] sm:text-xs text-muted-foreground">ball</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/70">ball</p>
                     </div>
                   </div>
                 );

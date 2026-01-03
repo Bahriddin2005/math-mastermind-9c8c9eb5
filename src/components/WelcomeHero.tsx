@@ -18,14 +18,15 @@ export const WelcomeHero = ({ username }: WelcomeHeroProps) => {
 
   return (
     <div 
-      className="relative overflow-hidden rounded-2xl sm:rounded-3xl gradient-primary p-5 sm:p-8 md:p-10 text-primary-foreground opacity-0 animate-slide-up" 
+      className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary via-primary/95 to-primary/90 dark:from-primary/90 dark:via-primary/80 dark:to-primary/70 p-5 sm:p-8 md:p-10 text-primary-foreground opacity-0 animate-slide-up shadow-xl dark:shadow-primary/20" 
       style={{ animationFillMode: 'forwards' }}
     >
-      {/* Animated background decorations - Smaller on mobile */}
-      <div className="absolute top-0 right-0 w-24 sm:w-40 h-24 sm:h-40 bg-primary-foreground/10 rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse" />
-      <div className="absolute top-1/2 right-1/4 w-12 sm:w-20 h-12 sm:h-20 bg-primary-foreground/5 rounded-full animate-bounce-soft" />
-      <div className="absolute bottom-0 left-0 w-20 sm:w-32 h-20 sm:h-32 bg-primary-foreground/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-      <div className="absolute -bottom-10 right-10 sm:right-20 w-16 sm:w-24 h-16 sm:h-24 bg-accent/20 rounded-full blur-2xl" />
+      {/* Animated background decorations - Enhanced for dark mode */}
+      <div className="absolute top-0 right-0 w-24 sm:w-40 h-24 sm:h-40 bg-primary-foreground/10 dark:bg-primary-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2 animate-pulse" />
+      <div className="absolute top-1/2 right-1/4 w-12 sm:w-20 h-12 sm:h-20 bg-primary-foreground/5 dark:bg-primary-foreground/[0.03] rounded-full animate-bounce-soft" />
+      <div className="absolute bottom-0 left-0 w-20 sm:w-32 h-20 sm:h-32 bg-primary-foreground/5 dark:bg-primary-foreground/[0.03] rounded-full translate-y-1/2 -translate-x-1/2" />
+      <div className="absolute -bottom-10 right-10 sm:right-20 w-16 sm:w-24 h-16 sm:h-24 bg-accent/20 dark:bg-accent/30 rounded-full blur-2xl" />
+      <div className="absolute top-1/3 left-1/4 w-32 sm:w-48 h-32 sm:h-48 bg-primary-foreground/[0.02] dark:bg-white/[0.02] rounded-full blur-3xl" />
       
       {/* Floating particles - Hidden on very small screens */}
       <div className="absolute top-6 right-10 sm:right-20 opacity-60 hidden xs:block">
@@ -65,12 +66,12 @@ export const WelcomeHero = ({ username }: WelcomeHeroProps) => {
             </h1>
           </div>
 
-          {/* IQROMAX Logo - Smaller on mobile */}
+          {/* IQROMAX Logo - Enhanced with glow for dark mode */}
           <div className="flex items-center justify-center">
             <div className="relative group">
-              <div className="absolute inset-0 bg-white/30 rounded-2xl sm:rounded-3xl blur-xl sm:blur-2xl scale-110 sm:scale-125 group-hover:scale-150 transition-transform duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-amber-400/20 rounded-2xl sm:rounded-3xl blur-lg sm:blur-xl scale-105 sm:scale-110" />
-              <div className="relative bg-white dark:bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 md:p-6 shadow-xl sm:shadow-2xl backdrop-blur-sm border border-white/50 group-hover:scale-105 transition-transform duration-300">
+              <div className="absolute inset-0 bg-white/30 dark:bg-white/20 rounded-2xl sm:rounded-3xl blur-xl sm:blur-2xl scale-110 sm:scale-125 group-hover:scale-150 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-amber-400/20 dark:from-emerald-400/30 dark:to-amber-400/30 rounded-2xl sm:rounded-3xl blur-lg sm:blur-xl scale-105 sm:scale-110" />
+              <div className="relative bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 md:p-6 shadow-xl sm:shadow-2xl dark:shadow-black/30 backdrop-blur-sm border border-white/50 dark:border-white/20 group-hover:scale-105 transition-transform duration-300">
                 <img 
                   src={iqromaxLogo} 
                   alt="IQROMAX" 
@@ -80,19 +81,19 @@ export const WelcomeHero = ({ username }: WelcomeHeroProps) => {
             </div>
           </div>
 
-          {/* Time greeting badge - Compact on mobile */}
-          <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl bg-primary-foreground/20 backdrop-blur-md border border-primary-foreground/10 shadow-lg">
-            <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-primary-foreground/20">
+          {/* Time greeting badge - Enhanced with better dark mode contrast */}
+          <div className="inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl bg-primary-foreground/15 dark:bg-primary-foreground/10 backdrop-blur-md border border-primary-foreground/20 dark:border-primary-foreground/10 shadow-lg dark:shadow-black/20">
+            <div className="flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-primary-foreground/20 dark:bg-primary-foreground/15">
               <TimeIcon className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
             <span className="text-sm sm:text-base font-semibold tracking-wide">{timeInfo.greeting}</span>
             <span className="text-lg sm:text-xl animate-bounce-soft">{timeInfo.emoji}</span>
           </div>
           
-          {/* Description - Smaller text on mobile */}
+          {/* Description - Enhanced readability */}
           <div className="relative max-w-lg px-2 sm:px-0">
-            <div className="absolute inset-0 bg-primary-foreground/5 rounded-xl sm:rounded-2xl blur-xl" />
-            <p className="relative text-sm sm:text-lg md:text-xl font-medium opacity-95 leading-relaxed">
+            <div className="absolute inset-0 bg-primary-foreground/5 dark:bg-primary-foreground/[0.03] rounded-xl sm:rounded-2xl blur-xl" />
+            <p className="relative text-sm sm:text-lg md:text-xl font-medium opacity-95 dark:opacity-90 leading-relaxed">
               Mental arifmetika bo'yicha treninglarni davom ettiring va o'z natijalaringizni kuzating.
             </p>
           </div>
