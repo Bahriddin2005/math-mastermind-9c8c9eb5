@@ -595,6 +595,104 @@ export const AbacusFlashCard = ({ onComplete }: AbacusFlashCardProps) => {
     return 'text-green-500';
   };
 
+  // Fullscreen game mode when playing
+  if (isPlaying) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        {/* Minimal Header */}
+        <div className="flex justify-between items-center px-4 py-3 border-b border-border/50">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-lg">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+            <span className="text-sm font-medium">{currentProblem}/{problemCount}</span>
+          </div>
+          
+          {streak > 0 && (
+            <div className="bg-amber-500/10 text-amber-500 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+              <Star className="h-4 w-4" />
+              <span className="font-bold text-sm">{streak}x</span>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-lg">
+              <Trophy className="h-4 w-4 text-amber-500" />
+              <span className="text-sm font-bold text-amber-500">{score.totalPoints}</span>
+            </div>
+            
+            {!isDisplaying && (
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg ${timeLeft <= 3 ? 'bg-red-500/20' : 'bg-muted/50'}`}>
+                <Clock className={`h-4 w-4 ${getTimerColor()}`} />
+                <span className={`text-sm font-bold ${getTimerColor()}`}>{timeLeft}s</span>
+              </div>
+            )}
+            
+            <Button variant="ghost" size="icon" onClick={resetGame} className="h-9 w-9">
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <Progress value={(currentProblem / problemCount) * 100} className="h-1 rounded-none" />
+
+        {/* Main Content - Centered Number Display */}
+        <div className="flex-1 flex items-center justify-center">
+          {isDisplaying && currentDisplayIndex >= 0 && currentDisplayIndex < displayNumbers.length && (
+            <div className="text-[140px] sm:text-[200px] md:text-[280px] font-bold font-display leading-none tracking-tight text-emerald-800 dark:text-emerald-400 animate-fade-in select-none">
+              {displayNumbers[currentDisplayIndex] < 0 
+                ? `−${Math.abs(displayNumbers[currentDisplayIndex])}` 
+                : (currentDisplayIndex > 0 ? `+${displayNumbers[currentDisplayIndex]}` : displayNumbers[currentDisplayIndex])}
+            </div>
+          )}
+
+          {/* Answer Input */}
+          {!isDisplaying && feedback === null && (
+            <div className="text-center space-y-8 w-full max-w-lg px-6">
+              <p className="text-xl text-muted-foreground">Javobingizni kiriting</p>
+              <Input
+                ref={inputRef}
+                type="number"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="?"
+                className="text-center text-6xl sm:text-7xl font-bold h-28 sm:h-32 border-2"
+                autoFocus
+              />
+              <Button 
+                onClick={checkAnswer} 
+                size="lg" 
+                className="gap-3 h-16 text-xl px-12 w-full"
+                disabled={!userAnswer}
+              >
+                <Check className="h-7 w-7" />
+                Tekshirish
+              </Button>
+            </div>
+          )}
+
+          {/* Feedback */}
+          {feedback && (
+            <div className="text-center space-y-6 animate-fade-in">
+              <div className={`text-[120px] sm:text-[180px] font-bold font-display leading-none ${
+                feedback === 'correct' ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {correctAnswer}
+              </div>
+              <div className={`text-3xl sm:text-4xl font-bold ${
+                feedback === 'correct' ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {feedback === 'correct' && "To'g'ri! ✓"}
+                {feedback === 'incorrect' && `Noto'g'ri`}
+                {feedback === 'timeout' && `Vaqt tugadi!`}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 pb-4 px-4 sm:px-6">
@@ -605,7 +703,7 @@ export const AbacusFlashCard = ({ onComplete }: AbacusFlashCardProps) => {
       </CardHeader>
       <CardContent className="pt-4 sm:pt-6 px-3 sm:px-6">
         {/* Settings */}
-        {showSettings && !isPlaying && !isFinished && (
+        {showSettings && !isFinished && (
           <div className="space-y-4 mb-6">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Settings2 className="h-4 w-4" />
@@ -783,106 +881,6 @@ export const AbacusFlashCard = ({ onComplete }: AbacusFlashCardProps) => {
           </div>
         )}
 
-        {/* Game area */}
-        {isPlaying && (
-          <div className="space-y-6">
-            {/* Top Stats Bar */}
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <span className="text-sm font-medium">Misol</span>
-                <span className="text-lg font-bold">{currentProblem} / {problemCount}</span>
-              </div>
-              
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <Trophy className="h-4 w-4 text-amber-500" />
-                <span className="text-lg font-bold text-amber-500">{score.totalPoints}</span>
-              </div>
-              
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <Clock className={`h-4 w-4 ${!isDisplaying ? getTimerColor() : 'text-muted-foreground'}`} />
-                <span className={`text-lg font-bold ${!isDisplaying ? getTimerColor() : 'text-muted-foreground'}`}>
-                  {isDisplaying ? '-' : `${timeLeft}s`}
-                </span>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <Progress value={(currentProblem / problemCount) * 100} className="h-2" />
-
-            {/* Current streak */}
-            {streak > 0 && (
-              <div className="flex justify-center">
-                <div className="bg-amber-500/10 text-amber-500 px-4 py-2 rounded-full flex items-center gap-2">
-                  <Star className="h-4 w-4" />
-                  <span className="font-bold">{streak}x seriya!</span>
-                </div>
-              </div>
-            )}
-
-            {/* Main Display Area */}
-            <div className="min-h-[350px] sm:min-h-[450px] flex items-center justify-center">
-              {isDisplaying && currentDisplayIndex >= 0 && currentDisplayIndex < displayNumbers.length && (
-                <div className="text-[100px] sm:text-[180px] font-bold font-display leading-none tracking-tight text-emerald-800 animate-fade-in">
-                  {displayNumbers[currentDisplayIndex] < 0 
-                    ? `−${Math.abs(displayNumbers[currentDisplayIndex])}` 
-                    : (currentDisplayIndex > 0 ? `+${displayNumbers[currentDisplayIndex]}` : displayNumbers[currentDisplayIndex])}
-                </div>
-              )}
-
-              {/* Answer Input */}
-              {!isDisplaying && feedback === null && (
-                <div className="text-center space-y-6 w-full max-w-md px-4">
-                  <p className="text-lg text-muted-foreground">Javobingizni kiriting:</p>
-                  <Input
-                    ref={inputRef}
-                    type="number"
-                    value={userAnswer}
-                    onChange={(e) => setUserAnswer(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="?"
-                    className="text-center text-4xl sm:text-5xl font-bold h-20 sm:h-24"
-                    autoFocus
-                  />
-                  <Button 
-                    onClick={checkAnswer} 
-                    size="lg" 
-                    className="gap-2 h-14 text-lg px-8 w-full"
-                    disabled={!userAnswer}
-                  >
-                    <Check className="h-6 w-6" />
-                    Tekshirish
-                  </Button>
-                </div>
-              )}
-
-              {/* Feedback */}
-              {feedback && (
-                <div className="text-center space-y-4 animate-fade-in">
-                  <div className={`text-[80px] sm:text-[120px] font-bold font-display leading-none ${
-                    feedback === 'correct' ? 'text-green-500' : 'text-red-500'
-                  }`}>
-                    {correctAnswer}
-                  </div>
-                  <div className={`text-2xl sm:text-3xl font-bold ${
-                    feedback === 'correct' ? 'text-green-500' : 'text-red-500'
-                  }`}>
-                    {feedback === 'correct' && "To'g'ri! ✓"}
-                    {feedback === 'incorrect' && `Noto'g'ri. Javob: ${correctAnswer}`}
-                    {feedback === 'timeout' && `Vaqt tugadi! Javob: ${correctAnswer}`}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Controls */}
-            <div className="flex justify-center">
-              <Button variant="outline" size="lg" onClick={() => playSound('bead')} className="gap-2">
-                <Volume2 className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Results */}
         {isFinished && (
