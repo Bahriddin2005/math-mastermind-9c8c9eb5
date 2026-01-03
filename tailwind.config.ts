@@ -163,6 +163,16 @@ export default {
           "60%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(0deg)" },
         },
+        "zoom-in": {
+          "0%": { opacity: "0", transform: "scale(0.3)" },
+          "50%": { opacity: "1", transform: "scale(1.1)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        "zoom-pop": {
+          "0%": { opacity: "0", transform: "scale(0.5)" },
+          "70%": { opacity: "1", transform: "scale(1.05)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -173,6 +183,8 @@ export default {
         "pulse-slow": "pulse-slow 2s ease-in-out infinite",
         "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
         "wave": "wave 2.5s ease-in-out infinite",
+        "zoom-in": "zoom-in 0.3s ease-out forwards",
+        "zoom-pop": "zoom-pop 0.25s ease-out forwards",
       },
       // Safe area insets
       padding: {

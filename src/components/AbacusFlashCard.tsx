@@ -651,9 +651,9 @@ export const AbacusFlashCard = ({ onComplete }: AbacusFlashCardProps) => {
             : 'justify-start pt-8 sm:pt-12'
         }`}>
           {isDisplaying && currentDisplayIndex >= 0 && currentDisplayIndex < displayNumbers.length && (
-            <div className="relative flex items-center justify-center w-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-amber-500/20 rounded-full blur-[100px] xs:blur-[120px] sm:blur-[150px] scale-150 sm:scale-200" />
-              <div className="relative text-[160px] xs:text-[200px] sm:text-[300px] md:text-[380px] lg:text-[460px] font-bold font-display leading-none tracking-tight text-emerald-700 dark:text-emerald-400 animate-fade-in select-none drop-shadow-2xl text-center">
+            <div key={currentDisplayIndex} className="relative flex items-center justify-center w-full animate-zoom-pop">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-amber-500/20 rounded-full blur-[100px] xs:blur-[120px] sm:blur-[150px] scale-150 sm:scale-200 animate-pulse-slow" />
+              <div className="relative text-[160px] xs:text-[200px] sm:text-[300px] md:text-[380px] lg:text-[460px] font-bold font-display leading-none tracking-tight text-emerald-700 dark:text-emerald-400 select-none drop-shadow-2xl text-center">
                 {displayNumbers[currentDisplayIndex] < 0 
                   ? `−${Math.abs(displayNumbers[currentDisplayIndex])}` 
                   : (currentDisplayIndex > 0 ? `+${displayNumbers[currentDisplayIndex]}` : displayNumbers[currentDisplayIndex])}
