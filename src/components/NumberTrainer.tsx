@@ -657,26 +657,14 @@ export const NumberTrainer = () => {
         <div className="flex-1 flex flex-col items-center justify-center">
           {/* Katta animatsiyali orqa fon */}
           <div className="relative">
-            {/* Katta yorug'lik effekti */}
+            {/* Katta yorug'lik effekti - bir xil rang */}
             <div className="absolute inset-0 blur-[100px] sm:blur-[150px] rounded-full scale-[2] sm:scale-[2.5]">
-              <div className={`absolute inset-0 rounded-full animate-pulse ${
-                isFirstNumber 
-                  ? 'bg-primary/40' 
-                  : isAddition 
-                    ? 'bg-emerald-500/40' 
-                    : 'bg-red-500/40'
-              }`} />
+              <div className="absolute inset-0 rounded-full animate-pulse bg-primary/20" />
             </div>
             
-            {/* Ikkinchi qatlam glow */}
+            {/* Ikkinchi qatlam glow - bir xil rang */}
             <div className="absolute inset-0 blur-[60px] sm:blur-[80px] rounded-full scale-150">
-              <div className={`absolute inset-0 rounded-full ${
-                isFirstNumber 
-                  ? 'bg-primary/30' 
-                  : isAddition 
-                    ? 'bg-emerald-400/30' 
-                    : 'bg-red-400/30'
-              }`} />
+              <div className="absolute inset-0 rounded-full bg-primary/15" />
             </div>
             
             {/* Son konteyner */}
@@ -689,19 +677,15 @@ export const NumberTrainer = () => {
                 {/* Matematik amal belgisi - har doim ko'rsatiladi */}
                 <span 
                   className={`text-[150px] sm:text-[280px] md:text-[400px] lg:text-[520px] font-bold leading-none drop-shadow-2xl ${
-                    isFirstNumber 
-                      ? 'text-primary' 
-                      : isAddition 
-                        ? 'text-emerald-500 dark:text-emerald-400' 
-                        : 'text-red-500 dark:text-red-400'
+                    isAddition 
+                      ? 'text-emerald-500 dark:text-emerald-400' 
+                      : 'text-red-500 dark:text-red-400'
                   }`}
                   style={{ 
                     fontFamily: 'system-ui, -apple-system, sans-serif',
-                    textShadow: isFirstNumber 
-                      ? '0 0 60px hsl(var(--primary) / 0.5), 0 0 120px hsl(var(--primary) / 0.3)'
-                      : isAddition
-                        ? '0 0 60px rgba(16, 185, 129, 0.5), 0 0 120px rgba(16, 185, 129, 0.3)'
-                        : '0 0 60px rgba(239, 68, 68, 0.5), 0 0 120px rgba(239, 68, 68, 0.3)'
+                    textShadow: isAddition
+                      ? '0 0 60px rgba(16, 185, 129, 0.5), 0 0 120px rgba(16, 185, 129, 0.3)'
+                      : '0 0 60px rgba(239, 68, 68, 0.5), 0 0 120px rgba(239, 68, 68, 0.3)'
                   }}
                 >
                   {isAddition ? '+' : '−'}
