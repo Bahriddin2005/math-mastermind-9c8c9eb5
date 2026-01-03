@@ -34,7 +34,9 @@ import {
   Calendar,
   Sun,
   Moon,
-  Palette
+  Palette,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
@@ -70,6 +72,20 @@ const Settings = () => {
   const [cropDialogOpen, setCropDialogOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
+  // Voice settings
+  const [voiceEnabled, setVoiceEnabled] = useState(() => {
+    const saved = localStorage.getItem('numberTrainer_voiceEnabled');
+    return saved !== null ? saved === 'true' : true;
+  });
+  
+  const toggleVoice = () => {
+    const newValue = !voiceEnabled;
+    setVoiceEnabled(newValue);
+    localStorage.setItem('numberTrainer_voiceEnabled', String(newValue));
+    localStorage.setItem('flashCard_voiceEnabled', String(newValue));
+    toast.success(newValue ? "Ovoz yoqildi" : "Ovoz o'chirildi");
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -549,6 +565,94 @@ const Settings = () => {
                   
                   <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/70">
                     Rejimni o'zgartirish orqali ilovaning umumiy ko'rinishini o'zgartiring
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Voice Settings Section */}
+            <Card className="opacity-0 animate-slide-up overflow-hidden bg-card dark:bg-card/90 border-border/40 dark:border-border/20 backdrop-blur-sm" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
+              <CardHeader className="pb-2 sm:pb-3 bg-gradient-to-r from-green-500/10 to-transparent dark:from-green-500/20 dark:to-transparent px-4 sm:px-6">
+                <CardTitle className="text-sm sm:text-base md:text-lg flex items-center gap-2 text-foreground dark:text-foreground/95">
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-green-500/20 dark:bg-green-500/35 flex items-center justify-center">
+                    <Volume2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
+                  </div>
+                  Ovoz sozlamalari
+                </CardTitle>
+                <CardDescription className="text-[10px] sm:text-xs md:text-sm text-muted-foreground dark:text-muted-foreground/80">
+                  Mashq paytida ovozli o'qishni sozlang
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-3 sm:pt-4 px-4 sm:px-6">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-secondary/50 dark:bg-secondary/20 border border-border/50 dark:border-border/20">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      {voiceEnabled ? (
+                        <Volume2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+                      ) : (
+                        <VolumeX className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="font-medium text-xs sm:text-sm text-foreground dark:text-foreground/95">
+                          ElevenLabs ovozli o'qish
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/80">
+                          {voiceEnabled ? "Professional ovoz bilan sonlar o'qiladi" : "Ovoz o'chirilgan"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={toggleVoice}
+                      className={`relative w-11 h-6 sm:w-12 sm:h-7 rounded-full transition-all duration-300 ${
+                        voiceEnabled 
+                          ? 'bg-green-500 shadow-md shadow-green-500/30' 
+                          : 'bg-muted dark:bg-secondary/50'
+                      }`}
+                      aria-label={voiceEnabled ? "Ovozni o'chirish" : "Ovozni yoqish"}
+                    >
+                      <span 
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${
+                          voiceEnabled ? 'translate-x-5 sm:translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-secondary/50 dark:bg-secondary/20 border border-border/50 dark:border-border/20">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      {soundEnabled ? (
+                        <Volume2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+                      ) : (
+                        <VolumeX className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="font-medium text-xs sm:text-sm text-foreground dark:text-foreground/95">
+                          Effekt ovozlari
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/80">
+                          {soundEnabled ? "To'g'ri/noto'g'ri javob ovozlari" : "Effektlar o'chirilgan"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={toggleSound}
+                      className={`relative w-11 h-6 sm:w-12 sm:h-7 rounded-full transition-all duration-300 ${
+                        soundEnabled 
+                          ? 'bg-blue-500 shadow-md shadow-blue-500/30' 
+                          : 'bg-muted dark:bg-secondary/50'
+                      }`}
+                      aria-label={soundEnabled ? "Effektlarni o'chirish" : "Effektlarni yoqish"}
+                    >
+                      <span 
+                        className={`absolute top-0.5 left-0.5 w-5 h-5 sm:w-6 sm:h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${
+                          soundEnabled ? 'translate-x-5 sm:translate-x-5' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  
+                  <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/70">
+                    ElevenLabs professional AI ovozi mashq paytida sonlarni o'qiydi
                   </p>
                 </div>
               </CardContent>
