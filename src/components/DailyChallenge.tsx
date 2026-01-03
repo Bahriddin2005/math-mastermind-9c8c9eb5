@@ -437,7 +437,7 @@ export const DailyChallenge = () => {
             {/* Son konteyner */}
             <div className={cn("relative px-10 sm:px-20 md:px-28 py-8 sm:py-14 md:py-16 rounded-[2rem] sm:rounded-[3rem]", "bg-gradient-to-br from-card/95 via-card/90 to-muted/70", "border-2 border-primary/20 shadow-[0_0_60px_-15px] shadow-primary/50", "backdrop-blur-xl")} key={currentDisplay}>
               {/* Ichki glow */}
-              <div className="absolute inset-0 rounded-[2rem] sm:rounded-[3rem] bg-gradient-to-t from-primary/5 to-transparent" />
+              
               
               {/* Ishorali belgi */}
               {!isAddition && countRef.current > 1 && <span className="absolute -left-6 sm:-left-10 md:-left-12 top-1/2 -translate-y-1/2 text-6xl sm:text-8xl md:text-9xl text-destructive font-light drop-shadow-lg">
