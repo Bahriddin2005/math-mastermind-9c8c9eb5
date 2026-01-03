@@ -704,7 +704,7 @@ export const NumberTrainer = () => {
                         : '0 0 60px rgba(239, 68, 68, 0.5), 0 0 120px rgba(239, 68, 68, 0.3)'
                   }}
                 >
-                  {isAddition || isFirstNumber ? '+' : '−'}
+                  {isAddition ? '+' : '−'}
                 </span>
                 
                 {/* Asosiy son - juda katta */}
