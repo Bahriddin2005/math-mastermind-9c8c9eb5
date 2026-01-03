@@ -349,76 +349,73 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
         )}
 
         {/* Mobile menu navigation */}
-        <div ref={navScrollRef} className="flex-1 min-h-0 overflow-y-auto mobile-menu-scroll p-2 space-y-0.5">
+        <div ref={navScrollRef} className="flex-1 min-h-0 overflow-y-auto mobile-menu-scroll px-2 py-1">
           {navItems.map((item, index) => (
             <button
               key={item.path}
               data-active={isActive(item.path)}
               onClick={() => handleNavigation(item.path)}
-              className={`w-full flex items-center gap-2.5 p-2.5 rounded-lg transition-all duration-200 ${
+              className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-all duration-200 ${
                 isActive(item.path)
-                  ? 'bg-primary text-primary-foreground shadow-md'
+                  ? 'bg-primary text-primary-foreground'
                   : item.highlight
                     ? 'bg-primary/10 text-primary hover:bg-primary/20'
                     : 'hover:bg-secondary/80'
               }`}
-              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className={`h-8 w-8 rounded-md flex items-center justify-center ${
+              <div className={`h-6 w-6 rounded flex items-center justify-center ${
                 isActive(item.path)
                   ? 'bg-primary-foreground/20'
                   : item.highlight
                     ? 'bg-primary/20'
                     : 'bg-secondary'
               }`}>
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-3.5 w-3.5" />
               </div>
-              <span className="text-sm font-semibold">{item.label}</span>
+              <span className="text-xs font-medium">{item.label}</span>
             </button>
           ))}
 
-          <div className="h-px bg-border/50 my-2" />
+          <div className="h-px bg-border/50 my-1.5" />
 
-          {/* Sound toggle in mobile menu */}
           <button
             onClick={() => {
               onToggleSound();
               setMobileMenuOpen(false);
             }}
-            className="w-full flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-secondary/80 transition-all duration-200"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-secondary/80 transition-all duration-200"
           >
-            <div className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center">
+            <div className="h-6 w-6 rounded bg-secondary flex items-center justify-center">
               {soundEnabled ? (
-                <Volume2 className="h-4 w-4" />
+                <Volume2 className="h-3.5 w-3.5" />
               ) : (
-                <VolumeX className="h-4 w-4 text-muted-foreground" />
+                <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />
               )}
             </div>
-            <span className="text-sm font-semibold">
-              {soundEnabled ? "Ovozni o'chirish" : "Ovozni yoqish"}
+            <span className="text-xs font-medium">
+              {soundEnabled ? "Ovoz o'ch" : "Ovoz yoq"}
             </span>
           </button>
 
           <button
             onClick={() => handleNavigation('/settings')}
-            className="w-full flex items-center gap-2.5 p-2.5 rounded-lg hover:bg-secondary/80 transition-all duration-200"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-secondary/80 transition-all duration-200"
           >
-            <div className="h-8 w-8 rounded-md bg-secondary flex items-center justify-center">
-              <Settings className="h-4 w-4" />
+            <div className="h-6 w-6 rounded bg-secondary flex items-center justify-center">
+              <Settings className="h-3.5 w-3.5" />
             </div>
-            <span className="text-sm font-semibold">Sozlamalar</span>
+            <span className="text-xs font-medium">Sozlamalar</span>
           </button>
 
           {isAdmin && (
             <button
               onClick={() => handleNavigation('/admin')}
-              className="w-full flex items-center gap-2.5 p-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-all duration-200"
+              className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md bg-primary/10 hover:bg-primary/20 transition-all duration-200"
             >
-              <div className="h-8 w-8 rounded-md bg-primary/20 flex items-center justify-center">
-                <ShieldCheck className="h-4 w-4 text-primary" />
+              <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center">
+                <ShieldCheck className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-sm font-semibold text-primary">Admin panel</span>
-              <Badge className="ml-auto bg-primary/20 text-primary border-0 text-xs px-1.5 py-0.5">Admin</Badge>
+              <span className="text-xs font-medium text-primary">Admin</span>
             </button>
           )}
         </div>
