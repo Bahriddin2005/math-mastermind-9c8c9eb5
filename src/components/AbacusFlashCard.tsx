@@ -645,11 +645,7 @@ export const AbacusFlashCard = ({ onComplete }: AbacusFlashCardProps) => {
         <Progress value={(currentProblem / problemCount) * 100} className="h-0.5 xs:h-1 rounded-none" />
 
         {/* Main Content - Conditional layout - Full height */}
-        <div className={`flex-1 min-h-[calc(100vh-80px)] overflow-y-auto flex flex-col items-center px-4 py-6 sm:py-10 ${
-          isDisplaying && currentDisplayIndex >= 0 && currentDisplayIndex < displayNumbers.length
-            ? 'justify-center' 
-            : 'justify-start pt-8 sm:pt-16 md:pt-20'
-        }`}>
+        <div className={`flex-1 min-h-[calc(100vh-80px)] overflow-y-auto flex flex-col items-center px-4 py-6 sm:py-10 justify-start pt-12 sm:pt-20 md:pt-24`}>
           {isDisplaying && currentDisplayIndex >= 0 && currentDisplayIndex < displayNumbers.length && (
             <div key={currentDisplayIndex} className="relative flex items-center justify-center w-full animate-zoom-pop">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-amber-500/20 rounded-full blur-[100px] xs:blur-[120px] sm:blur-[150px] scale-150 sm:scale-200 animate-pulse-slow" />
