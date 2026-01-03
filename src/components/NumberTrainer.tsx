@@ -708,11 +708,11 @@ export const NumberTrainer = () => {
                 
                 {/* Asosiy son - juda katta */}
                 <span 
-                  className="text-[80px] sm:text-[140px] md:text-[200px] lg:text-[260px] font-black leading-none bg-gradient-to-br from-foreground via-foreground to-foreground/70 dark:from-white dark:via-white dark:to-white/70 bg-clip-text text-transparent drop-shadow-2xl"
+                  className="text-[80px] sm:text-[140px] md:text-[200px] lg:text-[260px] font-black leading-none text-foreground dark:text-white drop-shadow-2xl"
                   style={{ 
                     fontFamily: 'system-ui, -apple-system, sans-serif',
-                    textShadow: '0 0 80px rgba(0,0,0,0.3), 0 4px 20px rgba(0,0,0,0.2)',
-                    letterSpacing: '-0.02em'
+                    letterSpacing: '-0.02em',
+                    filter: 'drop-shadow(0 0 30px rgba(0,0,0,0.3))'
                   }}
                 >
                   {currentDisplay}
