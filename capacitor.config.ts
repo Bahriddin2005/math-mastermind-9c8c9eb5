@@ -15,7 +15,9 @@ const config: CapacitorConfig = {
       backgroundColor: '#0A0A0F',
       showSpinner: false,
       splashFullScreen: true,
-      splashImmersive: true
+      splashImmersive: true,
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP'
     },
     StatusBar: {
       style: 'DARK',
@@ -28,6 +30,13 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert']
     }
+  },
+  android: {
+    allowMixedContent: true,
+    webContentsDebuggingEnabled: false
+  },
+  ios: {
+    contentInset: 'automatic'
   }
 };
 
