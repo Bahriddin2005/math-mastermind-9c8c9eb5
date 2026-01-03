@@ -32,9 +32,9 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { icon: MessageCircle, href: 'https://t.me/iqromax', label: 'Telegram', color: 'group-hover:text-blue-400', bgHover: 'group-hover:bg-blue-500/20' },
-  { icon: Instagram, href: 'https://instagram.com/iqromax', label: 'Instagram', color: 'group-hover:text-pink-400', bgHover: 'group-hover:bg-pink-500/20' },
-  { icon: Youtube, href: 'https://youtube.com/@iqromax', label: 'YouTube', color: 'group-hover:text-red-400', bgHover: 'group-hover:bg-red-500/20' },
+  { icon: MessageCircle, href: 'https://t.me/mentalarifmetika_uz', label: 'Telegram', color: 'group-hover:text-blue-400', bgHover: 'group-hover:bg-blue-500/20' },
+  { icon: Instagram, href: 'https://instagram.com/iqromaxcom', label: 'Instagram', color: 'group-hover:text-pink-400', bgHover: 'group-hover:bg-pink-500/20' },
+  { icon: Youtube, href: 'https://www.youtube.com/@iqromaxcom', label: 'YouTube', color: 'group-hover:text-red-400', bgHover: 'group-hover:bg-red-500/20' },
 ];
 
 export const Footer = () => {
@@ -151,13 +151,13 @@ export const Footer = () => {
               </li>
               <li>
                 <a 
-                  href="tel:+998901234567" 
+                  href="tel:+998990053000" 
                   className="group flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm py-1.5 touch-target"
                 >
                   <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors flex-shrink-0">
                     <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
-                  +998 90 123 45 67
+                  +998 99 005 30 00
                 </a>
               </li>
               <li className="flex items-center gap-3 text-muted-foreground text-sm py-1.5">
