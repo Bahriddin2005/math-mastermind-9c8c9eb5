@@ -317,19 +317,19 @@ export const AdminReports = () => {
   }
 
   return (
-    <div className="space-y-6" ref={reportRef}>
+    <div className="space-y-4 md:space-y-6" ref={reportRef}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-display font-bold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Batafsil hisobotlar
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-xl font-display font-bold flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
+            <span className="truncate">Batafsil hisobotlar</span>
           </h2>
-          <p className="text-sm text-muted-foreground">Platforma statistikasi va tahlillari</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Platforma statistikasi va tahlillari</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-[130px] sm:w-40 h-9 sm:h-10 text-xs sm:text-sm bg-background/50 dark:bg-background/30 border-border/50">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -339,66 +339,75 @@ export const AdminReports = () => {
               <SelectItem value="90">So'nggi 90 kun</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleExportPDF} className="gap-2">
-            <FileDown className="h-4 w-4" />
-            PDF eksport
+          <Button onClick={handleExportPDF} size="sm" className="gap-1.5 sm:gap-2 h-9 sm:h-10 px-3 sm:px-4 text-xs sm:text-sm">
+            <FileDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">PDF</span> eksport
           </Button>
         </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
-          <CardContent className="p-4 text-center">
-            <Users className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{totals.users}</p>
-            <p className="text-xs text-muted-foreground">Yangi foydalanuvchilar</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+        <Card className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 dark:from-blue-500/20 dark:to-blue-500/5 border-blue-500/20 dark:border-blue-500/30 shadow-sm">
+          <CardContent className="p-3 sm:p-4 text-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{totals.users}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Yangi foydalanuvchilar</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-          <CardContent className="p-4 text-center">
-            <Target className="h-6 w-6 text-green-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{totals.problems.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">Yechilgan masalalar</p>
+        <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 dark:from-green-500/20 dark:to-green-500/5 border-green-500/20 dark:border-green-500/30 shadow-sm">
+          <CardContent className="p-3 sm:p-4 text-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-green-500/10 dark:bg-green-500/20 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{totals.problems.toLocaleString()}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">Yechilgan masalalar</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 border-purple-500/20">
-          <CardContent className="p-4 text-center">
-            <Calendar className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{totals.games.toLocaleString()}</p>
-            <p className="text-xs text-muted-foreground">O'yinlar soni</p>
+        <Card className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 dark:from-purple-500/20 dark:to-purple-500/5 border-purple-500/20 dark:border-purple-500/30 shadow-sm">
+          <CardContent className="p-3 sm:p-4 text-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-500/10 dark:bg-purple-500/20 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500" />
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{totals.games.toLocaleString()}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">O'yinlar soni</p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20">
-          <CardContent className="p-4 text-center">
-            <Trophy className="h-6 w-6 text-amber-500 mx-auto mb-2" />
-            <p className="text-2xl font-bold">{totals.avgScore}</p>
-            <p className="text-xs text-muted-foreground">O'rtacha ball</p>
+        <Card className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 dark:from-amber-500/20 dark:to-amber-500/5 border-amber-500/20 dark:border-amber-500/30 shadow-sm">
+          <CardContent className="p-3 sm:p-4 text-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center mx-auto mb-1.5 sm:mb-2">
+              <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{totals.avgScore}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight">O'rtacha ball</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts Row */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
         {/* Daily Activity Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
+        <Card className="bg-card/50 dark:bg-card/30 border-border/50">
+          <CardHeader className="p-3 sm:p-4 md:p-6 pb-2 sm:pb-3">
+            <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+              <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
               Kunlik faollik
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={dailyStats}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="date" className="text-xs" tick={{ fontSize: 11 }} />
-                <YAxis className="text-xs" tick={{ fontSize: 11 }} />
+          <CardContent className="p-2 sm:p-4 md:p-6 pt-0">
+            <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
+              <LineChart data={dailyStats} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="date" className="text-xs" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
+                <YAxis className="text-xs" tick={{ fontSize: 9 }} width={30} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: 'hsl(var(--card))', 
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
+                    fontSize: '12px'
                   }} 
                 />
                 <Line 
@@ -423,32 +432,44 @@ export const AdminReports = () => {
         </Card>
 
         {/* Section Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Bo'limlar taqsimoti</CardTitle>
+        <Card className="bg-card/50 dark:bg-card/30 border-border/50">
+          <CardHeader className="p-3 sm:p-4 md:p-6 pb-2 sm:pb-3">
+            <CardTitle className="text-sm sm:text-base">Bo'limlar taqsimoti</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-2 sm:p-4 md:p-6 pt-0">
             {sectionStats.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
+              <ResponsiveContainer width="100%" height={200} className="sm:h-[250px]">
+                <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <Pie
                     data={sectionStats}
                     dataKey="count"
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
-                    label={({ name, percentage }) => `${name}: ${percentage}%`}
+                    outerRadius={60}
+                    label={({ name, percentage }) => `${percentage}%`}
+                    labelLine={{ strokeWidth: 1 }}
                   >
                     {sectionStats.map((_, index) => (
                       <Cell key={index} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      fontSize: '12px'
+                    }} 
+                  />
+                  <Legend 
+                    wrapperStyle={{ fontSize: '11px' }}
+                    iconSize={10}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+              <div className="h-[200px] sm:h-[250px] flex items-center justify-center text-muted-foreground text-sm">
                 Ma'lumot yo'q
               </div>
             )}
@@ -457,57 +478,64 @@ export const AdminReports = () => {
       </div>
 
       {/* Top Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Trophy className="h-4 w-4" />
+      <Card className="bg-card/50 dark:bg-card/30 border-border/50 overflow-hidden">
+        <CardHeader className="p-3 sm:p-4 md:p-6 pb-2 sm:pb-3">
+          <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+            <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-500" />
             Top 10 Foydalanuvchilar
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">#</TableHead>
-                <TableHead>Ism</TableHead>
-                <TableHead className="text-right">Ball</TableHead>
-                <TableHead className="text-right">Masalalar</TableHead>
-                <TableHead className="text-right">Eng yaxshi seriya</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topUsers.map((user, index) => (
-                <TableRow key={user.username}>
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell className="text-right font-semibold text-primary">
-                    {user.total_score.toLocaleString()}
-                  </TableCell>
-                  <TableCell className="text-right">{user.total_problems_solved.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{user.best_streak}</TableCell>
+        <CardContent className="p-0 sm:p-4 md:p-6 pt-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-border/50">
+                  <TableHead className="w-8 sm:w-12 text-xs sm:text-sm pl-3 sm:pl-4">#</TableHead>
+                  <TableHead className="text-xs sm:text-sm">Ism</TableHead>
+                  <TableHead className="text-right text-xs sm:text-sm">Ball</TableHead>
+                  <TableHead className="text-right text-xs sm:text-sm hidden sm:table-cell">Masalalar</TableHead>
+                  <TableHead className="text-right text-xs sm:text-sm pr-3 sm:pr-4 hidden md:table-cell">Seriya</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {topUsers.map((user, index) => (
+                  <TableRow key={user.username} className="hover:bg-muted/30 border-border/30">
+                    <TableCell className="font-medium text-xs sm:text-sm pl-3 sm:pl-4 py-2 sm:py-3">
+                      <span className={`${index < 3 ? 'text-amber-500 font-bold' : 'text-muted-foreground'}`}>
+                        {index + 1}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs sm:text-sm py-2 sm:py-3 max-w-[100px] sm:max-w-none truncate">{user.username}</TableCell>
+                    <TableCell className="text-right font-semibold text-primary text-xs sm:text-sm py-2 sm:py-3">
+                      {totals.users > 999 ? `${(user.total_score / 1000).toFixed(1)}k` : user.total_score.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm py-2 sm:py-3 hidden sm:table-cell">{user.total_problems_solved.toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-xs sm:text-sm pr-3 sm:pr-4 py-2 sm:py-3 hidden md:table-cell">{user.best_streak}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Daily Stats Bar Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Kunlik yangi foydalanuvchilar</CardTitle>
+      <Card className="bg-card/50 dark:bg-card/30 border-border/50">
+        <CardHeader className="p-3 sm:p-4 md:p-6 pb-2 sm:pb-3">
+          <CardTitle className="text-sm sm:text-base">Kunlik yangi foydalanuvchilar</CardTitle>
         </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={dailyStats}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+        <CardContent className="p-2 sm:p-4 md:p-6 pt-0">
+          <ResponsiveContainer width="100%" height={160} className="sm:h-[200px]">
+            <BarChart data={dailyStats} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+              <XAxis dataKey="date" tick={{ fontSize: 9 }} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 9 }} width={30} />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--card))', 
                   border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  fontSize: '12px'
                 }} 
               />
               <Bar dataKey="users" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Foydalanuvchilar" />
