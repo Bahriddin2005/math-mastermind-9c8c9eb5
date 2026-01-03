@@ -38,22 +38,14 @@ export const WelcomeHero = ({ username }: WelcomeHeroProps) => {
         <Sparkles className="h-5 w-5 animate-pulse" style={{ animationDelay: '0.8s' }} />
       </div>
       
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div className="flex-1 space-y-5">
-          {/* Time greeting badge - Enhanced */}
-          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-primary-foreground/20 backdrop-blur-md border border-primary-foreground/10 shadow-lg">
-            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-primary-foreground/20">
-              <TimeIcon className="h-4 w-4" />
-            </div>
-            <span className="text-base font-semibold tracking-wide">{timeInfo.greeting}</span>
-            <span className="text-xl animate-bounce-soft">{timeInfo.emoji}</span>
-          </div>
-          
+      <div className="relative z-10">
+        {/* Top Section - Greeting above logo */}
+        <div className="flex flex-col items-center text-center space-y-6">
           {/* Main heading - Enhanced with gradient effect */}
           <div className="space-y-2">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-extrabold leading-tight tracking-tight">
               {username ? (
-                <span className="flex flex-wrap items-baseline gap-x-3">
+                <span className="flex flex-wrap items-center justify-center gap-x-3">
                   <span className="opacity-90">Salom,</span>
                   <span className="relative inline-block">
                     <span className="relative z-10 bg-gradient-to-r from-white via-amber-100 to-white bg-clip-text text-transparent drop-shadow-lg">
@@ -65,35 +57,44 @@ export const WelcomeHero = ({ username }: WelcomeHeroProps) => {
                   <span className="text-4xl md:text-5xl animate-wave inline-block">👋</span>
                 </span>
               ) : (
-                <span className="flex items-center gap-3">
+                <span className="flex items-center justify-center gap-3">
                   Xush kelibsiz! 
                   <span className="text-4xl animate-bounce-soft">🎉</span>
                 </span>
               )}
             </h1>
           </div>
+
+          {/* IQROMAX Logo - Now below greeting */}
+          <div className="flex items-center justify-center">
+            <div className="relative group">
+              <div className="absolute inset-0 bg-white/30 rounded-3xl blur-2xl scale-125 group-hover:scale-150 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-amber-400/20 rounded-3xl blur-xl scale-110" />
+              <div className="relative bg-white dark:bg-white rounded-3xl p-5 md:p-6 shadow-2xl backdrop-blur-sm border border-white/50 group-hover:scale-105 transition-transform duration-300">
+                <img 
+                  src={iqromaxLogo} 
+                  alt="IQROMAX" 
+                  className="h-16 md:h-20 lg:h-24 w-auto object-contain"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Time greeting badge - Enhanced */}
+          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-primary-foreground/20 backdrop-blur-md border border-primary-foreground/10 shadow-lg">
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-primary-foreground/20">
+              <TimeIcon className="h-4 w-4" />
+            </div>
+            <span className="text-base font-semibold tracking-wide">{timeInfo.greeting}</span>
+            <span className="text-xl animate-bounce-soft">{timeInfo.emoji}</span>
+          </div>
           
           {/* Description - Enhanced with glass effect */}
           <div className="relative max-w-lg">
             <div className="absolute inset-0 bg-primary-foreground/5 rounded-2xl blur-xl" />
-            <p className="relative text-lg md:text-xl font-medium opacity-95 leading-relaxed pl-4 border-l-4 border-primary-foreground/30">
+            <p className="relative text-lg md:text-xl font-medium opacity-95 leading-relaxed">
               Mental arifmetika bo'yicha treninglarni davom ettiring va o'z natijalaringizni kuzating.
             </p>
-          </div>
-        </div>
-
-        {/* IQROMAX Logo */}
-        <div className="hidden md:flex items-center justify-center">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-white/30 rounded-3xl blur-2xl scale-125 group-hover:scale-150 transition-transform duration-500" />
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/20 to-amber-400/20 rounded-3xl blur-xl scale-110" />
-            <div className="relative bg-white dark:bg-white rounded-3xl p-6 shadow-2xl backdrop-blur-sm border border-white/50 group-hover:scale-105 transition-transform duration-300">
-              <img 
-                src={iqromaxLogo} 
-                alt="IQROMAX" 
-                className="h-20 lg:h-24 w-auto object-contain"
-              />
-            </div>
           </div>
         </div>
       </div>
