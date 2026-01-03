@@ -26,6 +26,7 @@ import LessonDetail from "./pages/LessonDetail";
 import WeeklyGame from "./pages/WeeklyGame";
 import Badges from "./pages/Badges";
 import Install from "./pages/Install";
+import MentalArithmetic from "./pages/MentalArithmetic";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
                 <Route path="/weekly-game" element={<ProtectedRoute><WeeklyGame /></ProtectedRoute>} />
                 <Route path="/badges" element={<Badges />} />
                 <Route path="/install" element={<Install />} />
+                <Route path="/mental-arithmetic" element={<ProtectedRoute><MentalArithmetic /></ProtectedRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
