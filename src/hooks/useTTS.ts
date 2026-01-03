@@ -9,6 +9,7 @@ export const useTTS = (options: TTSOptions = {}) => {
   const { voiceId = 'EXAVITQu4vr4xnSDxMaL', useElevenLabs = true } = options;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
+  const elevenLabsDisabledRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,93 +17,120 @@ export const useTTS = (options: TTSOptions = {}) => {
   const speakWithBrowser = useCallback((text: string) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      
+
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'uz-UZ';
       utterance.rate = 1.2;
       utterance.pitch = 1;
-      
+
       const voices = window.speechSynthesis.getVoices();
-      const uzVoice = voices.find(v => v.lang.startsWith('uz'));
-      const ruVoice = voices.find(v => v.lang.startsWith('ru'));
-      
+      const uzVoice = voices.find((v) => v.lang.startsWith('uz'));
+      const ruVoice = voices.find((v) => v.lang.startsWith('ru'));
+
       if (uzVoice) {
         utterance.voice = uzVoice;
       } else if (ruVoice) {
         utterance.voice = ruVoice;
       }
-      
+
       window.speechSynthesis.speak(utterance);
     }
   }, []);
 
   // ElevenLabs TTS
-  const speakWithElevenLabs = useCallback(async (text: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Clean up previous audio
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-      if (audioUrlRef.current) {
-        URL.revokeObjectURL(audioUrlRef.current);
-        audioUrlRef.current = null;
+  const speakWithElevenLabs = useCallback(
+    async (text: string) => {
+      // If we already detected a permission/config problem, stop retrying.
+      if (elevenLabsDisabledRef.current) {
+        speakWithBrowser(text);
+        return;
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text, voiceId }),
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Clean up previous audio
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
         }
-      );
+        if (audioUrlRef.current) {
+          URL.revokeObjectURL(audioUrlRef.current);
+          audioUrlRef.current = null;
+        }
 
-      if (!response.ok) {
-        throw new Error(`TTS request failed: ${response.status}`);
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ text, voiceId }),
+          }
+        );
+
+        if (!response.ok) {
+          let serverMessage = '';
+          try {
+            const data = await response.json();
+            serverMessage = data?.error || '';
+          } catch {
+            // ignore
+          }
+
+          const msg = serverMessage || `TTS request failed: ${response.status}`;
+
+          // If ElevenLabs key is missing the required permission, disable further attempts.
+          if (msg.includes('missing the permission text_to_speech')) {
+            elevenLabsDisabledRef.current = true;
+          }
+
+          throw new Error(msg);
+        }
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        audioUrlRef.current = audioUrl;
+
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+        await audio.play();
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage);
+        console.error('ElevenLabs TTS error:', err);
+        // Fallback to browser TTS
+        speakWithBrowser(text);
+      } finally {
+        setIsLoading(false);
       }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      audioUrlRef.current = audioUrl;
-      
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      await audio.play();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      console.error('ElevenLabs TTS error:', err);
-      // Fallback to browser TTS
-      speakWithBrowser(text);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [voiceId, speakWithBrowser]);
+    },
+    [voiceId, speakWithBrowser]
+  );
 
   // Main speak function - formats math operations
-  const speakNumber = useCallback((number: string, isAddition: boolean, isFirst: boolean) => {
-    let text: string;
-    
-    if (isFirst) {
-      text = number;
-    } else {
-      text = isAddition ? `qo'sh ${number}` : `ayir ${number}`;
-    }
-    
-    if (useElevenLabs) {
-      speakWithElevenLabs(text);
-    } else {
-      speakWithBrowser(text);
-    }
-  }, [useElevenLabs, speakWithElevenLabs, speakWithBrowser]);
+  const speakNumber = useCallback(
+    (number: string, isAddition: boolean, isFirst: boolean) => {
+      let text: string;
+
+      if (isFirst) {
+        text = number;
+      } else {
+        text = isAddition ? `qo'sh ${number}` : `ayir ${number}`;
+      }
+
+      if (useElevenLabs && !elevenLabsDisabledRef.current) {
+        speakWithElevenLabs(text);
+      } else {
+        speakWithBrowser(text);
+      }
+    },
+    [useElevenLabs, speakWithElevenLabs, speakWithBrowser]
+  );
 
   // Stop current playback
   const stop = useCallback(() => {

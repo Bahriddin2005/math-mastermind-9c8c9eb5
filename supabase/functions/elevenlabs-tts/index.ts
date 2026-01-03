@@ -26,7 +26,7 @@ serve(async (req) => {
     const voice = voiceId || 'EXAVITQu4vr4xnSDxMaL';
 
     const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voice}`,
+      `https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_128`,
       {
         method: 'POST',
         headers: {
@@ -36,7 +36,6 @@ serve(async (req) => {
         body: JSON.stringify({
           text,
           model_id: 'eleven_multilingual_v2',
-          output_format: 'mp3_44100_128',
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,
