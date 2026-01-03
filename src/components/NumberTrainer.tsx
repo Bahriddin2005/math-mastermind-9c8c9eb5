@@ -395,8 +395,8 @@ export const NumberTrainer = () => {
   }, [user, showResult]);
 
   const { playSound, soundEnabled, toggleSound } = useSound();
-  // Temporarily use browser TTS until ElevenLabs key has text_to_speech permission
-  const { speakNumber, stop: stopTTS, cleanup: cleanupTTS } = useTTS({ useElevenLabs: false });
+  // useElevenLabs=true enables ElevenLabs when provider setting is 'elevenlabs'
+  const { speakNumber, stop: stopTTS, cleanup: cleanupTTS } = useTTS({ useElevenLabs: true });
 
   // Sonni generatsiya qilish
   const generateNextNumber = useCallback(() => {
