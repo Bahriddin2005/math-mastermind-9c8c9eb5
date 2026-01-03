@@ -10,6 +10,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { PWAInstallBanner } from "./components/PWAInstallBanner";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { PageTransition } from "./components/PageTransition";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -42,28 +43,30 @@ const App = () => (
           <BrowserRouter>
             <ScrollToTop />
             <div className="pb-16 md:pb-0">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/train" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:id" element={<BlogPostPage />} />
-                <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
-                <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
-                <Route path="/lessons/:lessonId" element={<ProtectedRoute><LessonDetail /></ProtectedRoute>} />
-                <Route path="/weekly-game" element={<ProtectedRoute><WeeklyGame /></ProtectedRoute>} />
-                <Route path="/badges" element={<Badges />} />
-                <Route path="/install" element={<Install />} />
-                <Route path="/mental-arithmetic" element={<ProtectedRoute><MentalArithmetic /></ProtectedRoute>} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <PageTransition>
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/train" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:id" element={<BlogPostPage />} />
+                  <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
+                  <Route path="/courses/:courseId" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
+                  <Route path="/lessons/:lessonId" element={<ProtectedRoute><LessonDetail /></ProtectedRoute>} />
+                  <Route path="/weekly-game" element={<ProtectedRoute><WeeklyGame /></ProtectedRoute>} />
+                  <Route path="/badges" element={<Badges />} />
+                  <Route path="/install" element={<Install />} />
+                  <Route path="/mental-arithmetic" element={<ProtectedRoute><MentalArithmetic /></ProtectedRoute>} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </PageTransition>
             </div>
             <MobileBottomNav />
             <PWAInstallBanner />
