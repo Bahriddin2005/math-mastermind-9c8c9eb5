@@ -676,7 +676,7 @@ export const NumberTrainer = () => {
               <div className="flex items-center justify-center gap-3 sm:gap-6 w-full">
                 {/* Matematik amal belgisi - har doim ko'rsatiladi */}
                 <span 
-                  className="text-[150px] sm:text-[280px] md:text-[400px] lg:text-[520px] font-bold leading-none drop-shadow-2xl text-foreground dark:text-white"
+                  className="text-[150px] sm:text-[280px] md:text-[400px] lg:text-[520px] font-bold leading-none drop-shadow-2xl text-white"
                   style={{ 
                     fontFamily: 'system-ui, -apple-system, sans-serif',
                     filter: 'drop-shadow(0 0 30px rgba(0,0,0,0.3))'
