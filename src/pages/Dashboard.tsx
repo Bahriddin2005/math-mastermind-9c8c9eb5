@@ -16,6 +16,7 @@ import { InfoCarousel } from '@/components/InfoCarousel';
 import { TestimonialForm } from '@/components/TestimonialForm';
 import { GuestDashboard } from '@/components/GuestDashboard';
 import { Footer } from '@/components/Footer';
+import { MentalArithmeticPractice } from '@/components/MentalArithmeticPractice';
 import { WeeklyCompetition } from '@/components/WeeklyCompetition';
 import { UserBadges } from '@/components/UserBadges';
 import { ProgressVisualization } from '@/components/ProgressVisualization';
@@ -24,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSound } from '@/hooks/useSound';
 import { useAchievementNotifications } from '@/hooks/useAchievementNotifications';
+import { useBadgeNotifications } from '@/hooks/useBadgeNotifications';
 import {
   Trophy,
   Target,
@@ -89,6 +91,9 @@ const Dashboard = () => {
     totalScore: profile?.total_score || 0,
     enabled: !!user,
   });
+
+  // Badge notifications hook (realtime)
+  useBadgeNotifications();
 
   useEffect(() => {
     // If not logged in and auth is done loading, show guest dashboard
@@ -258,7 +263,7 @@ const Dashboard = () => {
         </div>
 
         <div className="container px-3 sm:px-4 py-4 sm:py-6 md:py-8">
-          <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
+          <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
 
             {/* Stats Overview - Mobile optimized Grid */}
             <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
@@ -351,66 +356,55 @@ const Dashboard = () => {
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                <div id="dashboard-card-train" className="scroll-mt-24">
-                  <FeatureCard
-                    category="TRENING"
-                    title="Mashqni boshlash"
-                    description="Darajangizga mos modulni tanlab, mental arifmetika mashqlarini boshlang."
-                    buttonText="Boshlash"
-                    icon={Play}
-                    iconBgColor="primary"
-                    onClick={() => {
-                      const cardElement = document.getElementById('dashboard-card-train');
-                      if (cardElement) {
-                        const cardTop = cardElement.getBoundingClientRect().top + window.scrollY;
-                        sessionStorage.setItem('dashboardScrollToCard', cardTop.toString());
-                      }
-                      navigate('/train');
-                    }}
-                    delay={500}
-                  />
-                </div>
-                <div id="dashboard-card-timer" className="scroll-mt-24">
-                  <FeatureCard
-                    category="VAQT REJIMI"
-                    title="Vaqtga qarshi hisob"
-                    description="Sanoq tezligini oshirish uchun dinamik timerli mashqlar."
-                    buttonText="Sekundomer rejimi"
-                    icon={Timer}
-                    iconBgColor="accent"
-                    onClick={() => {
-                      const cardElement = document.getElementById('dashboard-card-timer');
-                      if (cardElement) {
-                        const cardTop = cardElement.getBoundingClientRect().top + window.scrollY;
-                        sessionStorage.setItem('dashboardScrollToCard', cardTop.toString());
-                      }
-                      navigate('/train');
-                    }}
-                    delay={550}
-                  />
-                </div>
-                <div id="dashboard-card-courses" className="scroll-mt-24">
-                  <FeatureCard
-                    category="VIDEO DARSLAR"
-                    title="O'rganishni boshlash"
-                    description="Professional video darslar bilan mental arifmetikani o'rganing."
-                    buttonText="Darslarni ko'rish"
-                    icon={GraduationCap}
-                    iconBgColor="success"
-                    onClick={() => {
-                      const cardElement = document.getElementById('dashboard-card-courses');
-                      if (cardElement) {
-                        const cardTop = cardElement.getBoundingClientRect().top + window.scrollY;
-                        sessionStorage.setItem('dashboardScrollToCard', cardTop.toString());
-                      }
-                      navigate('/courses');
-                    }}
-                    delay={600}
-                  />
-                </div>
+                <FeatureCard
+                  category="TRENING"
+                  title="Mashqni boshlash"
+                  description="Darajangizga mos modulni tanlab, mental arifmetika mashqlarini boshlang."
+                  buttonText="Boshlash"
+                  icon={Play}
+                  iconBgColor="primary"
+                  onClick={() => navigate('/train')}
+                  delay={500}
+                />
+                <FeatureCard
+                  category="VAQT REJIMI"
+                  title="Vaqtga qarshi hisob"
+                  description="Sanoq tezligini oshirish uchun dinamik timerli mashqlar."
+                  buttonText="Sekundomer rejimi"
+                  icon={Timer}
+                  iconBgColor="accent"
+                  onClick={() => navigate('/train')}
+                  delay={550}
+                />
+                <FeatureCard
+                  category="VIDEO DARSLAR"
+                  title="O'rganishni boshlash"
+                  description="Professional video darslar bilan mental arifmetikani o'rganing."
+                  buttonText="Darslarni ko'rish"
+                  icon={GraduationCap}
+                  iconBgColor="success"
+                  onClick={() => navigate('/courses')}
+                  delay={600}
+                />
               </div>
             </div>
 
+            {/* Mental Arifmetika Mashqi */}
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex items-center justify-between opacity-0 animate-slide-up" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg">
+                    <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-display font-bold text-foreground">Mental Arifmetika</h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Abacus bilan mashq qiling</p>
+                  </div>
+                </div>
+                <div className="hidden sm:block h-px flex-1 mx-6 bg-gradient-to-r from-border to-transparent" />
+              </div>
+              <MentalArithmeticPractice />
+            </div>
 
             {/* Info Carousel & Testimonial Form */}
             <div className="space-y-4">

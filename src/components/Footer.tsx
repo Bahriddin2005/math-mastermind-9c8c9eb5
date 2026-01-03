@@ -75,7 +75,7 @@ export const Footer = () => {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`group relative w-12 h-12 sm:w-14 sm:h-14 min-w-[48px] min-h-[48px] sm:min-w-[56px] sm:min-h-[56px] rounded-2xl bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground transition-all duration-300 hover:scale-105 active:scale-95 ${social.bgHover} border border-border/50 hover:border-primary/30 touch-manipulation`}
+                  className={`group relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-secondary/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground transition-all duration-300 hover:scale-105 ${social.bgHover} border border-border/50 hover:border-primary/30`}
                   aria-label={social.label}
                 >
                   <social.icon className={`h-5 w-5 sm:h-6 sm:w-6 transition-colors ${social.color}`} />
@@ -87,10 +87,10 @@ export const Footer = () => {
       </div>
 
       {/* Main Footer */}
-      <div className="relative container px-4 py-8 sm:py-10 md:py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
+      <div className="relative container px-4 py-10 sm:py-14">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand Section */}
-          <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+          <div className="col-span-2 md:col-span-1 lg:col-span-1">
             <Logo size="md" />
             <p className="mt-4 text-muted-foreground text-sm leading-relaxed">
               Mental arifmetika bo'yicha eng yaxshi onlayn platforma. 
@@ -101,12 +101,12 @@ export const Footer = () => {
           {/* Platform Links */}
           <div>
             <h4 className="font-display font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Platforma</h4>
-            <ul className="space-y-2 sm:space-y-3">
+            <ul className="space-y-3">
               {footerLinks.platform.map((link) => (
                 <li key={link.href}>
                   <Link 
                     to={link.href} 
-                    className="group inline-flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors text-sm min-h-[44px] touch-manipulation py-1"
+                    className="group inline-flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors text-sm"
                   >
                     {link.label}
                     <ArrowUpRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
@@ -119,12 +119,12 @@ export const Footer = () => {
           {/* Support Links */}
           <div>
             <h4 className="font-display font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Yordam</h4>
-            <ul className="space-y-2 sm:space-y-3">
+            <ul className="space-y-3">
               {footerLinks.support.map((link) => (
                 <li key={link.href}>
                   <Link 
                     to={link.href} 
-                    className="group inline-flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors text-sm min-h-[44px] touch-manipulation py-1"
+                    className="group inline-flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors text-sm"
                   >
                     {link.label}
                     <ArrowUpRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
@@ -135,36 +135,36 @@ export const Footer = () => {
           </div>
 
           {/* Contact Info */}
-          <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+          <div className="col-span-2 md:col-span-1">
             <h4 className="font-display font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">Aloqa</h4>
             <ul className="space-y-3">
               <li>
                 <a 
                   href="mailto:info@iqromax.uz" 
-                  className="group flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm min-h-[44px] touch-manipulation"
+                  className="group flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm"
                 >
-                  <div className="h-11 w-11 sm:h-9 sm:w-9 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors flex-shrink-0">
-                    <Mail className="h-4 w-4 sm:h-4 sm:w-4" />
+                  <div className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <Mail className="h-4 w-4" />
                   </div>
-                  <span className="break-all">info@iqromax.uz</span>
+                  info@iqromax.uz
                 </a>
               </li>
               <li>
                 <a 
                   href="tel:+998901234567" 
-                  className="group flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm min-h-[44px] touch-manipulation"
+                  className="group flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors text-sm"
                 >
-                  <div className="h-11 w-11 sm:h-9 sm:w-9 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors flex-shrink-0">
-                    <Phone className="h-4 w-4 sm:h-4 sm:w-4" />
+                  <div className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <Phone className="h-4 w-4" />
                   </div>
-                  <span>+998 90 123 45 67</span>
+                  +998 90 123 45 67
                 </a>
               </li>
-              <li className="flex items-center gap-3 text-muted-foreground text-sm min-h-[44px]">
-                <div className="h-11 w-11 sm:h-9 sm:w-9 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                  <MapPin className="h-4 w-4 sm:h-4 sm:w-4" />
+              <li className="flex items-center gap-3 text-muted-foreground text-sm">
+                <div className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center">
+                  <MapPin className="h-4 w-4" />
                 </div>
-                <span>Toshkent, O'zbekiston</span>
+                Toshkent, O'zbekiston
               </li>
             </ul>
           </div>
@@ -182,12 +182,12 @@ export const Footer = () => {
               <span className="hidden sm:inline">O'zbekistonda ishlab chiqilgan.</span>
             </p>
             
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6">
+            <div className="flex items-center gap-4 sm:gap-6">
               {footerLinks.legal.map((link) => (
                 <Link 
                   key={link.href}
                   to={link.href} 
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors min-h-[44px] flex items-center touch-manipulation"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   {link.label}
                 </Link>

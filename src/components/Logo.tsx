@@ -1,4 +1,4 @@
-import iqromaxLogo from '@/assets/iqromax-logo.png';
+import iqromaxLogo from '@/assets/iqromax-logo.jpg';
 
 interface LogoProps {
   className?: string;
@@ -20,9 +20,9 @@ export const Logo = ({ className = '', size = 'md' }: LogoProps) => {
 
   return (
     <div className={`inline-flex items-center justify-center ${paddings[size]}`}>
-    <img 
-      src={iqromaxLogo} 
-      alt="IQROMAX - Mental Matematika" 
+      <img 
+        src={iqromaxLogo} 
+        alt="IQROMAX - Mental Matematika" 
         className={`
           ${sizes[size]} 
           object-contain 
@@ -35,7 +35,7 @@ export const Logo = ({ className = '', size = 'md' }: LogoProps) => {
         style={{
           filter: 'brightness(1) contrast(1.05)',
         }}
-    />
+      />
     </div>
   );
 };

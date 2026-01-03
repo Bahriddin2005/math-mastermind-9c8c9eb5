@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, Clock, Trophy, Check, Play, Medal, Award, Flame, Timer, Volume2 } from 'lucide-react';
+import { Calendar, Clock, Trophy, Check, Play, Medal, Award, Flame, Timer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -370,156 +370,82 @@ export const DailyChallenge = () => {
     );
   }
 
-  // O'yin davomida - Fullscreen number display
+  // O'yin davomida - Mobile optimized
   if (view === 'playing' && currentDisplay !== null) {
-    const progress = (countRef.current / (challenge?.problem_count || 1)) * 100;
-    
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-background to-background z-50 flex flex-col overflow-hidden">
-        {/* Top bar with stats */}
-        <div className="relative z-10 w-full px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
-            {/* Stats row */}
-            <div className="flex items-center justify-between gap-3 sm:gap-4">
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <span className="text-sm font-medium text-muted-foreground">Misol</span>
-                <span className="text-base sm:text-lg font-bold text-foreground">{countRef.current}/{challenge?.problem_count || 0}</span>
-              </div>
-              
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <Trophy className="h-4 w-4 text-amber-500" />
-                <span className="text-base sm:text-lg font-bold text-foreground">0</span>
-              </div>
-              
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-base sm:text-lg font-bold text-muted-foreground">{elapsedTime.toFixed(0)}s</span>
-              </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-primary to-success rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
+      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 p-4">
+        <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex items-center gap-2 text-xl sm:text-2xl font-mono text-muted-foreground bg-muted/50 px-3 sm:px-4 py-2 rounded-xl">
+          <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
+          {elapsedTime.toFixed(1)}s
         </div>
-
-        {/* Number display - centered */}
-        <div className="relative z-10 flex-1 flex items-center justify-center px-4">
-          <div 
-            className="text-[100px] sm:text-[150px] md:text-[200px] lg:text-[250px] font-bold text-foreground transition-all duration-100 leading-none text-center"
-          >
-            <span className={!isAddition && countRef.current > 1 ? 'text-destructive' : 'text-primary'}>
-              {!isAddition && countRef.current > 1 ? '-' : ''}{currentDisplay}
-            </span>
-          </div>
-        </div>
-
-        {/* Audio player button at bottom */}
-        <div className="relative z-10 w-full px-4 pb-4 sm:pb-6 flex justify-center">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border-2 border-primary/30 hover:border-primary/50 bg-background hover:bg-primary/5"
-          >
-            <Volume2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-          </Button>
+        
+        <Badge className="absolute top-4 sm:top-6 left-4 sm:left-6 text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2">
+          <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+          Kunlik musobaqa
+        </Badge>
+        
+        <div 
+          className="text-[120px] sm:text-[180px] md:text-[250px] font-light text-foreground transition-all duration-100 leading-none"
+        >
+          {!isAddition && countRef.current > 1 ? '-' : ''}{currentDisplay}
         </div>
       </div>
     );
   }
 
-  // Javob kiritish - Fullscreen answer input
+  // Javob kiritish - Mobile optimized
   if (view === 'answer') {
-    const progress = ((countRef.current - 1) / (challenge?.problem_count || 1)) * 100;
-    
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-background to-background z-50 flex flex-col overflow-y-auto">
-        {/* Top bar with stats */}
-        <div className="relative z-10 w-full px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
-            {/* Stats row */}
-            <div className="flex items-center justify-between gap-3 sm:gap-4">
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                <span className="text-sm font-medium text-muted-foreground">Misol</span>
-                <span className="text-base sm:text-lg font-bold text-foreground">{countRef.current - 1}/{challenge?.problem_count || 0}</span>
-              </div>
-              
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <Trophy className="h-4 w-4 text-amber-500" />
-                <span className="text-base sm:text-lg font-bold text-foreground">0</span>
-              </div>
-              
-              <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-base sm:text-lg font-bold text-muted-foreground">{elapsedTime.toFixed(0)}s</span>
-              </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-primary to-success rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
+      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 p-4 sm:p-6">
+        <div className="max-w-md w-full space-y-4 sm:space-y-6 text-center">
+          <Badge className="text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2">
+            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+            Kunlik musobaqa
+          </Badge>
+          
+          <h2 className="text-xl sm:text-2xl font-bold">Javobingizni kiriting!</h2>
+          
+          <div className="flex items-center justify-center gap-2 text-muted-foreground bg-muted/50 px-4 py-2 rounded-xl mx-auto w-fit">
+            <Clock className="h-5 w-5 sm:h-6 sm:w-6" />
+            <span className="font-mono text-lg sm:text-xl font-bold">{elapsedTime.toFixed(1)}s</span>
           </div>
-        </div>
-
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-12">
-          <div className="w-full max-w-2xl space-y-6 sm:space-y-8">
-            {/* Answer prompt */}
-            <div className="text-center">
-              <p className="text-lg sm:text-xl md:text-2xl font-medium text-primary mb-6 sm:mb-8">
-                Javobingizni kiriting:
-              </p>
-            </div>
-            
-            {/* Answer input */}
-            <div className="space-y-4 sm:space-y-6">
-              <Input
-                type="number"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && userAnswer && submitAnswer()}
-                placeholder="?"
-                className="text-center text-4xl sm:text-5xl md:text-6xl h-20 sm:h-24 md:h-28 font-mono border-2 border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl bg-[#FAF9F6] text-foreground font-bold"
-                autoFocus
-              />
-              
-              <Button 
-                onClick={submitAnswer} 
-                disabled={!userAnswer || !user} 
-                size="lg" 
-                className="w-full h-14 sm:h-16 md:h-18 text-lg sm:text-xl md:text-2xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <Check className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
-                Tekshirish
-              </Button>
-            </div>
-            
-            {!user && (
-              <p className="text-center text-sm text-muted-foreground bg-card/50 px-4 py-2 rounded-xl">
-                Natijani saqlash uchun tizimga kiring
-              </p>
-            )}
+          
+          <div className="bg-muted/50 rounded-xl p-3 sm:p-4">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-2">Ko'rsatilgan sonlar:</p>
+            <p className="text-base sm:text-lg font-mono leading-relaxed">
+              {displayedNumbers.map((item, i) => (
+                <span key={i}>
+                  {i > 0 ? (item.isAdd ? ' + ' : ' - ') : ''}{item.num}
+                </span>
+              ))}
+            </p>
           </div>
-        </div>
-
-        {/* Audio player button at bottom */}
-        <div className="relative z-10 w-full px-4 pb-4 sm:pb-6 flex justify-center">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border-2 border-primary/30 hover:border-primary/50 bg-background hover:bg-primary/5"
+          
+          <Input
+            type="number"
+            value={userAnswer}
+            onChange={(e) => setUserAnswer(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && userAnswer && submitAnswer()}
+            placeholder="Javob"
+            className="text-center text-3xl sm:text-4xl h-16 sm:h-20 text-primary font-bold"
+            autoFocus
+          />
+          
+          <Button 
+            onClick={submitAnswer} 
+            disabled={!userAnswer || !user} 
+            size="lg" 
+            className="w-full h-14 sm:h-12 text-lg sm:text-base"
           >
-            <Volume2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+            <Check className="h-5 w-5 sm:h-5 sm:w-5 mr-2" />
+            Yuborish
           </Button>
+          
+          {!user && (
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Natijani saqlash uchun tizimga kiring
+            </p>
+          )}
         </div>
       </div>
     );

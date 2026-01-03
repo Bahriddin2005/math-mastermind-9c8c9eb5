@@ -58,7 +58,7 @@ export const FeatureCard = ({
 
   return (
     <Card
-      className={`group relative overflow-hidden p-4 sm:p-6 bg-gradient-to-br from-card via-card to-secondary/30 border border-border/40 hover:shadow-xl transition-all duration-300 opacity-0 animate-slide-up cursor-pointer hover:-translate-y-1 active:scale-[0.98] h-[260px] sm:h-[280px] flex flex-col touch-manipulation ${colors.borderHover} ${colors.glow}`}
+      className={`group relative overflow-hidden p-4 sm:p-6 bg-gradient-to-br from-card via-card to-secondary/30 border border-border/40 hover:shadow-xl transition-all duration-300 opacity-0 animate-slide-up cursor-pointer hover:-translate-y-1 h-[260px] flex flex-col ${colors.borderHover} ${colors.glow}`}
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'forwards' }}
       onClick={onClick}
     >

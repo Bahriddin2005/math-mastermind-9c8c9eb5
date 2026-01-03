@@ -147,31 +147,19 @@ export const UserBadges = ({ userId }: { userId?: string }) => {
   }
 
   return (
-    <Card className="rounded-2xl border-2 border-primary/20 shadow-xl bg-gradient-to-br from-card via-card to-primary/5 overflow-hidden h-full flex flex-col card-hover-glow">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-orange-500/5 to-amber-500/5 pointer-events-none" />
-      
-      <CardHeader className="pb-4 relative z-10 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-amber-500/10 border-b border-border/30">
-        <CardTitle className="flex items-center justify-between gap-3 w-full">
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center shadow-lg shadow-amber-500/20 flex-shrink-0">
-              <Award className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent text-base sm:text-lg md:text-xl block truncate">
-                Mukofotlar va yutuqlar
-              </span>
-            </div>
-          </div>
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-2 bg-gradient-to-r from-amber-500/10 to-orange-500/5">
+        <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+          <Award className="h-5 w-5 text-amber-500" />
+          Mukofotlar va yutuqlar
           {badges && badges.length > 0 && (
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge variant="secondary" className="px-3 sm:px-4 py-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-2 border-amber-500/30 shadow-lg text-xs sm:text-sm font-bold">
-                <span className="text-amber-600 dark:text-amber-400">{badges.length}</span>
-                <span className="text-muted-foreground ml-1">ta</span>
+            <>
+              <Badge variant="secondary" className="ml-auto mr-2">
+                {badges.length} ta
               </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg hover:bg-amber-500/10 hover:text-amber-500 transition-colors">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -194,33 +182,26 @@ export const UserBadges = ({ userId }: { userId?: string }) => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
+            </>
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6 flex-1 flex flex-col relative z-10">
+      <CardContent className="pt-4">
         {!badges?.length ? (
-          <div className="text-center py-12 flex-1 flex items-center justify-center">
-            <div className="w-full">
-              <div className="relative inline-block mb-6">
-                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/20">
-                  <Trophy className="h-10 w-10 text-amber-500/70" />
-                </div>
-                {/* Floating sparkles */}
-                <div className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-yellow-400/60 blur-sm animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '2s' }} />
-                <div className="absolute -bottom-2 -left-2 w-3 h-3 rounded-full bg-orange-400/60 blur-sm animate-bounce" style={{ animationDelay: '1s', animationDuration: '2s' }} />
-              </div>
-              <h3 className="font-bold text-lg mb-2">Hali mukofotlar yo'q</h3>
-              <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                Musobaqalarda qatnashing va g'olib bo'lib mukofotlar yutib oling!
-              </p>
+          <div className="text-center py-8">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+              <Trophy className="h-8 w-8 text-amber-500/50" />
             </div>
+            <h3 className="font-medium mb-1">Hali mukofotlar yo'q</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              Musobaqalarda qatnashing va g'olib bo'lib mukofotlar yutib oling!
+            </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Badge Grid */}
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 pb-6 sm:pb-8 md:pb-10">
-              {uniqueBadgeTypes.map((type, index) => {
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+              {uniqueBadgeTypes.map((type) => {
                 const definition = BADGE_DEFINITIONS.find((b) => b.type === type);
                 const count = badgeCounts[type] || 0;
                 const latestBadge = badges?.find((b) => b.badge_type === type);
@@ -229,50 +210,33 @@ export const UserBadges = ({ userId }: { userId?: string }) => {
                   <div
                     key={type}
                     className="relative group cursor-pointer"
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    title={definition?.description || latestBadge?.description || ""}
                   >
-                    {/* Glow effect on hover */}
-                    <div className={`absolute -inset-1 rounded-2xl bg-gradient-to-br ${definition?.color || "from-gray-500 to-gray-600"} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500 -z-10`} />
-                    
                     <div
-                      className={`aspect-square rounded-lg sm:rounded-xl md:rounded-2xl bg-gradient-to-br ${
+                      className={`aspect-square rounded-xl bg-gradient-to-br ${
                         definition?.color || "from-gray-500 to-gray-600"
-                      } p-1 shadow-xl hover:shadow-2xl hover:scale-110 transition-all duration-500 relative overflow-hidden`}
+                      } p-0.5 shadow-lg hover:scale-105 transition-transform`}
                     >
-                      {/* Shimmer effect */}
-                      <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ${definition?.color || "from-gray-500 to-gray-600"}`} />
-                      
-                      <div className="w-full h-full rounded-[8px] sm:rounded-lg md:rounded-xl bg-card/95 backdrop-blur-sm flex flex-col items-center justify-center relative z-10">
-                        <span className="text-2xl sm:text-3xl md:text-4xl transition-transform duration-500 group-hover:scale-110">
+                      <div className="w-full h-full rounded-[10px] bg-card flex flex-col items-center justify-center">
+                        <span className="text-2xl md:text-3xl">
                           {definition?.icon || latestBadge?.badge_icon || "🏆"}
                         </span>
                         {count > 1 && (
-                          <span className="text-[10px] sm:text-xs font-bold text-foreground/80 mt-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-                            ×{count}
+                          <span className="text-[10px] font-bold text-muted-foreground mt-1">
+                            x{count}
                           </span>
                         )}
                       </div>
                     </div>
-                    
-                    {/* Enhanced Tooltip - Desktop - From bottom */}
-                    <div className="hidden sm:block absolute top-full left-1/2 -translate-x-1/2 mt-4 px-4 py-3 bg-white dark:bg-gray-800 backdrop-blur-md border border-border/50 rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/30 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50 transform group-hover:translate-y-1 min-w-[200px] max-w-[280px]">
-                      {/* Tooltip content with proper spacing */}
-                      <div className="text-center space-y-1.5">
-                        <div className="text-sm font-bold text-foreground leading-tight">
-                          {definition?.name || latestBadge?.badge_name}
-                        </div>
-                        <div className="text-xs text-muted-foreground leading-relaxed px-1 break-words">
-                          {definition?.description || latestBadge?.description}
-                        </div>
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-popover border rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                      <div className="text-xs font-medium">
+                        {definition?.name || latestBadge?.badge_name}
                       </div>
-                      {/* Tooltip arrow - pointing up, centered */}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[1px]">
-                        <div className="w-3 h-3 bg-white dark:bg-gray-800 border-l border-t border-border/50 transform rotate-45 rounded-sm" />
+                      <div className="text-[10px] text-muted-foreground">
+                        {definition?.description || latestBadge?.description}
                       </div>
-                      {/* Subtle glow effect */}
-                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none -z-10" />
                     </div>
-                    
                   </div>
                 );
               })}
@@ -280,60 +244,31 @@ export const UserBadges = ({ userId }: { userId?: string }) => {
 
             {/* Recent Badges List */}
             {badges.length > 0 && (
-              <div className="space-y-3 pt-4 border-t border-border/50">
-                <div className="flex items-center gap-2">
-                  <Trophy className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                  <h4 className="text-sm font-bold text-foreground">Oxirgi mukofotlar</h4>
-                </div>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                  {badges.slice(0, 5).map((badge, index) => {
+              <div className="space-y-2 pt-2 border-t">
+                <h4 className="text-sm font-medium text-muted-foreground">Oxirgi mukofotlar</h4>
+                <div className="space-y-1.5">
+                  {badges.slice(0, 5).map((badge) => {
                     const definition = BADGE_DEFINITIONS.find((b) => b.type === badge.badge_type);
                     return (
                       <div
                         key={badge.id}
-                        className="group relative flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl bg-gradient-to-r from-secondary/40 via-secondary/30 to-secondary/40 border-2 border-border/30 hover:border-primary/40 hover:bg-gradient-to-r hover:from-primary/10 hover:via-primary/5 hover:to-primary/10 transition-all duration-300 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 overflow-hidden"
-                        style={{ animationDelay: `${index * 100}ms` }}
+                        className="flex items-center gap-2 p-2 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
                       >
-                        {/* Background glow on hover */}
-                        <div className={`absolute inset-0 bg-gradient-to-br ${definition?.color || "from-gray-500 to-gray-600"} opacity-0 group-hover:opacity-5 blur-xl transition-opacity duration-500`} />
-                        
-                        {/* Badge icon container with enhanced design */}
-                        <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br ${definition?.color || "from-gray-500 to-gray-600"} p-1 shadow-xl hover:shadow-2xl transition-all duration-500 group-hover:scale-110 flex-shrink-0`}>
-                          {/* Shimmer effect */}
-                          <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ${definition?.color || "from-gray-500 to-gray-600"}`} />
-                          
-                          {/* Inner container */}
-                          <div className="w-full h-full rounded-lg sm:rounded-xl bg-card/95 backdrop-blur-sm flex items-center justify-center relative z-10">
-                            <span className="text-xl sm:text-2xl transition-transform duration-500 group-hover:scale-110">
-                              {definition?.icon || badge.badge_icon}
-                            </span>
-                          </div>
-                          
-                          {/* Glow ring */}
-                          <div className={`absolute -inset-1 rounded-xl sm:rounded-2xl bg-gradient-to-br ${definition?.color || "from-gray-500 to-gray-600"} opacity-0 group-hover:opacity-30 blur-md transition-opacity duration-500 -z-10`} />
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="flex-1 min-w-0 relative z-10">
-                          <div className="text-xs sm:text-sm font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors duration-300">
+                        <span className="text-lg">{definition?.icon || badge.badge_icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium truncate">
                             {definition?.name || badge.badge_name}
                           </div>
-                          <div className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-2 mt-0.5 line-clamp-1">
-                            <span className="font-medium truncate">
-                              {badge.competition_type === "daily"
-                                ? "Kunlik musobaqa"
-                                : badge.competition_type === "weekly"
-                                ? "Haftalik musobaqa"
-                                : "Yutuq"}
-                            </span>
+                          <div className="text-[10px] text-muted-foreground">
+                            {badge.competition_type === "daily"
+                              ? "Kunlik musobaqa"
+                              : badge.competition_type === "weekly"
+                              ? "Haftalik musobaqa"
+                              : "Yutuq"}
                           </div>
                         </div>
-                        
-                        {/* Date badge */}
-                        <div className="flex flex-col items-end flex-shrink-0 relative z-10">
-                          <Badge variant="secondary" className="text-[10px] sm:text-xs px-2 sm:px-3 py-1 bg-gradient-to-r from-primary/20 to-primary/10 border-2 border-primary/30 text-primary font-bold shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 whitespace-nowrap">
-                            {format(new Date(badge.earned_at), "dd.MM.yy")}
-                          </Badge>
+                        <div className="text-[10px] text-muted-foreground">
+                          {format(new Date(badge.earned_at), "dd.MM.yy")}
                         </div>
                       </div>
                     );
@@ -341,13 +276,13 @@ export const UserBadges = ({ userId }: { userId?: string }) => {
                 </div>
                 {/* View All Button */}
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="sm" 
-                  className="w-full mt-3 gap-2 h-10 rounded-xl border-2 hover:border-primary/50 hover:bg-primary/5 hover:text-primary font-semibold transition-all duration-300 text-sm sm:text-base"
+                  className="w-full mt-2 gap-1"
                   onClick={() => navigate("/badges")}
                 >
-                  <span className="truncate">Barcha badge'larni ko'rish</span>
-                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1 flex-shrink-0" />
+                  Barcha badge'larni ko'rish
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             )}

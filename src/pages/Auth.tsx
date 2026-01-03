@@ -289,7 +289,7 @@ const Auth = () => {
       </div>
 
       {/* Right side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12 bg-gradient-to-br from-background via-background to-secondary/20 relative overflow-hidden">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 lg:p-12 bg-gradient-to-br from-background via-background to-secondary/20 relative overflow-hidden">
         {/* Mobile/Tablet background decorations */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none lg:hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse" />
@@ -345,7 +345,7 @@ const Auth = () => {
               )}
             </CardHeader>
             
-            <CardContent className="pt-2 pb-4 sm:pb-6">
+            <CardContent className="pt-2 pb-6 px-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 {mode === 'signup' && (
                   <div className="space-y-2">

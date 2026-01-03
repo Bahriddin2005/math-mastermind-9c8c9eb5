@@ -11,6 +11,7 @@ interface Achievement {
 }
 
 const achievements: Achievement[] = [
+  { id: 'first10', name: 'Birinchi qadam', description: '10 ta misol yechildi!', requirement: 10, type: 'problems' },
   { id: 'solver50', name: "Faol o'quvchi", description: '50 ta misol yechildi!', requirement: 50, type: 'problems' },
   { id: 'solver100', name: 'Yuz misol', description: '100 ta misol yechildi!', requirement: 100, type: 'problems' },
   { id: 'solver500', name: 'Matematik', description: '500 ta misol yechildi!', requirement: 500, type: 'problems' },

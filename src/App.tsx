@@ -7,7 +7,6 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "./hooks/useAuth";
 import { HelpChatWidget } from "./components/HelpChatWidget";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { ScrollToTop } from "./components/ScrollToTop";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -24,8 +23,6 @@ import CourseDetail from "./pages/CourseDetail";
 import LessonDetail from "./pages/LessonDetail";
 import WeeklyGame from "./pages/WeeklyGame";
 import Badges from "./pages/Badges";
-import MentalArithmetic from "./pages/MentalArithmetic";
-import DailyChallengePage from "./pages/DailyChallengePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,7 +35,6 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <ScrollToTop />
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/train" element={<ProtectedRoute><Index /></ProtectedRoute>} />
@@ -56,9 +52,7 @@ const App = () => (
               <Route path="/lessons/:lessonId" element={<ProtectedRoute><LessonDetail /></ProtectedRoute>} />
               <Route path="/weekly-game" element={<ProtectedRoute><WeeklyGame /></ProtectedRoute>} />
               <Route path="/badges" element={<Badges />} />
-                  <Route path="/mental-arithmetic" element={<ProtectedRoute><MentalArithmetic /></ProtectedRoute>} />
-                  <Route path="/daily-challenge" element={<ProtectedRoute><DailyChallengePage /></ProtectedRoute>} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             <HelpChatWidget />

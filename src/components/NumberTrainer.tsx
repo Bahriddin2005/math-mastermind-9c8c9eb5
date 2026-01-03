@@ -2,25 +2,21 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Square, Volume2, VolumeX, RotateCcw, Check, Clock, BarChart3, Trophy, Target, Play, Home, Moon, Sun, User, LogOut, Settings, ShieldCheck, GraduationCap, Users, Flame, BookOpen, Crown, Brain, Calendar, Plus, Minus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Square, Volume2, VolumeX, RotateCcw, Check, Clock, BarChart3, Trophy, Target, Play, Home, Moon, Sun, User, LogOut, Settings, ShieldCheck, GraduationCap, Users, Flame, BookOpen } from 'lucide-react';
 import { MultiplayerMode } from './MultiplayerMode';
 import { Navbar } from './Navbar';
-import { Footer } from './Footer';
+import { DailyChallenge } from './DailyChallenge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useTheme } from 'next-themes';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from './Logo';
 import { Leaderboard } from './Leaderboard';
 import { useConfetti } from '@/hooks/useConfetti';
 import { useSound } from '@/hooks/useSound';
-import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -198,7 +194,6 @@ const handleTabClick = (event: React.MouseEvent<HTMLElement>, value: string, set
 
 export const NumberTrainer = () => {
   const { user, signOut } = useAuth();
-  const { hasPro, canSolveMoreProblems, getDailyProblemLimit } = useSubscription();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
@@ -207,7 +202,7 @@ export const NumberTrainer = () => {
   const [prevTab, setPrevTab] = useState('train');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   
-  const tabOrder = ['train', 'learn', 'multiplayer', 'leaderboard', 'stats'];
+  const tabOrder = ['train', 'learn', 'daily', 'multiplayer', 'leaderboard', 'stats'];
   
   const handleTabChange = (newTab: string) => {
     const currentIndex = tabOrder.indexOf(activeTab);
@@ -532,31 +527,6 @@ export const NumberTrainer = () => {
     const totalTime = (Date.now() - startTimeRef.current) / 1000;
     const answerDuration = (Date.now() - answerStartTimeRef.current) / 1000;
     
-    // Kunlik limitni tekshirish (faqat bepul foydalanuvchilar uchun)
-    if (user && !hasPro()) {
-      const today = new Date().toISOString().split('T')[0];
-      const { data: todaySessions } = await supabase
-        .from('game_sessions')
-        .select('problems_solved, correct, incorrect')
-        .eq('user_id', user.id)
-        .gte('created_at', `${today}T00:00:00`)
-        .lt('created_at', `${today}T23:59:59`);
-      
-      const todaySolved = todaySessions?.reduce((sum, s) => 
-        sum + (s.problems_solved || 0) + (s.correct || 0) + (s.incorrect || 0), 0) || 0;
-      
-      if (todaySolved >= 20) {
-        toast.error("Kunlik limit", {
-          description: "Siz bugun 20 ta masala yechdingiz. Cheksiz mashq uchun Pro rejaga o'ting!",
-          action: {
-            label: "Pro rejaga o'tish",
-            onClick: () => navigate('/pricing'),
-          },
-        });
-        return;
-      }
-    }
-    
     setIsCorrect(correct);
     setShowResult(true);
     setAnswerTime(answerDuration);
@@ -615,7 +585,7 @@ export const NumberTrainer = () => {
         console.error('Error saving session:', error);
       }
     }
-  }, [userAnswer, user, formulaType, digitCount, problemCount, currentStreak, hasPro, navigate]);
+  }, [userAnswer, user, formulaType, digitCount, problemCount, currentStreak]);
 
   // Qayta boshlash
   const resetGame = useCallback(() => {
@@ -646,100 +616,24 @@ export const NumberTrainer = () => {
     : 0;
 
 
-  // O'yin davomida - Fullscreen number display (DailyChallenge uslubida)
+  // O'yin davomida - toza oq fon, markazda katta son
   if (isRunning && currentDisplay !== null) {
-    const progress = (countRef.current / problemCount) * 100;
-    const showAddition = isAddition || countRef.current === 1;
+    const displayNumber = countRef.current === 1 
+      ? currentDisplay 
+      : (isAddition ? currentDisplay : `-${currentDisplay}`);
     
     return (
-      <div className="fixed inset-0 bg-background z-50 flex flex-col overflow-hidden">
-        {/* Animated background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] sm:w-[800px] sm:h-[800px] md:w-[1000px] md:h-[1000px] rounded-full bg-gradient-radial from-primary/10 via-primary/5 to-transparent animate-pulse" />
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        </div>
-
-        {/* Top bar with timer and progress */}
-        <div className="relative z-10 w-full px-4 sm:px-8 pt-6 sm:pt-10">
-          <div className="max-w-4xl mx-auto">
-            {/* Progress bar */}
-            <div className="h-2 sm:h-3 bg-muted/30 rounded-full overflow-hidden mb-4 sm:mb-6 backdrop-blur-sm">
-              <div 
-                className="h-full bg-gradient-to-r from-primary via-accent to-primary rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            
-            {/* Info row */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2 sm:gap-3 text-muted-foreground">
-                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-card/50 backdrop-blur-md rounded-xl border border-border/30">
-                  <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                  <span className="text-sm sm:text-base font-medium">{digitCount}-xon</span>
-                </div>
-                <div className="px-3 sm:px-4 py-2 bg-card/50 backdrop-blur-md rounded-xl border border-border/30">
-                  <span className="text-sm sm:text-base font-bold text-foreground">{countRef.current}/{problemCount}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-card/80 backdrop-blur-md rounded-xl border border-accent/30 shadow-lg shadow-accent/10">
-                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-accent animate-pulse" />
-                <span className="font-mono text-xl sm:text-2xl md:text-3xl font-bold text-accent tabular-nums">
-                  {elapsedTime.toFixed(1)}s
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Main number display - centered */}
-        <div className="flex-1 flex items-center justify-center px-4 relative z-10">
-          <div className="relative">
-            {/* Glow effect behind number */}
-            <div 
-              className="absolute inset-0 blur-3xl opacity-40 transition-colors duration-200 bg-white"
-              style={{ transform: 'scale(1.5)' }}
-            />
-            
-            {/* Number with operation sign */}
-            <div className="relative flex items-center justify-center gap-2 sm:gap-4">
-              {/* Operation sign for non-first numbers */}
-              {countRef.current > 1 && (
-                <span 
-                  className="text-[100px] sm:text-[150px] md:text-[200px] lg:text-[250px] xl:text-[300px] font-bold transition-all duration-200 text-foreground"
-                >
-                  {isAddition ? '+' : '−'}
-                </span>
-              )}
-              
-              {/* Main number */}
+      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+        <div 
+          key={countRef.current}
+          className="animate-fade-in"
+        >
           <span 
-                className="text-[150px] sm:text-[220px] md:text-[300px] lg:text-[400px] xl:text-[480px] font-bold tracking-tight transition-all duration-200 tabular-nums text-foreground"
-              >
-                {currentDisplay}
+            className="text-[180px] sm:text-[220px] md:text-[280px] lg:text-[350px] font-light text-foreground tracking-tight"
+            style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
+          >
+            {displayNumber}
           </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom decorative element */}
-        <div className="relative z-10 w-full px-4 sm:px-8 pb-6 sm:pb-10">
-          <div className="max-w-4xl mx-auto flex justify-center">
-            <div className="flex gap-1.5 sm:gap-2">
-              {Array.from({ length: problemCount }).map((_, i) => (
-                <div 
-                  key={i}
-                  className={cn(
-                    "w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300",
-                    i < countRef.current 
-                      ? "bg-primary shadow-lg shadow-primary/50" 
-                      : "bg-muted/30"
-                  )}
-                />
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -862,9 +756,9 @@ export const NumberTrainer = () => {
     <div className="min-h-screen">
       <Navbar soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       
-      <div className="container py-2 md:py-4 px-4 md:px-8">
+      <div className="container py-8 px-4 md:px-8">
         {/* Hero Section */}
-        <div className="relative text-center mb-4 md:mb-6 py-2 md:py-4 animate-fade-in">
+        <div className="relative text-center mb-10 py-8 animate-fade-in">
           {/* Background decorations */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
@@ -895,41 +789,40 @@ export const NumberTrainer = () => {
 
           {/* Main content */}
           <div className="relative z-10">
-            {/* Banner */}
-            <div className="inline-flex items-center gap-3 px-4 sm:px-6 py-3 bg-green-50 dark:bg-green-950/30 rounded-2xl mb-6 mx-auto">
-              <span className="text-2xl">🧮</span>
-              <span className="text-base sm:text-lg font-medium text-green-700 dark:text-green-400">Kundalik mashq qiling</span>
-              <span className="text-2xl">🧠</span>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-sm text-primary font-medium mb-4">
+              <Flame className="h-4 w-4" />
+              Kundalik mashq qiling
             </div>
             
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-foreground mb-4">
               Mental Arifmetika{' '}
-              <span className="relative inline-block">
-                <span className="text-green-600 dark:text-green-500">Treneri</span>
-                <svg className="absolute -bottom-1 left-0 w-full" height="4" viewBox="0 0 200 4" fill="none">
-                  <path d="M0 2L200 2" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="text-green-600 dark:text-green-500"/>
+              <span className="relative">
+                <span className="text-gradient-primary">Treneri</span>
+                <svg className="absolute -bottom-2 left-0 w-full" height="8" viewBox="0 0 200 8" fill="none">
+                  <path d="M2 6C50 2 150 2 198 6" stroke="hsl(var(--primary))" strokeWidth="3" strokeLinecap="round" className="opacity-50"/>
                 </svg>
               </span>
             </h1>
             
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed mb-6">
-              Aql hisoblash ko&apos;nikmalarini rivojlantiring va o&apos;z darajangizni oshiring
+            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Aql hisoblash ko&apos;nikmalarini rivojlantiring va{' '}
+              <span className="text-foreground font-medium">o&apos;z darajangizni</span> oshiring
             </p>
 
             {/* Stats badges */}
             {user && stats.totalProblems > 0 && (
-              <div className="flex items-center justify-center gap-3 mt-4 flex-wrap">
-                <div className="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-card rounded-xl border border-border/50 shadow-sm">
-                  <Target className="h-4 w-4 text-green-600 dark:text-green-500" />
-                  <span className="text-sm font-medium text-foreground">{stats.totalProblems} mashq</span>
+              <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-sm">
+                  <Target className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">{stats.totalProblems} mashq</span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-card rounded-xl border border-border/50 shadow-sm">
-                  <Trophy className="h-4 w-4 text-yellow-500 dark:text-yellow-400" />
-                  <span className="text-sm font-medium text-foreground">{accuracy}% aniqlik</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-sm">
+                  <Trophy className="h-4 w-4 text-warning" />
+                  <span className="text-sm font-medium">{accuracy}% aniqlik</span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-card rounded-xl border border-border/50 shadow-sm">
-                  <Flame className="h-4 w-4 text-orange-500 dark:text-orange-400" />
-                  <span className="text-sm font-medium text-foreground">{stats.bestStreak} seriya</span>
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-sm rounded-full border border-border/50 shadow-sm">
+                  <Flame className="h-4 w-4 text-accent" />
+                  <span className="text-sm font-medium">{stats.bestStreak} seriya</span>
                 </div>
               </div>
             )}
@@ -937,37 +830,102 @@ export const NumberTrainer = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          {/* Desktop va Mobile TabsList */}
-          <div className="flex w-full max-w-5xl mx-auto mb-3 md:mb-4 bg-transparent p-0">
-            <TabsList className="grid w-full grid-cols-5 bg-transparent p-0 flex-1 gap-3 md:gap-4 lg:gap-5">
-            <TabsTrigger value="train" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
-              <Play className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
-              <span className="font-semibold text-xs leading-tight text-center relative z-10">Mashq</span>
+          {/* Desktop TabsList - tepa qismda */}
+          <TabsList className="hidden md:grid w-full max-w-3xl mx-auto grid-cols-6 mb-8 bg-card/80 backdrop-blur-sm border border-border/50 p-1.5 rounded-2xl shadow-md">
+            <TabsTrigger value="train" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300">
+              <Play className="h-4 w-4" />
+              <span className="font-medium">Mashq</span>
             </TabsTrigger>
-            <TabsTrigger value="learn" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
-              <BookOpen className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
-              <span className="font-semibold text-xs leading-tight text-center relative z-10">O'quv</span>
+            <TabsTrigger value="learn" className="gap-2 data-[state=active]:bg-success data-[state=active]:text-success-foreground rounded-xl transition-all duration-300">
+              <BookOpen className="h-4 w-4" />
+              <span className="font-medium">O'quv</span>
             </TabsTrigger>
-            <TabsTrigger value="multiplayer" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
-              <Users className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
-              <span className="font-semibold text-xs leading-tight text-center relative z-10">Ko'p</span>
+            <TabsTrigger value="daily" className="gap-2 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground rounded-xl transition-all duration-300">
+              <Flame className="h-4 w-4" />
+              <span className="font-medium">Kunlik</span>
             </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
-              <Trophy className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
-              <span className="font-semibold text-xs leading-tight text-center relative z-10">Reyting</span>
+            <TabsTrigger value="multiplayer" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300">
+              <Users className="h-4 w-4" />
+              <span className="font-medium">Multiplayer</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="flex flex-col items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:via-green-600 data-[state=active]:to-green-500 dark:data-[state=active]:from-green-600 dark:data-[state=active]:via-green-700 dark:data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-xl data-[state=active]:shadow-green-500/60 data-[state=active]:scale-105 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 text-green-700 dark:text-green-400 hover:bg-gradient-to-br hover:from-green-50 hover:to-green-100 dark:hover:from-green-900/40 dark:hover:to-green-800/40 hover:text-green-600 dark:hover:text-green-300 hover:shadow-md hover:scale-102 border-2 border-gray-200/80 dark:border-gray-700/80 data-[state=active]:border-green-500/80 rounded-2xl transition-all duration-300 ease-out py-3.5 md:py-4 px-2.5 md:px-3 min-w-0 group font-semibold relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-400/0 to-green-600/0 data-[state=active]:from-green-400/20 data-[state=active]:to-green-600/20 rounded-2xl transition-all duration-300" />
-              <BarChart3 className="h-5 w-5 flex-shrink-0 stroke-2 transition-transform duration-300 group-hover:scale-110 data-[state=active]:scale-110 relative z-10" strokeWidth={2.5} />
-              <span className="font-semibold text-xs leading-tight text-center relative z-10">Statistika</span>
+            <TabsTrigger value="leaderboard" className="gap-2 data-[state=active]:bg-warning data-[state=active]:text-warning-foreground rounded-xl transition-all duration-300">
+              <Trophy className="h-4 w-4" />
+              <span className="font-medium">Reyting</span>
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-xl transition-all duration-300">
+              <BarChart3 className="h-4 w-4" />
+              <span className="font-medium">Statistika</span>
             </TabsTrigger>
           </TabsList>
-          </div>
 
+          {/* Mobile TabsList - pastki navigatsiya with animations */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/50 shadow-lg safe-area-bottom">
+            <TabsList className="grid w-full grid-cols-6 p-2 bg-transparent h-auto relative">
+              {/* Animated background indicator */}
+              <div 
+                className="absolute h-[calc(100%-16px)] top-2 rounded-2xl bg-gradient-to-r transition-all duration-300 ease-out"
+                style={{
+                  width: 'calc((100% - 16px) / 6)',
+                  left: `calc(${['train', 'learn', 'daily', 'multiplayer', 'leaderboard', 'stats'].indexOf(activeTab)} * ((100% - 16px) / 6) + 8px)`,
+                  background: activeTab === 'train' ? 'hsl(var(--primary) / 0.15)' :
+                              activeTab === 'learn' ? 'hsl(var(--success) / 0.15)' :
+                              activeTab === 'daily' ? 'hsl(var(--accent) / 0.15)' :
+                              activeTab === 'multiplayer' ? 'hsl(var(--primary) / 0.15)' :
+                              activeTab === 'leaderboard' ? 'hsl(var(--warning) / 0.15)' :
+                              'hsl(var(--primary) / 0.15)'
+                }}
+              />
+              
+              <TabsTrigger 
+                value="train" 
+                onClick={(e) => { createRipple(e); triggerHaptic(); }}
+                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-primary rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
+              >
+                <Play className="h-5 w-5 transition-transform duration-300 data-[state=active]:scale-110" />
+                <span className="text-[10px] font-medium transition-all duration-300">Mashq</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="learn" 
+                onClick={(e) => { createRipple(e); triggerHaptic(); }}
+                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-success rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
+              >
+                <BookOpen className="h-5 w-5 transition-transform duration-300" />
+                <span className="text-[10px] font-medium transition-all duration-300">O'quv</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="daily" 
+                onClick={(e) => { createRipple(e); triggerHaptic(); }}
+                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-accent rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
+              >
+                <Flame className="h-5 w-5 transition-transform duration-300" />
+                <span className="text-[10px] font-medium transition-all duration-300">Kunlik</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="multiplayer" 
+                onClick={(e) => { createRipple(e); triggerHaptic(); }}
+                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-primary rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
+              >
+                <Users className="h-5 w-5 transition-transform duration-300" />
+                <span className="text-[10px] font-medium transition-all duration-300">Ko'p</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="leaderboard" 
+                onClick={(e) => { createRipple(e); triggerHaptic(); }}
+                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-warning rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
+              >
+                <Trophy className="h-5 w-5 transition-transform duration-300" />
+                <span className="text-[10px] font-medium transition-all duration-300">Reyting</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="stats" 
+                onClick={(e) => { createRipple(e); triggerHaptic(); }}
+                className="ripple-container relative flex flex-col items-center gap-0.5 py-2.5 px-1 text-muted-foreground data-[state=active]:text-primary rounded-xl transition-all duration-300 data-[state=active]:scale-105 z-10"
+              >
+                <BarChart3 className="h-5 w-5 transition-transform duration-300" />
+                <span className="text-[10px] font-medium transition-all duration-300">Stat</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="learn" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`learn-${activeTab}`}>
             <div className="max-w-4xl mx-auto">
@@ -984,145 +942,65 @@ export const NumberTrainer = () => {
                 </p>
               </div>
               
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Kurs kartasi 1 */}
                 <Card 
-                  className="group relative overflow-visible border-0 shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-3 opacity-0 animate-slide-up bg-gradient-to-br from-card via-card to-secondary/20 backdrop-blur-sm"
-                  style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}
+                  className="group bg-card/80 backdrop-blur-sm border-border/50 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden h-[220px] flex flex-col"
                   onClick={() => navigate('/courses')}
                 >
-                  {/* Animated gradient border */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/30 via-accent/20 to-primary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl" />
-                  
-                  {/* Glow effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 via-accent/10 to-primary/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -z-20" />
-                  
-                  {/* Background layer */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/20 z-0" />
-                  
-                  {/* Content wrapper */}
-                  <div className="relative z-10 flex flex-col h-full">
-                    <div className="h-40 bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 flex items-center justify-center flex-shrink-0 rounded-t-2xl relative overflow-hidden">
-                      {/* Decorative circles */}
-                      <div className="absolute top-2 right-2 h-20 w-20 rounded-full bg-gradient-to-br from-primary/30 to-transparent blur-2xl animate-pulse" />
-                      <div className="absolute bottom-2 left-2 h-16 w-16 rounded-full bg-gradient-to-br from-accent/30 to-transparent blur-xl animate-pulse" style={{ animationDelay: '0.5s' }} />
-                      
-                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-2xl shadow-primary/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10">
-                        <BookOpen className="h-8 w-8 text-primary-foreground" />
+                  <div className="h-28 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center flex-shrink-0">
+                    <div className="h-14 w-14 rounded-2xl bg-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <BookOpen className="h-7 w-7 text-primary" />
                     </div>
-                      
-                      {/* Shimmer effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   </div>
-                    
-                    <CardContent className="p-6 flex flex-col flex-1 relative z-10">
-                      <h3 className="font-bold text-xl text-foreground mb-2 line-clamp-1 group-hover:text-primary transition-colors">Boshlang'ich kurs</h3>
-                      <p className="text-sm text-foreground/80 mb-4 line-clamp-2 flex-1 leading-relaxed">Soroban asoslari va oddiy formulalar</p>
-                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
-                        <Badge className="bg-gradient-to-r from-success to-emerald-500 text-white border-0 shadow-lg shadow-success/30 px-3 py-1">
-                          <span className="font-bold">Bepul</span>
-                        </Badge>
-                        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
-                          <BookOpen className="h-4 w-4 text-primary" />
-                          10+ dars
-                        </span>
+                  <CardContent className="p-4 flex flex-col flex-1">
+                    <h3 className="font-bold text-foreground mb-1 line-clamp-1">Boshlang'ich kurs</h3>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">Soroban asoslari va oddiy formulalar</p>
+                    <div className="flex items-center justify-between mt-auto">
+                      <span className="text-xs text-primary font-medium">Bepul</span>
+                      <span className="text-xs text-muted-foreground">10+ dars</span>
                     </div>
                   </CardContent>
-                  </div>
                 </Card>
 
                 {/* Kurs kartasi 2 */}
                 <Card 
-                  className="group relative overflow-visible border-0 shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-3 opacity-0 animate-slide-up bg-gradient-to-br from-card via-card to-secondary/20 backdrop-blur-sm"
-                  style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}
+                  className="group bg-card/80 backdrop-blur-sm border-border/50 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden h-[220px] flex flex-col"
                   onClick={() => navigate('/courses')}
                 >
-                  {/* Animated gradient border */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-accent/30 via-warning/20 to-accent/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl" />
-                  
-                  {/* Glow effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-br from-accent/20 via-warning/10 to-accent/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -z-20" />
-                  
-                  {/* Background layer */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/20 z-0" />
-                  
-                  {/* Content wrapper */}
-                  <div className="relative z-10 flex flex-col h-full">
-                    <div className="h-40 bg-gradient-to-br from-accent/20 via-accent/10 to-warning/20 flex items-center justify-center flex-shrink-0 rounded-t-2xl relative overflow-hidden">
-                      {/* Decorative circles */}
-                      <div className="absolute top-2 right-2 h-20 w-20 rounded-full bg-gradient-to-br from-accent/30 to-transparent blur-2xl animate-pulse" />
-                      <div className="absolute bottom-2 left-2 h-16 w-16 rounded-full bg-gradient-to-br from-warning/30 to-transparent blur-xl animate-pulse" style={{ animationDelay: '0.5s' }} />
-                      
-                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-accent to-accent/80 flex items-center justify-center shadow-2xl shadow-accent/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10">
-                        <Target className="h-8 w-8 text-accent-foreground" />
+                  <div className="h-28 bg-gradient-to-br from-accent/20 to-warning/20 flex items-center justify-center flex-shrink-0">
+                    <div className="h-14 w-14 rounded-2xl bg-accent/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Target className="h-7 w-7 text-accent" />
                     </div>
-                      
-                      {/* Shimmer effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   </div>
-                    
-                    <CardContent className="p-6 flex flex-col flex-1 relative z-10">
-                      <h3 className="font-bold text-xl text-foreground mb-2 line-clamp-1 group-hover:text-accent transition-colors">O'rta daraja</h3>
-                      <p className="text-sm text-foreground/80 mb-4 line-clamp-2 flex-1 leading-relaxed">Formula 5 va Formula 10</p>
-                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
-                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg shadow-amber-500/30 px-3 py-1">
-                          <Crown className="h-3.5 w-3.5 mr-1" />
-                          <span className="font-bold">Premium</span>
-                        </Badge>
-                        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
-                          <BookOpen className="h-4 w-4 text-accent" />
-                          15+ dars
-                        </span>
+                  <CardContent className="p-4 flex flex-col flex-1">
+                    <h3 className="font-bold text-foreground mb-1 line-clamp-1">O'rta daraja</h3>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">Formula 5 va Formula 10</p>
+                    <div className="flex items-center justify-between mt-auto">
+                      <span className="text-xs text-accent font-medium">Premium</span>
+                      <span className="text-xs text-muted-foreground">15+ dars</span>
                     </div>
                   </CardContent>
-                  </div>
                 </Card>
 
                 {/* Kurs kartasi 3 */}
                 <Card 
-                  className="group relative overflow-visible border-0 shadow-xl hover:shadow-2xl transition-all duration-500 cursor-pointer hover:-translate-y-3 opacity-0 animate-slide-up bg-gradient-to-br from-card via-card to-secondary/20 backdrop-blur-sm"
-                  style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}
+                  className="group bg-card/80 backdrop-blur-sm border-border/50 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden h-[220px] flex flex-col"
                   onClick={() => navigate('/courses')}
                 >
-                  {/* Animated gradient border */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-warning/30 via-rose/20 to-warning/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10 blur-xl" />
-                  
-                  {/* Glow effect */}
-                  <div className="absolute -inset-1 bg-gradient-to-br from-warning/20 via-rose/10 to-warning/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-2xl -z-20" />
-                  
-                  {/* Background layer */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-card via-card to-secondary/20 z-0" />
-                  
-                  {/* Content wrapper */}
-                  <div className="relative z-10 flex flex-col h-full">
-                    <div className="h-40 bg-gradient-to-br from-warning/20 via-warning/10 to-rose/20 flex items-center justify-center flex-shrink-0 rounded-t-2xl relative overflow-hidden">
-                      {/* Decorative circles */}
-                      <div className="absolute top-2 right-2 h-20 w-20 rounded-full bg-gradient-to-br from-warning/30 to-transparent blur-2xl animate-pulse" />
-                      <div className="absolute bottom-2 left-2 h-16 w-16 rounded-full bg-gradient-to-br from-rose/30 to-transparent blur-xl animate-pulse" style={{ animationDelay: '0.5s' }} />
-                      
-                      <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-warning to-warning/80 flex items-center justify-center shadow-2xl shadow-warning/40 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 relative z-10">
-                        <Trophy className="h-8 w-8 text-warning-foreground" />
+                  <div className="h-28 bg-gradient-to-br from-warning/20 to-destructive/20 flex items-center justify-center flex-shrink-0">
+                    <div className="h-14 w-14 rounded-2xl bg-warning/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Trophy className="h-7 w-7 text-warning" />
                     </div>
-                      
-                      {/* Shimmer effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   </div>
-                    
-                    <CardContent className="p-6 flex flex-col flex-1 relative z-10">
-                      <h3 className="font-bold text-xl text-foreground mb-2 line-clamp-1 group-hover:text-warning transition-colors">Yuqori daraja</h3>
-                      <p className="text-sm text-foreground/80 mb-4 line-clamp-2 flex-1 leading-relaxed">Murakkab formulalar va tezlik</p>
-                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
-                        <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg shadow-amber-500/30 px-3 py-1">
-                          <Crown className="h-3.5 w-3.5 mr-1" />
-                          <span className="font-bold">Premium</span>
-                        </Badge>
-                        <span className="text-sm font-semibold text-foreground flex items-center gap-1">
-                          <BookOpen className="h-4 w-4 text-warning" />
-                          20+ dars
-                        </span>
+                  <CardContent className="p-4 flex flex-col flex-1">
+                    <h3 className="font-bold text-foreground mb-1 line-clamp-1">Yuqori daraja</h3>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-1">Murakkab formulalar va tezlik</p>
+                    <div className="flex items-center justify-between mt-auto">
+                      <span className="text-xs text-warning font-medium">Premium</span>
+                      <span className="text-xs text-muted-foreground">20+ dars</span>
                     </div>
                   </CardContent>
-                  </div>
                 </Card>
               </div>
 
@@ -1139,56 +1017,62 @@ export const NumberTrainer = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="daily" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`daily-${activeTab}`}>
+            <div className="max-w-2xl mx-auto">
+              <DailyChallenge />
+            </div>
+          </TabsContent>
+
           <TabsContent value="multiplayer" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`multiplayer-${activeTab}`}>
             <MultiplayerMode onBack={() => setActiveTab('train')} />
           </TabsContent>
 
           <TabsContent value="train" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`train-${activeTab}`}>
-            <div className="max-w-4xl mx-auto space-y-6 pt-16 md:pt-20">
+            <div className="max-w-4xl mx-auto space-y-6">
               {/* Mini statistika */}
               {user && stats.totalProblems > 0 && (
-                <div className="grid grid-cols-2 gap-4 md:gap-6">
-                  <div className="group relative p-5 bg-white dark:bg-card rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex flex-col gap-3">
-                      <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <Target className="h-6 w-6 text-green-600 dark:text-green-500" />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="group relative p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <Target className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-foreground mb-1">{stats.totalProblems}</p>
-                        <p className="text-sm text-muted-foreground">Jami mashqlar</p>
+                        <p className="text-xl font-bold text-foreground">{stats.totalProblems}</p>
+                        <p className="text-xs text-muted-foreground">Jami mashqlar</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-5 bg-white dark:bg-card rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex flex-col gap-3">
-                      <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <Check className="h-6 w-6 text-green-600 dark:text-green-500" />
+                  <div className="group relative p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-success/10 flex items-center justify-center">
+                        <Check className="h-5 w-5 text-success" />
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-green-600 dark:text-green-500 mb-1">{accuracy}%</p>
-                        <p className="text-sm text-muted-foreground">Aniqlik</p>
+                        <p className="text-xl font-bold text-success">{accuracy}%</p>
+                        <p className="text-xs text-muted-foreground">Aniqlik</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-5 bg-white dark:bg-card rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex flex-col gap-3">
-                      <div className="h-12 w-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                        <Clock className="h-6 w-6 text-blue-600 dark:text-blue-500" />
+                  <div className="group relative p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <Clock className="h-5 w-5 text-blue-500" />
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-blue-600 dark:text-blue-500 mb-1">{stats.averageTime.toFixed(1)}s</p>
-                        <p className="text-sm text-muted-foreground">O'rtacha vaqt</p>
+                        <p className="text-xl font-bold text-blue-500">{stats.averageTime.toFixed(1)}s</p>
+                        <p className="text-xs text-muted-foreground">O'rtacha vaqt</p>
                       </div>
                     </div>
                   </div>
-                  <div className="group relative p-5 bg-white dark:bg-card rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex flex-col gap-3">
-                      <div className="h-12 w-12 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                        <Flame className="h-6 w-6 text-orange-600 dark:text-orange-500" />
+                  <div className="group relative p-4 bg-card/80 backdrop-blur-sm rounded-2xl border border-border/50 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-warning/10 flex items-center justify-center">
+                        <Flame className="h-5 w-5 text-warning" />
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-orange-600 dark:text-orange-500 mb-1">{stats.bestStreak}</p>
-                        <p className="text-sm text-muted-foreground">Eng uzun seriya</p>
+                        <p className="text-xl font-bold text-warning">{stats.bestStreak}</p>
+                        <p className="text-xs text-muted-foreground">Eng uzun seriya</p>
                       </div>
                     </div>
                   </div>
@@ -1196,51 +1080,49 @@ export const NumberTrainer = () => {
               )}
 
               {/* Settings Cards */}
-              <div className="grid md:grid-cols-2 gap-6 pt-8 md:pt-12">
+              <div className="grid md:grid-cols-2 gap-6">
                 {/* Misol turi */}
-                <Card className="bg-white dark:bg-card border-border/50 shadow-md overflow-hidden flex flex-col">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                      <div className="h-8 w-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <Square className="h-4 w-4 text-green-600 dark:text-green-500" />
+                <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-md overflow-hidden h-[280px] flex flex-col">
+                  <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Square className="h-4 w-4 text-primary" />
                       </div>
                       Misol turi
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-3">
                     <RadioGroup
                       value={formulaType}
                       onValueChange={(v) => setFormulaType(v as FormulaType)}
-                      className="grid grid-cols-2 gap-3"
+                      className="grid grid-cols-2 gap-2"
                     >
                       {[
-                        { value: 'oddiy', label: 'Oddiy', icon: BookOpen },
-                        { value: 'formula5', label: 'Formula 5', icon: Calendar },
-                        { value: 'formula10plus', label: 'Formula 10+', icon: Plus },
-                        { value: 'formula10minus', label: 'Formula 10-', icon: Minus },
-                      ].map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <div key={item.value} className="flex items-center">
-                            <RadioGroupItem
-                              value={item.value}
-                              id={`formula-${item.value}`}
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor={`formula-${item.value}`}
-                              className={`flex items-center gap-2.5 w-full px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 border-2 
-                                ${formulaType === item.value 
-                                  ? 'bg-green-600 text-white border-green-600 shadow-md' 
-                                  : 'bg-gray-100 dark:bg-gray-800 border-transparent hover:bg-gray-200 dark:hover:bg-gray-700'
-                                }`}
-                            >
-                              <Icon className={`h-5 w-5 ${formulaType === item.value ? 'text-white' : 'text-gray-600 dark:text-gray-400'}`} />
-                              <span className="font-medium text-sm">{item.label}</span>
-                            </Label>
-                          </div>
-                        );
-                      })}
+                        { value: 'oddiy', label: 'Oddiy', icon: '📘' },
+                        { value: 'formula5', label: 'Formula 5', icon: '🔢' },
+                        { value: 'formula10plus', label: 'Formula 10+', icon: '➕' },
+                        { value: 'formula10minus', label: 'Formula 10-', icon: '➖' },
+                        { value: 'hammasi', label: 'Hammasi', icon: '🎯' },
+                      ].map((item) => (
+                        <div key={item.value} className="flex items-center">
+                          <RadioGroupItem
+                            value={item.value}
+                            id={`formula-${item.value}`}
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor={`formula-${item.value}`}
+                            className={`flex items-center gap-2 w-full px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 border-2 
+                              ${formulaType === item.value 
+                                ? 'bg-primary text-primary-foreground border-primary shadow-glow' 
+                                : 'bg-muted/50 border-transparent hover:bg-muted hover:border-border'
+                              }`}
+                          >
+                            <span className="text-lg">{item.icon}</span>
+                            <span className="font-medium text-sm">{item.label}</span>
+                          </Label>
+                        </div>
+                      ))}
                     </RadioGroup>
                   </CardContent>
                 </Card>
@@ -1412,9 +1294,9 @@ export const NumberTrainer = () => {
           </TabsContent>
 
           <TabsContent value="stats" className={`mt-0 mb-20 md:mb-0 ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`} key={`stats-${activeTab}`}>
-            <div className="max-w-4xl mx-auto space-y-6 pt-8 md:pt-12">
+            <div className="max-w-4xl mx-auto space-y-6">
               {/* Statistika kartalar */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <Card className="bg-card/80 backdrop-blur-sm border-border/50 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden h-[160px] flex flex-col relative">
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary-glow" />
                   <CardContent className="p-5 text-center flex flex-col items-center justify-center flex-1">
@@ -1513,8 +1395,6 @@ export const NumberTrainer = () => {
           </TabsContent>
         </Tabs>
       </div>
-      
-      <Footer />
     </div>
   );
 };

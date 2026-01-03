@@ -5,10 +5,6 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
   :root {
     /* IQROMAX Brand Colors */
     --background: 45 100% 98%;
@@ -426,32 +422,3 @@
 .voice-wave-bar:nth-child(3) { animation-delay: 0.2s; height: 100%; }
 .voice-wave-bar:nth-child(4) { animation-delay: 0.3s; height: 80%; }
 .voice-wave-bar:nth-child(5) { animation-delay: 0.15s; height: 60%; }
-
-/* Shimmer animation for progress bars */
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s ease-in-out infinite;
-}
-
-@keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.05);
-  }
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 3s ease-in-out infinite;
-}

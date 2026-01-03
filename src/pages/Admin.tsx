@@ -37,8 +37,6 @@ import { AdminUserCharts } from '@/components/AdminUserCharts';
 import { FileManager } from '@/components/FileManager';
 import { TestimonialsManager } from '@/components/TestimonialsManager';
 import { AdminReports } from '@/components/AdminReports';
-import { AdminPayments } from '@/components/AdminPayments';
-import { PricingManager } from '@/components/PricingManager';
 import { CompetitionsManager } from '@/components/CompetitionsManager';
 import { TeamMembersManager } from '@/components/TeamMembersManager';
 import { 
@@ -50,8 +48,6 @@ import {
   Clock,
   User,
   ShieldCheck,
-  CreditCard,
-  DollarSign,
   Loader2,
   Check,
   X,
@@ -658,14 +654,6 @@ const Admin = () => {
                     <BarChart2 className="h-4 w-4 text-purple-500 group-data-[state=active]:text-white" />
                     <span className="text-[10px] font-medium truncate">Hisobot</span>
                   </TabsTrigger>
-                  <TabsTrigger value="payments" className="relative group flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-300 hover:bg-green-500/15 hover:-translate-y-0.5 data-[state=active]:bg-gradient-to-br data-[state=active]:from-green-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                    <CreditCard className="h-4 w-4 text-green-500 group-data-[state=active]:text-white" />
-                    <span className="text-[10px] font-medium truncate">To'lovlar</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="pricing" className="relative group flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-300 hover:bg-emerald-500/15 hover:-translate-y-0.5 data-[state=active]:bg-gradient-to-br data-[state=active]:from-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                    <DollarSign className="h-4 w-4 text-emerald-500 group-data-[state=active]:text-white" />
-                    <span className="text-[10px] font-medium truncate">Narxlar</span>
-                  </TabsTrigger>
                   <TabsTrigger value="competitions" className="relative group flex flex-col items-center justify-center gap-0.5 py-1.5 px-1 rounded-lg transition-all duration-300 hover:bg-yellow-500/15 hover:-translate-y-0.5 data-[state=active]:bg-gradient-to-br data-[state=active]:from-yellow-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
                     <Trophy className="h-4 w-4 text-yellow-500 group-data-[state=active]:text-white" />
                     <span className="text-[10px] font-medium truncate">Musobaqa</span>
@@ -771,16 +759,6 @@ const Admin = () => {
             {/* Reports Tab */}
             <TabsContent value="reports">
               <AdminReports />
-            </TabsContent>
-
-            {/* Payments Tab */}
-            <TabsContent value="payments">
-              <AdminPayments />
-            </TabsContent>
-
-            {/* Pricing Tab */}
-            <TabsContent value="pricing">
-              <PricingManager />
             </TabsContent>
 
             {/* Competitions Tab */}

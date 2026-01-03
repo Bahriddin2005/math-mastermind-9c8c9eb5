@@ -192,9 +192,9 @@ export const WeeklyCompetition = () => {
 
   if (!currentChallenge) {
     return (
-      <Card className="bg-gradient-to-br from-purple-500/5 to-pink-500/5 border-purple-500/20 h-full flex flex-col">
-        <CardContent className="py-8 flex-1 flex items-center justify-center">
-          <div className="text-center w-full">
+      <Card className="bg-gradient-to-br from-purple-500/5 to-pink-500/5 border-purple-500/20">
+        <CardContent className="py-8">
+          <div className="text-center">
             <div className="w-16 h-16 rounded-2xl bg-purple-500/10 flex items-center justify-center mx-auto mb-4">
               <Calendar className="h-8 w-8 text-purple-500" />
             </div>
@@ -207,7 +207,9 @@ export const WeeklyCompetition = () => {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-transparent border-purple-500/20 overflow-hidden relative h-full flex flex-col">
+    <div className="space-y-4">
+      {/* Challenge Info Card */}
+      <Card className="bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-transparent border-purple-500/20 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl" />
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -223,7 +225,7 @@ export const WeeklyCompetition = () => {
             )}
           </div>
         </CardHeader>
-      <CardContent className="space-y-4 flex-1 flex flex-col">
+        <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <Badge variant="outline">{getFormulaLabel(currentChallenge.formula_type)}</Badge>
             <Badge variant="outline">{currentChallenge.digit_count} xonali</Badge>
@@ -261,73 +263,85 @@ export const WeeklyCompetition = () => {
             </div>
           )}
 
-        {/* Leaderboard Section */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center gap-2 mb-2">
+          {user && (
+            <Button 
+              className="w-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              onClick={() => navigate("/weekly-game")}
+            >
+              <Play className="h-4 w-4" />
+              O'ynash
+            </Button>
+          )}
+
+          {!user && (
+            <div className="text-center py-2">
+              <p className="text-sm text-muted-foreground mb-2">Ishtirok etish uchun tizimga kiring</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Leaderboard */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-base">
             <Users className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">Haftalik reyting</span>
-          </div>
-          <div className="flex-1 overflow-y-auto max-h-32">
+            Haftalik reyting
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
           {!leaderboard?.length ? (
-              <div className="text-center py-4 text-muted-foreground text-xs">
-                Hali ishtirokchilar yo'q
+            <div className="text-center py-6 text-muted-foreground text-sm">
+              Hali ishtirokchilar yo'q. Birinchi bo'ling!
             </div>
           ) : (
-              <div className="space-y-1.5">
-                {leaderboard.slice(0, 3).map((result, index) => {
+            <div className="space-y-2">
+              {leaderboard.map((result, index) => {
                 const isCurrentUser = result.user_id === user?.id;
                 return (
                   <div
                     key={result.id}
-                      className={`flex items-center gap-2 p-1.5 rounded-lg text-xs transition-all ${
+                    className={`flex items-center gap-3 p-2 rounded-lg transition-all ${
                       isCurrentUser
-                          ? "bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/40"
+                        ? "bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-2 border-primary/40 animate-pulse-slow shadow-lg shadow-primary/20 ring-2 ring-primary/20"
                         : index < 3
                         ? "bg-secondary/50"
                         : "hover:bg-secondary/30"
                     }`}
                   >
-                      <div className="w-5 flex items-center justify-center">{getRankIcon(index)}</div>
-                      <Avatar className={`h-6 w-6 ${isCurrentUser ? "ring-1 ring-primary" : ""}`}>
+                    <div className="w-6 flex items-center justify-center">{getRankIcon(index)}</div>
+                    <Avatar className={`h-8 w-8 ${isCurrentUser ? "ring-2 ring-primary" : ""}`}>
                       <AvatarImage src={result.avatar_url || undefined} />
-                        <AvatarFallback className="text-[10px]">
+                      <AvatarFallback className="text-xs">
                         {result.username.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                        <div className={`font-medium truncate ${isCurrentUser ? "text-primary font-bold" : ""}`}>
+                      <div className={`font-medium text-sm truncate ${isCurrentUser ? "text-primary font-bold" : ""}`}>
                         {result.username}
+                        {isCurrentUser && (
+                          <Badge variant="secondary" className="ml-2 text-[10px] py-0 px-1.5 bg-primary/20 text-primary">
+                            Siz
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {result.games_played} o'yin · {result.correct_answers} to'g'ri
                       </div>
                     </div>
                     <div className="text-right">
-                        <div className={`font-bold ${isCurrentUser ? "text-primary" : ""}`}>
+                      <div className={`font-bold ${isCurrentUser ? "text-primary text-lg" : "text-primary"}`}>
                         {result.total_score}
                       </div>
+                      <div className="text-[10px] text-muted-foreground">ball</div>
                     </div>
                   </div>
                 );
               })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {user && (
-          <Button 
-            className="w-full gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 mt-auto"
-            onClick={() => navigate("/weekly-game")}
-          >
-            <Play className="h-4 w-4" />
-            O'ynash
-          </Button>
-        )}
-
-        {!user && (
-          <div className="text-center py-2 mt-auto">
-            <p className="text-sm text-muted-foreground mb-2">Ishtirok etish uchun tizimga kiring</p>
             </div>
           )}
         </CardContent>
       </Card>
+    </div>
   );
 };
