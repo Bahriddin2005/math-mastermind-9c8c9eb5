@@ -1,9 +1,16 @@
-import { useRef, useCallback, useState } from 'react';
+import { useRef, useCallback, useState, useEffect } from 'react';
 
 interface TTSOptions {
   voiceId?: string;
   useElevenLabs?: boolean;
 }
+
+// Helper to read ttsProvider setting from localStorage
+const getTtsProvider = (): 'browser' | 'elevenlabs' => {
+  if (typeof window === 'undefined') return 'browser';
+  const saved = localStorage.getItem('ttsProvider');
+  return saved === 'elevenlabs' ? 'elevenlabs' : 'browser';
+};
 
 export const useTTS = (options: TTSOptions = {}) => {
   const { voiceId = 'EXAVITQu4vr4xnSDxMaL', useElevenLabs = true } = options;
@@ -12,6 +19,24 @@ export const useTTS = (options: TTSOptions = {}) => {
   const elevenLabsDisabledRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ttsProvider, setTtsProvider] = useState<'browser' | 'elevenlabs'>(getTtsProvider);
+
+  // Listen for storage changes (in case user changes setting in another tab or same page)
+  useEffect(() => {
+    const onStorage = () => setTtsProvider(getTtsProvider());
+    window.addEventListener('storage', onStorage);
+    // Also re-check on visibility change (same-tab updates)
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        setTtsProvider(getTtsProvider());
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
   // Web Speech API fallback
   const speakWithBrowser = useCallback((text: string) => {
@@ -113,8 +138,11 @@ export const useTTS = (options: TTSOptions = {}) => {
   );
 
   // Main speak function - formats math operations
+  // Respects global ttsProvider setting from localStorage
   const speakNumber = useCallback(
     (number: string, isAddition: boolean, isFirst: boolean) => {
+      // Re-read provider in case changed after hook mounted
+      const currentProvider = getTtsProvider();
       let text: string;
 
       if (isFirst) {
@@ -123,7 +151,11 @@ export const useTTS = (options: TTSOptions = {}) => {
         text = isAddition ? `qo'sh ${number}` : `ayir ${number}`;
       }
 
-      if (useElevenLabs && !elevenLabsDisabledRef.current) {
+      // Use ElevenLabs only if provider is elevenlabs, useElevenLabs option is true, and not disabled due to permission error
+      const shouldUseElevenLabs =
+        currentProvider === 'elevenlabs' && useElevenLabs && !elevenLabsDisabledRef.current;
+
+      if (shouldUseElevenLabs) {
         speakWithElevenLabs(text);
       } else {
         speakWithBrowser(text);

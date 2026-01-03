@@ -78,13 +78,29 @@ const Settings = () => {
     const saved = localStorage.getItem('numberTrainer_voiceEnabled');
     return saved !== null ? saved === 'true' : true;
   });
-  
+
+  // TTS provider settings: 'browser' or 'elevenlabs'
+  const [ttsProvider, setTtsProvider] = useState<'browser' | 'elevenlabs'>(() => {
+    const saved = localStorage.getItem('ttsProvider');
+    return saved === 'elevenlabs' ? 'elevenlabs' : 'browser';
+  });
+
   const toggleVoice = () => {
     const newValue = !voiceEnabled;
     setVoiceEnabled(newValue);
     localStorage.setItem('numberTrainer_voiceEnabled', String(newValue));
     localStorage.setItem('flashCard_voiceEnabled', String(newValue));
     toast.success(newValue ? "Ovoz yoqildi" : "Ovoz o'chirildi");
+  };
+
+  const handleTtsProviderChange = (provider: 'browser' | 'elevenlabs') => {
+    setTtsProvider(provider);
+    localStorage.setItem('ttsProvider', provider);
+    toast.success(
+      provider === 'elevenlabs'
+        ? "ElevenLabs professional ovozi tanlandi"
+        : "Brauzer ovozi tanlandi"
+    );
   };
 
   useEffect(() => {
@@ -585,6 +601,7 @@ const Settings = () => {
               </CardHeader>
               <CardContent className="pt-3 sm:pt-4 px-4 sm:px-6">
                 <div className="space-y-3 sm:space-y-4">
+                  {/* Voice on/off toggle */}
                   <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-secondary/50 dark:bg-secondary/20 border border-border/50 dark:border-border/20">
                     <div className="flex items-center gap-2 sm:gap-3">
                       {voiceEnabled ? (
@@ -594,10 +611,10 @@ const Settings = () => {
                       )}
                       <div>
                         <p className="font-medium text-xs sm:text-sm text-foreground dark:text-foreground/95">
-                          ElevenLabs ovozli o'qish
+                          Ovozli o'qish
                         </p>
                         <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/80">
-                          {voiceEnabled ? "Professional ovoz bilan sonlar o'qiladi" : "Ovoz o'chirilgan"}
+                          {voiceEnabled ? "Sonlar ovozda o'qiladi" : "Ovoz o'chirilgan"}
                         </p>
                       </div>
                     </div>
@@ -617,7 +634,46 @@ const Settings = () => {
                       />
                     </button>
                   </div>
+
+                  {/* TTS Provider selection */}
+                  {voiceEnabled && (
+                    <div className="p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-secondary/50 dark:bg-secondary/20 border border-border/50 dark:border-border/20 space-y-2">
+                      <p className="font-medium text-xs sm:text-sm text-foreground dark:text-foreground/95 mb-2">
+                        TTS provider
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => handleTtsProviderChange('browser')}
+                          className={`p-2 sm:p-3 rounded-lg text-center transition-all ${
+                            ttsProvider === 'browser'
+                              ? 'bg-primary text-primary-foreground shadow-md'
+                              : 'bg-background dark:bg-secondary/30 hover:bg-muted text-foreground border border-border/50'
+                          }`}
+                        >
+                          <p className="font-medium text-xs sm:text-sm">Brauzer</p>
+                          <p className="text-[9px] sm:text-[10px] opacity-80">Bepul, tez</p>
+                        </button>
+                        <button
+                          onClick={() => handleTtsProviderChange('elevenlabs')}
+                          className={`p-2 sm:p-3 rounded-lg text-center transition-all ${
+                            ttsProvider === 'elevenlabs'
+                              ? 'bg-primary text-primary-foreground shadow-md'
+                              : 'bg-background dark:bg-secondary/30 hover:bg-muted text-foreground border border-border/50'
+                          }`}
+                        >
+                          <p className="font-medium text-xs sm:text-sm">ElevenLabs</p>
+                          <p className="text-[9px] sm:text-[10px] opacity-80">Professional AI</p>
+                        </button>
+                      </div>
+                      {ttsProvider === 'elevenlabs' && (
+                        <p className="text-[9px] sm:text-[10px] text-amber-500 dark:text-amber-400 mt-1">
+                          ⚠️ ElevenLabs API key text_to_speech ruxsatiga ega bo'lishi kerak
+                        </p>
+                      )}
+                    </div>
+                  )}
                   
+                  {/* Sound effects toggle */}
                   <div className="flex items-center justify-between p-2.5 sm:p-3 rounded-lg sm:rounded-xl bg-secondary/50 dark:bg-secondary/20 border border-border/50 dark:border-border/20">
                     <div className="flex items-center gap-2 sm:gap-3">
                       {soundEnabled ? (
@@ -650,10 +706,6 @@ const Settings = () => {
                       />
                     </button>
                   </div>
-                  
-                  <p className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/70">
-                    ElevenLabs professional AI ovozi mashq paytida sonlarni o'qiydi
-                  </p>
                 </div>
               </CardContent>
             </Card>
