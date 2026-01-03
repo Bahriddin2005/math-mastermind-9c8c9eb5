@@ -1,14 +1,14 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Dumbbell, BookOpen, Trophy, User } from 'lucide-react';
+import { Home, Dumbbell, BookOpen, Trophy, Calculator } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
   { icon: Home, label: "Bosh sahifa", path: "/" },
   { icon: Dumbbell, label: "Mashq", path: "/train" },
+  { icon: Calculator, label: "Abakus", path: "/mental-arithmetic" },
   { icon: BookOpen, label: "Kurslar", path: "/courses" },
   { icon: Trophy, label: "Haftalik", path: "/weekly-game" },
-  { icon: User, label: "Profil", path: "/settings" },
 ];
 
 export const MobileBottomNav = () => {
@@ -28,7 +28,7 @@ export const MobileBottomNav = () => {
             (item.path !== '/' && location.pathname.startsWith(item.path));
           
           // If not logged in, show auth for protected routes
-          const href = !user && ['/train', '/courses', '/weekly-game', '/settings'].includes(item.path) 
+          const href = !user && ['/train', '/courses', '/weekly-game', '/mental-arithmetic'].includes(item.path) 
             ? '/auth' 
             : item.path;
 

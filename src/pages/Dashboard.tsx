@@ -16,7 +16,7 @@ import { InfoCarousel } from '@/components/InfoCarousel';
 import { TestimonialForm } from '@/components/TestimonialForm';
 import { GuestDashboard } from '@/components/GuestDashboard';
 import { Footer } from '@/components/Footer';
-import { MentalArithmeticPractice } from '@/components/MentalArithmeticPractice';
+
 import { WeeklyCompetition } from '@/components/WeeklyCompetition';
 import { UserBadges } from '@/components/UserBadges';
 import { ProgressVisualization } from '@/components/ProgressVisualization';
@@ -425,22 +425,46 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Mental Arifmetika Mashqi */}
-            <div className="space-y-4 sm:space-y-6">
-              <div className="flex items-center justify-between opacity-0 animate-slide-up" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg">
-                    <Calculator className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            {/* Mental Arifmetika Card - Link to dedicated page */}
+            <Card 
+              className="overflow-hidden border-border/40 cursor-pointer hover:shadow-xl transition-all group opacity-0 animate-slide-up"
+              style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}
+              onClick={() => navigate('/mental-arithmetic')}
+            >
+              <div className="p-5 sm:p-6 bg-gradient-to-br from-amber-500 to-orange-500 text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+                
+                <div className="relative z-10 flex items-center gap-4">
+                  <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Calculator className="h-7 w-7 sm:h-8 sm:w-8" />
                   </div>
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-display font-bold text-foreground">Mental Arifmetika</h2>
-                    <p className="text-xs sm:text-sm text-muted-foreground">Abacus bilan mashq qiling</p>
+                  <div className="flex-1">
+                    <h2 className="text-xl sm:text-2xl font-display font-bold mb-1">Mental Arifmetika</h2>
+                    <p className="text-sm opacity-90">Abakus bilan mashq qiling</p>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                    <Play className="h-5 w-5" />
+                    <span className="font-medium">Boshlash</span>
                   </div>
                 </div>
-                <div className="hidden sm:block h-px flex-1 mx-6 bg-gradient-to-r from-border to-transparent" />
+                
+                <div className="relative z-10 mt-4 grid grid-cols-3 gap-3 text-center">
+                  <div className="p-2 rounded-lg bg-white/10 backdrop-blur-sm">
+                    <p className="text-lg font-bold">10+</p>
+                    <p className="text-[10px] opacity-80">Formulalar</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/10 backdrop-blur-sm">
+                    <p className="text-lg font-bold">⚡</p>
+                    <p className="text-[10px] opacity-80">Flash-kartalar</p>
+                  </div>
+                  <div className="p-2 rounded-lg bg-white/10 backdrop-blur-sm">
+                    <p className="text-lg font-bold">🏆</p>
+                    <p className="text-[10px] opacity-80">Multiplayer</p>
+                  </div>
+                </div>
               </div>
-              <MentalArithmeticPractice />
-            </div>
+            </Card>
 
             {/* Info Carousel & Testimonial Form */}
             <div className="space-y-4">
