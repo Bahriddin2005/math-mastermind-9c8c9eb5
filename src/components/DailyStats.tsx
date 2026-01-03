@@ -100,25 +100,27 @@ export const DailyStats = ({
   const trend = getTrend();
 
   return (
-    <Card className="border-border/40 shadow-sm overflow-hidden opacity-0 animate-slide-up" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
-      <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-accent/5">
+    <Card className="border-border/40 dark:border-border/20 shadow-sm dark:shadow-lg dark:shadow-black/20 overflow-hidden opacity-0 animate-slide-up bg-card dark:bg-card/95" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
+      <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 via-accent/5 to-transparent dark:from-primary/10 dark:via-accent/10 dark:to-transparent">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-lg flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
+            <div className="h-8 w-8 rounded-lg bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+              <BarChart3 className="h-4 w-4 text-primary" />
+            </div>
             <span className="hidden sm:inline">Statistika</span>
             <span className="sm:hidden">Stat</span>
           </CardTitle>
           
-          {/* Period Tabs */}
-          <div className="flex items-center bg-secondary/60 rounded-lg p-0.5">
+          {/* Period Tabs - Enhanced for dark mode */}
+          <div className="flex items-center bg-secondary/60 dark:bg-secondary/40 rounded-lg p-0.5 border border-border/20 dark:border-border/30">
             {periods.map((period) => (
               <button
                 key={period.key}
                 onClick={() => setActivePeriod(period.key)}
                 className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${
                   activePeriod === period.key
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-sm dark:shadow-primary/30'
+                    : 'text-muted-foreground hover:text-foreground dark:hover:text-foreground/90'
                 }`}
               >
                 {period.shortLabel}
@@ -129,15 +131,15 @@ export const DailyStats = ({
       </CardHeader>
       <CardContent className="pt-4">
         <div className="grid grid-cols-2 gap-3">
-          {/* Ball + Sparkline */}
-          <div className="col-span-2 p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
+          {/* Ball + Sparkline - Enhanced dark mode */}
+          <div className="col-span-2 p-4 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent dark:from-primary/15 dark:via-primary/10 dark:to-primary/5 border border-primary/20 dark:border-primary/30">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-xl bg-primary/20 dark:bg-primary/30 flex items-center justify-center shadow-inner dark:shadow-primary/20">
                   <Trophy className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">{getPeriodLabel()} ball</p>
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground/80">{getPeriodLabel()} ball</p>
                   <div className="flex items-baseline gap-2">
                     <p className="text-3xl font-display font-bold text-primary">{stats.score}</p>
                     {trend.direction !== 'neutral' && trend.percent > 0 && (
@@ -149,15 +151,15 @@ export const DailyStats = ({
                 </div>
               </div>
               
-              {/* Mini Sparkline Chart */}
+              {/* Mini Sparkline Chart - Better dark mode colors */}
               {filteredChartData.length > 1 && (
                 <div className="w-24 h-12 sm:w-32 sm:h-14">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={filteredChartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="sparklineGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
-                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.5}/>
+                          <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05}/>
                         </linearGradient>
                       </defs>
                       <Tooltip 
@@ -166,7 +168,8 @@ export const DailyStats = ({
                           border: '1px solid hsl(var(--border))',
                           borderRadius: '8px',
                           fontSize: '12px',
-                          padding: '6px 10px'
+                          padding: '6px 10px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                         }}
                         labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
                         formatter={(value: number) => [`${value} ball`, '']}
@@ -188,50 +191,52 @@ export const DailyStats = ({
             </div>
           </div>
 
-          {/* Yechilgan misollar */}
-          <div className="p-3 rounded-xl bg-accent/10 border border-accent/20">
+          {/* Yechilgan misollar - Enhanced */}
+          <div className="p-3 rounded-xl bg-accent/10 dark:bg-accent/15 border border-accent/20 dark:border-accent/30 transition-colors">
             <div className="flex items-center gap-2 mb-1">
               <Target className="h-4 w-4 text-accent" />
-              <span className="text-xs text-muted-foreground">Yechilgan</span>
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground/80">Yechilgan</span>
             </div>
             <p className="text-xl font-display font-bold text-accent">{stats.solved}</p>
-            <span className="text-xs text-muted-foreground">ta misol</span>
+            <span className="text-xs text-muted-foreground dark:text-muted-foreground/70">ta misol</span>
           </div>
 
-          {/* Aniqlik */}
-          <div className="p-3 rounded-xl bg-success/10 border border-success/20">
+          {/* Aniqlik - Enhanced */}
+          <div className="p-3 rounded-xl bg-success/10 dark:bg-success/15 border border-success/20 dark:border-success/30 transition-colors">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4 text-success" />
-              <span className="text-xs text-muted-foreground">Aniqlik</span>
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground/80">Aniqlik</span>
             </div>
             <p className="text-xl font-display font-bold text-success">{stats.accuracy}%</p>
-            <span className="text-xs text-muted-foreground">{getPeriodLabel().toLowerCase()}</span>
+            <span className="text-xs text-muted-foreground dark:text-muted-foreground/70">{getPeriodLabel().toLowerCase()}</span>
           </div>
 
-          {/* Eng yaxshi seriya */}
-          <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+          {/* Eng yaxshi seriya - Enhanced */}
+          <div className="p-3 rounded-xl bg-orange-500/10 dark:bg-orange-500/15 border border-orange-500/20 dark:border-orange-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-1">
-              <Zap className="h-4 w-4 text-orange-500" />
-              <span className="text-xs text-muted-foreground">Eng yaxshi</span>
+              <Zap className="h-4 w-4 text-orange-500 dark:text-orange-400" />
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground/80">Eng yaxshi</span>
             </div>
-            <p className="text-xl font-display font-bold text-orange-500">{stats.bestStreak}</p>
-            <span className="text-xs text-muted-foreground">ta ketma-ket</span>
+            <p className="text-xl font-display font-bold text-orange-500 dark:text-orange-400">{stats.bestStreak}</p>
+            <span className="text-xs text-muted-foreground dark:text-muted-foreground/70">ta ketma-ket</span>
           </div>
 
-          {/* O'rtacha vaqt */}
-          <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
+          {/* O'rtacha vaqt - Enhanced */}
+          <div className="p-3 rounded-xl bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/20 dark:border-sky-500/30 transition-colors">
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="h-4 w-4 text-sky-500" />
-              <span className="text-xs text-muted-foreground">O'rtacha</span>
+              <Clock className="h-4 w-4 text-sky-500 dark:text-sky-400" />
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground/80">O'rtacha</span>
             </div>
-            <p className="text-xl font-display font-bold text-sky-500">{formatTime(stats.avgTime)}</p>
-            <span className="text-xs text-muted-foreground">har bir misol</span>
+            <p className="text-xl font-display font-bold text-sky-500 dark:text-sky-400">{formatTime(stats.avgTime)}</p>
+            <span className="text-xs text-muted-foreground dark:text-muted-foreground/70">har bir misol</span>
           </div>
 
-          {/* Kunlik seriya */}
-          <div className="col-span-2 flex items-center justify-between p-3 rounded-xl bg-warning/10 border border-warning/20">
+          {/* Kunlik seriya - Enhanced */}
+          <div className="col-span-2 flex items-center justify-between p-3 rounded-xl bg-warning/10 dark:bg-warning/15 border border-warning/20 dark:border-warning/30 transition-colors">
             <div className="flex items-center gap-2">
-              <Flame className="h-5 w-5 text-warning" />
+              <div className="h-8 w-8 rounded-lg bg-warning/20 dark:bg-warning/30 flex items-center justify-center">
+                <Flame className="h-4 w-4 text-warning" />
+              </div>
               <span className="text-sm font-medium">Kunlik seriya</span>
             </div>
             <span className="text-xl font-display font-bold text-warning">
