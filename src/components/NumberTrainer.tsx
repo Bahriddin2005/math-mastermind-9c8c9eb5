@@ -745,8 +745,8 @@ export const NumberTrainer = () => {
         </div>
 
         {/* Asosiy kontent - pastroqda */}
-        <div className="flex-1 flex flex-col items-center justify-end pb-[12vh] sm:pb-[15vh]">
-          <div className="relative max-w-lg w-full space-y-4 sm:space-y-5 animate-fade-in">
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="relative max-w-lg w-full space-y-4 sm:space-y-5 animate-fade-in mx-auto">
             {/* Header */}
             <div className="text-center mb-2">
               <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground dark:text-white">Mashq tugadi!</h2>
