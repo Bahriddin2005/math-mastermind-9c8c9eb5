@@ -873,17 +873,12 @@ export const AbacusFlashCard = ({ onComplete }: AbacusFlashCardProps) => {
 
           {/* Large Display Area for Preview */}
           <div className="flex-1 flex items-center justify-center py-4 xs:py-6 sm:py-8">
-            <div className="text-center space-y-3 sm:space-y-4">
+            <div className="text-center">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-[40px] sm:blur-[60px] scale-125 sm:scale-150" />
                 <div className="relative text-[60px] xs:text-[80px] sm:text-[120px] md:text-[160px] lg:text-[200px] font-bold font-display text-primary/30 dark:text-primary/20 select-none leading-none">
                   ?
                 </div>
-              </div>
-              <div className="flex items-center justify-center gap-2 text-muted-foreground/60">
-                <div className="w-8 h-px bg-border" />
-                <p className="text-xs xs:text-sm">Tayyor bo'lgach boshlang</p>
-                <div className="w-8 h-px bg-border" />
               </div>
             </div>
           </div>
