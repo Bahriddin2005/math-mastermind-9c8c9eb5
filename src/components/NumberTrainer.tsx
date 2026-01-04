@@ -1195,17 +1195,33 @@ export const NumberTrainer = () => {
                   <CardContent className="pt-2 sm:pt-3 px-3 sm:px-4 md:px-6">
                     <RadioGroup
                       value={formulaType}
-                      onValueChange={(v) => setFormulaType(v as FormulaType)}
+                      onValueChange={(v) => {
+                        // Pro obunasi talab qilinadigan formulalar
+                        const proFormulas = ['formula10plus', 'formula10minus', 'hammasi'];
+                        if (proFormulas.includes(v)) {
+                          // Pro versiyaga yo'naltirish
+                          import('sonner').then(({ toast }) => {
+                            toast.info("Bu mavzu Pro obunada mavjud", {
+                              description: "Pro obunaga o'tish uchun Narxlar sahifasiga boring",
+                              action: {
+                                label: "Pro ga o'tish",
+                                onClick: () => navigate('/pricing'),
+                              },
+                            });
+                          });
+                          return;
+                        }
+                        setFormulaType(v as FormulaType);
+                      }}
                       className="grid grid-cols-2 gap-1.5 sm:gap-2"
                     >
                       {[
-                        { value: 'oddiy', label: 'Oddiy', icon: '📘' },
-                        { value: 'formula5', label: 'Formula 5', icon: '🔢' },
-                        { value: 'formula10plus', label: 'Formula 10+', icon: '➕' },
-                        { value: 'formula10minus', label: 'Formula 10-', icon: '➖' },
-                        { value: 'hammasi', label: 'Hammasi', icon: '🎯' },
+                        { value: 'oddiy', label: 'Formulasiz', icon: '📘', isPro: false },
+                        { value: 'formula5', label: 'Kichik formula (5)', icon: '🔢', isPro: false },
+                        { value: 'formula10plus', label: 'Katta formula (10)', icon: '➕', isPro: true },
+                        { value: 'hammasi', label: 'Mix formula', icon: '🎯', isPro: true },
                       ].map((item) => (
-                        <div key={item.value} className="flex items-center">
+                        <div key={item.value} className="flex items-center relative">
                           <RadioGroupItem
                             value={item.value}
                             id={`formula-${item.value}`}
@@ -1214,13 +1230,18 @@ export const NumberTrainer = () => {
                           <Label
                             htmlFor={`formula-${item.value}`}
                             className={`flex items-center gap-1.5 sm:gap-2 w-full px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border-2 
-                              ${formulaType === item.value 
-                                ? 'bg-primary text-primary-foreground border-primary shadow-glow' 
-                                : 'bg-muted/50 dark:bg-slate-800/50 border-transparent hover:bg-muted dark:hover:bg-slate-700 hover:border-border dark:hover:border-slate-600'
+                              ${item.isPro 
+                                ? 'bg-muted/30 dark:bg-slate-800/30 border-dashed border-muted-foreground/30 opacity-70' 
+                                : formulaType === item.value 
+                                  ? 'bg-primary text-primary-foreground border-primary shadow-glow' 
+                                  : 'bg-muted/50 dark:bg-slate-800/50 border-transparent hover:bg-muted dark:hover:bg-slate-700 hover:border-border dark:hover:border-slate-600'
                               }`}
                           >
                             <span className="text-sm sm:text-lg">{item.icon}</span>
                             <span className="font-medium text-xs sm:text-sm">{item.label}</span>
+                            {item.isPro && (
+                              <span className="ml-auto text-[9px] sm:text-[10px] px-1.5 py-0.5 bg-warning/20 text-warning rounded-full font-bold">PRO</span>
+                            )}
                           </Label>
                         </div>
                       ))}
@@ -1308,19 +1329,39 @@ export const NumberTrainer = () => {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1 sm:gap-1.5">
-                      {[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3].map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => setSpeed(s)}
-                          className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 
-                            ${speed === s 
-                              ? 'bg-primary text-primary-foreground shadow-glow' 
-                              : 'bg-muted/70 dark:bg-slate-800 text-muted-foreground dark:text-slate-400 hover:bg-muted dark:hover:bg-slate-700 hover:text-foreground dark:hover:text-white'
-                            }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
+                      {[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3].map((s) => {
+                        // Speed-based color logic
+                        const getSpeedColor = (speedVal: number, isSelected: boolean) => {
+                          if (isSelected) {
+                            if (speedVal <= 0.5) return 'bg-green-500 text-white shadow-green-500/30';
+                            if (speedVal <= 0.6) return 'bg-yellow-500 text-white shadow-yellow-500/30';
+                            if (speedVal <= 0.9) return 'bg-orange-500 text-white shadow-orange-500/30';
+                            if (speedVal === 1) return 'bg-red-500 text-white shadow-red-500/30';
+                            if (speedVal <= 1.5) return 'bg-red-600 text-white shadow-red-600/30';
+                            if (speedVal <= 2) return 'bg-red-700 text-white shadow-red-700/30';
+                            return 'bg-red-900 text-white shadow-red-900/30';
+                          }
+                          // Unselected state - subtle hint of color
+                          if (speedVal <= 0.5) return 'bg-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-500/30';
+                          if (speedVal <= 0.6) return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-500/30';
+                          if (speedVal <= 0.9) return 'bg-orange-500/20 text-orange-700 dark:text-orange-400 hover:bg-orange-500/30';
+                          if (speedVal === 1) return 'bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/30';
+                          if (speedVal <= 1.5) return 'bg-red-600/20 text-red-700 dark:text-red-500 hover:bg-red-600/30';
+                          if (speedVal <= 2) return 'bg-red-700/20 text-red-800 dark:text-red-600 hover:bg-red-700/30';
+                          return 'bg-red-900/20 text-red-900 dark:text-red-700 hover:bg-red-900/30';
+                        };
+                        
+                        return (
+                          <button
+                            key={s}
+                            onClick={() => setSpeed(s)}
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 shadow-sm
+                              ${getSpeedColor(s, speed === s)}`}
+                          >
+                            {s}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1332,11 +1373,11 @@ export const NumberTrainer = () => {
                         <Input
                           type="number"
                           min={1}
-                          max={999}
+                          max={25}
                           value={problemCount}
                           onChange={(e) => {
                             const val = parseInt(e.target.value, 10);
-                            if (!isNaN(val) && val >= 1 && val <= 999) {
+                            if (!isNaN(val) && val >= 1 && val <= 25) {
                               setProblemCount(val);
                             }
                           }}
@@ -1346,7 +1387,7 @@ export const NumberTrainer = () => {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-1 sm:gap-1.5">
-                      {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25, 30, 40, 50].map((num) => (
+                      {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 25].map((num) => (
                         <button
                           key={num}
                           onClick={() => setProblemCount(num)}
