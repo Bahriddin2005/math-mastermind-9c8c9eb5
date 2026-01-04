@@ -9,13 +9,14 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Trophy, CalendarDays, CalendarRange, Clock, Target, 
-  Flame, Star, TrendingUp, Award, Zap, Medal, Crown
+  Flame, Star, TrendingUp, Award, Zap, Medal, Crown, BarChart3, PieChart
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSound } from '@/hooks/useSound';
 import { cn } from '@/lib/utils';
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays } from 'date-fns';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart as RechartsPieChart, Pie, Cell, Legend } from 'recharts';
 
 interface DailyChallengeResult {
   id: string;
@@ -51,6 +52,20 @@ interface UserStats {
   bestWeeklyRank: number;
 }
 
+interface DailyChartData {
+  date: string;
+  score: number;
+  correct: number;
+}
+
+interface WeeklyChartData {
+  week: string;
+  score: number;
+  games: number;
+}
+
+const CHART_COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#10b981', '#f59e0b', '#ef4444'];
+
 const ChallengeStats = () => {
   const { user } = useAuth();
   const { soundEnabled, toggleSound } = useSound();
@@ -68,6 +83,9 @@ const ChallengeStats = () => {
   });
   const [todayLeaderboard, setTodayLeaderboard] = useState<DailyChallengeResult[]>([]);
   const [thisWeekLeaderboard, setThisWeekLeaderboard] = useState<WeeklyChallengeResult[]>([]);
+  const [dailyChartData, setDailyChartData] = useState<DailyChartData[]>([]);
+  const [weeklyChartData, setWeeklyChartData] = useState<WeeklyChartData[]>([]);
+  const [accuracyData, setAccuracyData] = useState<{ name: string; value: number }[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -157,16 +175,49 @@ const ChallengeStats = () => {
           setWeeklyResults(userWeeklyResults);
         }
 
+        const correctCount = userDailyResults?.filter(r => r.is_correct).length || 0;
+        const incorrectCount = (userDailyResults?.length || 0) - correctCount;
+
         setUserStats({
           dailyParticipation: dailyCount || 0,
           weeklyParticipation: weeklyCount || 0,
-          dailyWins: userDailyResults?.filter(r => r.is_correct).length || 0,
+          dailyWins: correctCount,
           weeklyWins: 0,
           totalXpFromChallenges: (userDailyResults?.reduce((sum, r) => sum + r.score, 0) || 0) + 
             (userWeeklyResults?.reduce((sum, r) => sum + r.total_score, 0) || 0),
           bestDailyRank: 1,
           bestWeeklyRank: 1,
         });
+
+        // Prepare daily chart data (last 7 days)
+        const dailyChart: DailyChartData[] = [];
+        const last7Days = Array.from({ length: 7 }, (_, i) => format(subDays(new Date(), 6 - i), 'yyyy-MM-dd'));
+        
+        last7Days.forEach(date => {
+          const dayResults = userDailyResults?.filter(r => 
+            format(new Date(r.created_at), 'yyyy-MM-dd') === date
+          ) || [];
+          dailyChart.push({
+            date: format(new Date(date), 'dd MMM'),
+            score: dayResults.reduce((sum, r) => sum + r.score, 0),
+            correct: dayResults.filter(r => r.is_correct).length,
+          });
+        });
+        setDailyChartData(dailyChart);
+
+        // Prepare weekly chart data
+        const weeklyChart: WeeklyChartData[] = userWeeklyResults?.slice(0, 6).reverse().map((r, i) => ({
+          week: `Hafta ${i + 1}`,
+          score: r.total_score,
+          games: r.games_played,
+        })) || [];
+        setWeeklyChartData(weeklyChart);
+
+        // Prepare accuracy pie chart
+        setAccuracyData([
+          { name: "To'g'ri", value: correctCount },
+          { name: "Noto'g'ri", value: incorrectCount },
+        ]);
       }
 
       setLoading(false);
@@ -239,6 +290,115 @@ const ChallengeStats = () => {
                   <p className="text-xs text-muted-foreground">Jami XP</p>
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {/* Charts Section */}
+          {user && (dailyChartData.length > 0 || weeklyChartData.length > 0) && (
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Daily Score Trend */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                    So'nggi 7 kunlik ball
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={dailyChartData}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                        <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px'
+                          }}
+                        />
+                        <Bar dataKey="score" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Ball" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Accuracy Pie Chart */}
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <PieChart className="h-4 w-4 text-accent" />
+                    Aniqlik statistikasi
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[200px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RechartsPieChart>
+                        <Pie
+                          data={accuracyData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={50}
+                          outerRadius={70}
+                          paddingAngle={5}
+                          dataKey="value"
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          labelLine={false}
+                        >
+                          {accuracyData.map((entry, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={index === 0 ? '#10b981' : '#ef4444'} 
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </RechartsPieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Weekly Score Trend */}
+              {weeklyChartData.length > 0 && (
+                <Card className="md:col-span-2">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      Haftalik ball trendi
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-[200px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={weeklyChartData}>
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                          <XAxis dataKey="week" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                          <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'hsl(var(--card))', 
+                              border: '1px solid hsl(var(--border))',
+                              borderRadius: '8px'
+                            }}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="score" 
+                            stroke="hsl(var(--primary))" 
+                            strokeWidth={2}
+                            dot={{ fill: 'hsl(var(--primary))' }}
+                            name="Ball"
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
 
