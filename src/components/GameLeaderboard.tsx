@@ -19,6 +19,7 @@ interface LeaderboardEntry {
   total_score: number;
   games_played: number;
   rank: number;
+  vip_expires_at: string | null;
 }
 
 interface GameLeaderboardProps {
@@ -57,7 +58,7 @@ export const GameLeaderboard = ({ compact = false }: GameLeaderboardProps) => {
 
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('user_id, username, avatar_url, total_score');
+        .select('user_id, username, avatar_url, total_score, vip_expires_at');
 
       const { data: currencyData } = await supabase
         .from('user_game_currency')
@@ -108,7 +109,8 @@ export const GameLeaderboard = ({ compact = false }: GameLeaderboardProps) => {
               total_coins: currencyMap.get(userId) || 0,
               total_score: scores[period],
               games_played: scores.games,
-              rank: 0
+              rank: 0,
+              vip_expires_at: profile.vip_expires_at || null
             });
           }
         });
@@ -202,6 +204,12 @@ export const GameLeaderboard = ({ compact = false }: GameLeaderboardProps) => {
                     {entry.username}
                     {isCurrentUser && <span className="text-xs ml-1">(siz)</span>}
                   </p>
+                  {entry.vip_expires_at && new Date(entry.vip_expires_at) > new Date() && (
+                    <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[10px] px-1.5 py-0">
+                      <Crown className="h-2.5 w-2.5 mr-0.5" />
+                      VIP
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {entry.games_played} o'yin

@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useGameCurrency } from "@/hooks/useGameCurrency";
+import { useConfetti } from "@/hooks/useConfetti";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
   CheckCircle, Coins, Zap, Calendar, 
-  CalendarDays, Gift, Sparkles
+  CalendarDays, Gift, Sparkles, PartyPopper
 } from "lucide-react";
 
 interface GameTask {
@@ -35,10 +36,12 @@ interface TaskProgress {
 export const GameTasks = () => {
   const { user } = useAuth();
   const { addCoins } = useGameCurrency();
+  const { triggerAchievementConfetti } = useConfetti();
   const [tasks, setTasks] = useState<GameTask[]>([]);
   const [progress, setProgress] = useState<Map<string, TaskProgress>>(new Map());
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState<string | null>(null);
+  const [previousCompletedTasks, setPreviousCompletedTasks] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -70,10 +73,13 @@ export const GameTasks = () => {
 
       if (progressData) {
         const progressMap = new Map<string, TaskProgress>();
+        const currentCompletedTasks = new Set<string>();
+        
         progressData.forEach(p => {
           // Check if task needs reset
-          const isDaily = tasksData?.find(t => t.id === p.task_id)?.task_type === 'daily';
-          const isWeekly = tasksData?.find(t => t.id === p.task_id)?.task_type === 'weekly';
+          const task = tasksData?.find(t => t.id === p.task_id);
+          const isDaily = task?.task_type === 'daily';
+          const isWeekly = task?.task_type === 'weekly';
           
           const resetDate = new Date(p.reset_date);
           const currentDate = new Date(today);
@@ -91,11 +97,39 @@ export const GameTasks = () => {
               progressMap.set(p.task_id, { ...p, current_value: 0, is_completed: false });
             } else {
               progressMap.set(p.task_id, p);
+              if (p.is_completed) currentCompletedTasks.add(p.task_id);
             }
           } else {
             progressMap.set(p.task_id, p);
+            if (p.is_completed) currentCompletedTasks.add(p.task_id);
           }
         });
+        
+        // Check for newly completed tasks and show notification
+        currentCompletedTasks.forEach(taskId => {
+          if (!previousCompletedTasks.has(taskId)) {
+            const task = tasksData?.find(t => t.id === taskId);
+            if (task) {
+              // Trigger confetti and notification for newly completed task
+              triggerAchievementConfetti();
+              toast.success(
+                <div className="flex items-center gap-2">
+                  <PartyPopper className="h-5 w-5 text-yellow-500" />
+                  <div>
+                    <p className="font-bold">Vazifa bajarildi!</p>
+                    <p className="text-sm text-muted-foreground">{task.title}</p>
+                  </div>
+                </div>,
+                {
+                  duration: 5000,
+                  icon: null,
+                }
+              );
+            }
+          }
+        });
+        
+        setPreviousCompletedTasks(currentCompletedTasks);
         setProgress(progressMap);
       }
     } catch (error) {
@@ -161,9 +195,33 @@ export const GameTasks = () => {
         is_completed: false
       })));
 
-      toast.success(`${task.reward_coins} coin va ${task.reward_xp} XP olindi!`, {
-        icon: '🎁'
-      });
+      // Trigger reward animation
+      triggerAchievementConfetti();
+      
+      toast.success(
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center">
+            <Gift className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <p className="font-bold">Mukofot olindi!</p>
+            <p className="text-sm text-muted-foreground flex items-center gap-2">
+              <span className="flex items-center gap-0.5">
+                <Coins className="h-3 w-3 text-yellow-500" />
+                +{task.reward_coins}
+              </span>
+              <span className="flex items-center gap-0.5">
+                <Zap className="h-3 w-3 text-purple-500" />
+                +{task.reward_xp} XP
+              </span>
+            </p>
+          </div>
+        </div>,
+        {
+          duration: 4000,
+          icon: null,
+        }
+      );
     } catch (error) {
       console.error('Error claiming reward:', error);
       toast.error("Xatolik yuz berdi");
