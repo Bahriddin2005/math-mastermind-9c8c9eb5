@@ -10,6 +10,7 @@ import { useGameCurrency } from "@/hooks/useGameCurrency";
 import { useSound } from "@/hooks/useSound";
 import { supabase } from "@/integrations/supabase/client";
 import { GameLeaderboard } from "@/components/GameLeaderboard";
+import { GameTasks } from "@/components/GameTasks";
 import { 
   Coins, Heart, Star, Trophy, ShoppingBag, 
   Play, Lock, Crown, Zap, Target, Gift, Package
@@ -291,6 +292,11 @@ const GameHub = () => {
             </p>
           </Card>
         )}
+
+        {/* Game Tasks */}
+        <div className="mt-6">
+          <GameTasks />
+        </div>
 
         {/* Leaderboard */}
         <div className="mt-6">

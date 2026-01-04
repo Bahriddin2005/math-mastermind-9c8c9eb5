@@ -501,6 +501,45 @@ export type Database = {
         }
         Relationships: []
       }
+      game_tasks: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          reward_coins: number
+          reward_xp: number
+          target_value: number
+          task_type: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          reward_coins?: number
+          reward_xp?: number
+          target_value?: number
+          task_type?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          reward_coins?: number
+          reward_xp?: number
+          target_value?: number
+          task_type?: string
+          title?: string
+        }
+        Relationships: []
+      }
       lesson_questions: {
         Row: {
           content: string
@@ -1422,6 +1461,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_task_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          id: string
+          is_completed: boolean | null
+          reset_date: string
+          task_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          id?: string
+          is_completed?: boolean | null
+          reset_date?: string
+          task_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          id?: string
+          is_completed?: boolean | null
+          reset_date?: string
+          task_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_task_progress_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "game_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       weekly_challenge_results: {
         Row: {
