@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Trophy, Medal, Award, CalendarDays, CalendarRange, Sparkles, Flame, Calculator, Star } from 'lucide-react';
+import { Trophy, Medal, Award, CalendarDays, CalendarRange, Sparkles, Flame, Calculator, Star, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { PlayerProfileDialog } from './PlayerProfileDialog';
@@ -20,6 +20,7 @@ interface LeaderboardEntry {
   avatar_url: string | null;
   level: number;
   total_xp: number;
+  vip_expires_at: string | null;
 }
 
 type TimeFilter = 'all' | 'weekly' | 'daily';
@@ -86,7 +87,7 @@ export const MentalArithmeticLeaderboard = () => {
         
         if (userIds.length > 0) {
           const [profilesResult, gamificationResult] = await Promise.all([
-            supabase.from('profiles').select('id, user_id, username, avatar_url').in('user_id', userIds),
+            supabase.from('profiles').select('id, user_id, username, avatar_url, vip_expires_at').in('user_id', userIds),
             supabase.from('user_gamification').select('user_id, level, total_xp').in('user_id', userIds)
           ]);
 
@@ -118,6 +119,7 @@ export const MentalArithmeticLeaderboard = () => {
                 avatar_url: profile.avatar_url,
                 level: gamification?.level || 1,
                 total_xp: gamification?.total_xp || 0,
+                vip_expires_at: profile.vip_expires_at || null,
               };
             });
 
@@ -317,6 +319,12 @@ export const MentalArithmeticLeaderboard = () => {
                         )}>
                           {entry.username}
                         </p>
+                        {entry.vip_expires_at && new Date(entry.vip_expires_at) > new Date() && (
+                          <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 text-[10px] px-1.5 py-0">
+                            <Crown className="h-2.5 w-2.5 mr-0.5" />
+                            VIP
+                          </Badge>
+                        )}
                         {isCurrentUser && (
                           <Badge variant="secondary" className="text-xs">siz</Badge>
                         )}
