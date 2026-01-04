@@ -11,7 +11,10 @@ import { MentalArithmeticHistory } from './MentalArithmeticHistory';
 import { MentalArithmeticLeaderboard } from './MentalArithmeticLeaderboard';
 import { AbacusFlashCard } from './AbacusFlashCard';
 import { GhostBattle } from './GhostBattle';
+import { GhostBattleStats } from './GhostBattleStats';
 import { MultiplayerCompetition } from './MultiplayerCompetition';
+import { ComboEffect } from './ComboEffect';
+import { LevelUpModal } from './LevelUpModal';
 import { Play, RotateCcw, Check, Settings2, Zap, BarChart3, Trophy, Lightbulb, Swords, Ghost } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -208,6 +211,9 @@ export const MentalArithmeticPractice = () => {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [refreshHistory, setRefreshHistory] = useState(0);
   
+  // Combo effect state
+  const [showComboEffect, setShowComboEffect] = useState(false);
+  
   // Statistika
   const [stats, setStats] = useState<PracticeStats>({
     totalProblems: 0,
@@ -398,6 +404,11 @@ export const MentalArithmeticPractice = () => {
     const newStreak = isCorrect ? currentStreak + 1 : 0;
     setCurrentStreak(newStreak);
     
+    // Trigger combo effect for streaks of 2+
+    if (isCorrect && newStreak >= 2) {
+      setShowComboEffect(true);
+    }
+    
     // Statistikani yangilash
     setStats(prev => ({
       ...prev,
@@ -502,6 +513,21 @@ export const MentalArithmeticPractice = () => {
 
   return (
     <div className="space-y-4 sm:space-y-6 px-0">
+      {/* Combo Effect */}
+      <ComboEffect
+        combo={currentStreak}
+        showEffect={showComboEffect}
+        onEffectComplete={() => setShowComboEffect(false)}
+      />
+
+      {/* Level Up Modal */}
+      <LevelUpModal
+        isOpen={gamification.showLevelUpModal}
+        onClose={gamification.closeLevelUpModal}
+        newLevel={gamification.newLevelForModal}
+        rewards={gamification.levelUpRewards}
+      />
+
       {/* Gamification Display */}
       {user && !gamification.isLoading && (
         <GamificationDisplay
@@ -612,8 +638,9 @@ export const MentalArithmeticPractice = () => {
           <AbacusFlashCard onComplete={() => setRefreshHistory(prev => prev + 1)} />
         </TabsContent>
 
-        <TabsContent value="ghost" className="mt-4 sm:mt-6">
+        <TabsContent value="ghost" className="mt-4 sm:mt-6 space-y-4">
           <GhostBattle />
+          <GhostBattleStats />
         </TabsContent>
 
         <TabsContent value="multiplayer" className="mt-4 sm:mt-6">
