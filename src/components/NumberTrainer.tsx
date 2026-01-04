@@ -198,11 +198,31 @@ interface Stats {
   bestStreak: number;
 }
 
+interface TopicStats {
+  topic: string;
+  label: string;
+  icon: string;
+  total: number;
+  correct: number;
+  accuracy: number;
+}
+
 interface DailyData {
   name: string;
   total: number;
   correct: number;
 }
+
+// Mavzu nomlari
+const TOPIC_LABELS: Record<string, { label: string; icon: string }> = {
+  oddiy: { label: 'Formulasiz', icon: '📘' },
+  formula5: { label: 'Kichik formula (5)', icon: '🔢' },
+  formula10plus: { label: 'Katta formula (10)', icon: '➕' },
+  hammasi: { label: 'Mix formula', icon: '🎯' },
+  manfiy: { label: 'Manfiy sonlar', icon: '➖' },
+  kopaytirish: { label: "Ko'paytirish", icon: '✖️' },
+  bolish: { label: "Bo'lish", icon: '➗' },
+};
 
 // Ripple effect va haptic feedback
 const createRipple = (event: React.MouseEvent<HTMLElement>) => {
@@ -367,6 +387,7 @@ export const NumberTrainer = () => {
     bestStreak: 0,
   });
   const [dailyData, setDailyData] = useState<DailyData[]>([]);
+  const [topicStats, setTopicStats] = useState<TopicStats[]>([]);
   const [currentStreak, setCurrentStreak] = useState(0);
 
   const runningResultRef = useRef(0);
@@ -414,7 +435,7 @@ export const NumberTrainer = () => {
         .eq('user_id', user.id)
         .eq('section', 'number-trainer')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(500);
       
       if (data && data.length > 0) {
         const totalProblems = data.length;
@@ -428,6 +449,35 @@ export const NumberTrainer = () => {
           averageTime: totalProblems > 0 ? totalTime / totalProblems : 0,
           bestStreak,
         });
+
+        // Mavzular bo'yicha statistika
+        const topicMap = new Map<string, { total: number; correct: number }>();
+        data.forEach(session => {
+          const topic = (session as any).formula_type || session.difficulty || 'oddiy';
+          if (!topicMap.has(topic)) {
+            topicMap.set(topic, { total: 0, correct: 0 });
+          }
+          const t = topicMap.get(topic)!;
+          t.total += 1;
+          t.correct += (session.correct || 0) > 0 ? 1 : 0;
+        });
+
+        const topicStatsData: TopicStats[] = [];
+        topicMap.forEach((value, key) => {
+          const labelInfo = TOPIC_LABELS[key] || { label: key, icon: '📊' };
+          topicStatsData.push({
+            topic: key,
+            label: labelInfo.label,
+            icon: labelInfo.icon,
+            total: value.total,
+            correct: value.correct,
+            accuracy: value.total > 0 ? Math.round((value.correct / value.total) * 100) : 0,
+          });
+        });
+
+        // Eng ko'p mashq qilingan mavzularni birinchi qilish
+        topicStatsData.sort((a, b) => b.total - a.total);
+        setTopicStats(topicStatsData);
 
         // Haftalik ma'lumotlar
         const days = ['Yak', 'Dush', 'Sesh', 'Chor', 'Pay', 'Jum', 'Shan'];
@@ -465,18 +515,50 @@ export const NumberTrainer = () => {
   const generateNextNumber = useCallback(() => {
     const currentResult = runningResultRef.current;
     
-    // Ko'paytirish rejimi
+    // Ko'paytirish rejimi - digitCount ga qarab qiyinlik
     if (formulaType === 'kopaytirish') {
-      const num1 = Math.floor(Math.random() * 9) + 1; // 1-9
-      const num2 = Math.floor(Math.random() * 9) + 2; // 2-9
+      let num1: number, num2: number;
+      if (digitCount === 1) {
+        // 1 xonali: 1-9 × 2-9
+        num1 = Math.floor(Math.random() * 9) + 1;
+        num2 = Math.floor(Math.random() * 8) + 2;
+      } else if (digitCount === 2) {
+        // 2 xonali: 10-99 × 2-9
+        num1 = Math.floor(Math.random() * 90) + 10;
+        num2 = Math.floor(Math.random() * 8) + 2;
+      } else if (digitCount === 3) {
+        // 3 xonali: 10-99 × 10-99
+        num1 = Math.floor(Math.random() * 90) + 10;
+        num2 = Math.floor(Math.random() * 90) + 10;
+      } else {
+        // 4 xonali: 100-999 × 2-9
+        num1 = Math.floor(Math.random() * 900) + 100;
+        num2 = Math.floor(Math.random() * 8) + 2;
+      }
       runningResultRef.current = num1 * num2;
       return { num: num1, isAdd: true, isMultiply: true, secondNum: num2 };
     }
     
-    // Bo'lish rejimi
+    // Bo'lish rejimi - digitCount ga qarab qiyinlik
     if (formulaType === 'bolish') {
-      const divisor = Math.floor(Math.random() * 8) + 2; // 2-9
-      const quotient = Math.floor(Math.random() * 9) + 1; // 1-9
+      let divisor: number, quotient: number;
+      if (digitCount === 1) {
+        // 1 xonali: natija 1-9, bo'luvchi 2-9
+        divisor = Math.floor(Math.random() * 8) + 2;
+        quotient = Math.floor(Math.random() * 9) + 1;
+      } else if (digitCount === 2) {
+        // 2 xonali: natija 10-99, bo'luvchi 2-9
+        divisor = Math.floor(Math.random() * 8) + 2;
+        quotient = Math.floor(Math.random() * 90) + 10;
+      } else if (digitCount === 3) {
+        // 3 xonali: natija 10-99, bo'luvchi 10-99
+        divisor = Math.floor(Math.random() * 90) + 10;
+        quotient = Math.floor(Math.random() * 9) + 1;
+      } else {
+        // 4 xonali: natija 10-99, bo'luvchi 10-99
+        divisor = Math.floor(Math.random() * 90) + 10;
+        quotient = Math.floor(Math.random() * 90) + 10;
+      }
       const dividend = divisor * quotient;
       runningResultRef.current = quotient;
       return { num: dividend, isAdd: true, isDivide: true, secondNum: divisor };
@@ -696,6 +778,7 @@ export const NumberTrainer = () => {
           score: scoreEarned,
           total_time: totalTime,
           problems_solved: problemCount,
+          formula_type: formulaType,
         });
 
         // Profilni yangilash
@@ -1574,6 +1657,70 @@ export const NumberTrainer = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Mavzular bo'yicha tahlil */}
+              {topicStats.length > 0 && (
+                <Card className="bg-card/80 dark:bg-slate-900/80 backdrop-blur-sm border-border/50 dark:border-slate-700/50 shadow-md dark:shadow-2xl overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent via-warning to-accent" />
+                  <CardHeader className="bg-gradient-to-r from-accent/5 to-transparent dark:from-accent/10 px-3 sm:px-6">
+                    <CardTitle className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base">
+                      <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-accent/10 dark:bg-accent/20 flex items-center justify-center">
+                        <Target className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+                      </div>
+                      <span className="dark:text-white">Mavzular bo'yicha tahlil</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="grid gap-3">
+                      {topicStats.map((topic) => {
+                        const isStrong = topic.accuracy >= 70;
+                        const isWeak = topic.accuracy < 50;
+                        return (
+                          <div 
+                            key={topic.topic}
+                            className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                              isStrong 
+                                ? 'bg-success/5 border-success/20' 
+                                : isWeak 
+                                  ? 'bg-destructive/5 border-destructive/20' 
+                                  : 'bg-muted/30 border-border/50'
+                            }`}
+                          >
+                            <span className="text-2xl">{topic.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="font-medium text-sm dark:text-white truncate">{topic.label}</span>
+                                <div className="flex items-center gap-2">
+                                  {isStrong && <span className="text-xs text-success font-medium">Kuchli 💪</span>}
+                                  {isWeak && <span className="text-xs text-destructive font-medium">Yaxshilash kerak 📚</span>}
+                                  <span className={`text-sm font-bold ${
+                                    isStrong ? 'text-success' : isWeak ? 'text-destructive' : 'text-foreground'
+                                  }`}>
+                                    {topic.accuracy}%
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full rounded-full transition-all ${
+                                      isStrong ? 'bg-success' : isWeak ? 'bg-destructive' : 'bg-primary'
+                                    }`}
+                                    style={{ width: `${topic.accuracy}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                  {topic.correct}/{topic.total}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Haftalik grafik */}
               <Card className="bg-card/80 dark:bg-slate-900/80 backdrop-blur-sm border-border/50 dark:border-slate-700/50 shadow-md dark:shadow-2xl overflow-hidden">
