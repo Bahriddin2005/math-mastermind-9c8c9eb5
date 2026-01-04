@@ -10,9 +10,9 @@ import { AbacusDisplay } from './AbacusDisplay';
 import { MentalArithmeticHistory } from './MentalArithmeticHistory';
 import { MentalArithmeticLeaderboard } from './MentalArithmeticLeaderboard';
 import { AbacusFlashCard } from './AbacusFlashCard';
-
+import { GhostBattle } from './GhostBattle';
 import { MultiplayerCompetition } from './MultiplayerCompetition';
-import { Play, RotateCcw, Check, Settings2, Zap, BarChart3, Trophy, Lightbulb, Swords } from 'lucide-react';
+import { Play, RotateCcw, Check, Settings2, Zap, BarChart3, Trophy, Lightbulb, Swords, Ghost } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSound } from '@/hooks/useSound';
@@ -570,7 +570,7 @@ export const MentalArithmeticPractice = () => {
 
       {/* Tabs - Chiroyli dizayn - Dark mode enhanced */}
       <Tabs defaultValue="flashcard" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-auto p-1 sm:p-1.5 bg-muted/50 dark:bg-muted/30 backdrop-blur-sm rounded-xl border border-border/50 dark:border-border/30">
+        <TabsList className="grid w-full grid-cols-5 h-auto p-1 sm:p-1.5 bg-muted/50 dark:bg-muted/30 backdrop-blur-sm rounded-xl border border-border/50 dark:border-border/30">
           <TabsTrigger 
             value="flashcard" 
             className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
@@ -579,11 +579,18 @@ export const MentalArithmeticPractice = () => {
             <span className="text-[10px] sm:text-sm font-medium">Flash</span>
           </TabsTrigger>
           <TabsTrigger 
+            value="ghost" 
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-purple-500/10 data-[state=active]:border-purple-500/20 dark:data-[state=active]:border-purple-500/30 transition-all"
+          >
+            <Ghost className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] sm:text-sm font-medium">Ghost</span>
+          </TabsTrigger>
+          <TabsTrigger 
             value="multiplayer" 
             className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
           >
             <Swords className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[10px] sm:text-sm font-medium">Musobaqa</span>
+            <span className="text-[10px] sm:text-sm font-medium">Battle</span>
           </TabsTrigger>
           <TabsTrigger 
             value="leaderboard" 
@@ -603,6 +610,10 @@ export const MentalArithmeticPractice = () => {
 
         <TabsContent value="flashcard" className="mt-4 sm:mt-6">
           <AbacusFlashCard onComplete={() => setRefreshHistory(prev => prev + 1)} />
+        </TabsContent>
+
+        <TabsContent value="ghost" className="mt-4 sm:mt-6">
+          <GhostBattle />
         </TabsContent>
 
         <TabsContent value="multiplayer" className="mt-4 sm:mt-6">
