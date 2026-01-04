@@ -107,14 +107,54 @@ const RULES_ALL: Record<number, { add: number[]; subtract: number[] }> = {
   9: { add: [1, 2, 3, 4, 5, 6, 7, 8, 9], subtract: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
 };
 
-type FormulaType = 'oddiy' | 'formula5' | 'formula10plus' | 'formula10minus' | 'hammasi';
+// Manfiy sonlar qoidalari - manfiy natijalar bilan ishlash
+const RULES_NEGATIVE: Record<number, { add: number[]; subtract: number[] }> = {
+  0: { add: [], subtract: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+  1: { add: [], subtract: [2, 3, 4, 5, 6, 7, 8, 9] },
+  2: { add: [], subtract: [3, 4, 5, 6, 7, 8, 9] },
+  3: { add: [], subtract: [4, 5, 6, 7, 8, 9] },
+  4: { add: [], subtract: [5, 6, 7, 8, 9] },
+  5: { add: [], subtract: [6, 7, 8, 9] },
+  6: { add: [], subtract: [7, 8, 9] },
+  7: { add: [], subtract: [8, 9] },
+  8: { add: [], subtract: [9] },
+  9: { add: [], subtract: [] },
+};
 
-const FORMULA_RULES: Record<FormulaType, Record<number, { add: number[]; subtract: number[] }>> = {
+// Ko'paytirish qoidalari - oddiy ko'paytirish jadvali
+const RULES_MULTIPLY: Record<number, { multiply: number[] }> = {
+  1: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+  2: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+  3: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+  4: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+  5: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+  6: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+  7: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+  8: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+  9: { multiply: [2, 3, 4, 5, 6, 7, 8, 9] },
+};
+
+// Bo'lish qoidalari - qoldiqsiz bo'lish
+const RULES_DIVIDE: Record<number, { divide: number[] }> = {
+  2: { divide: [2] },
+  3: { divide: [3] },
+  4: { divide: [2, 4] },
+  5: { divide: [5] },
+  6: { divide: [2, 3, 6] },
+  7: { divide: [7] },
+  8: { divide: [2, 4, 8] },
+  9: { divide: [3, 9] },
+};
+
+type FormulaType = 'oddiy' | 'formula5' | 'formula10plus' | 'hammasi' | 'manfiy' | 'kopaytirish' | 'bolish';
+
+const FORMULA_RULES: Record<string, Record<number, { add: number[]; subtract: number[] }>> = {
   oddiy: RULES_BASIC,
   formula5: RULES_FORMULA_5,
   formula10plus: RULES_FORMULA_10_PLUS,
   formula10minus: RULES_FORMULA_10_MINUS,
   hammasi: RULES_ALL,
+  manfiy: RULES_NEGATIVE,
 };
 
 // Web Speech API fallback (used when ElevenLabs fails or is disabled)
@@ -424,8 +464,26 @@ export const NumberTrainer = () => {
   // Sonni generatsiya qilish
   const generateNextNumber = useCallback(() => {
     const currentResult = runningResultRef.current;
+    
+    // Ko'paytirish rejimi
+    if (formulaType === 'kopaytirish') {
+      const num1 = Math.floor(Math.random() * 9) + 1; // 1-9
+      const num2 = Math.floor(Math.random() * 9) + 2; // 2-9
+      runningResultRef.current = num1 * num2;
+      return { num: num1, isAdd: true, isMultiply: true, secondNum: num2 };
+    }
+    
+    // Bo'lish rejimi
+    if (formulaType === 'bolish') {
+      const divisor = Math.floor(Math.random() * 8) + 2; // 2-9
+      const quotient = Math.floor(Math.random() * 9) + 1; // 1-9
+      const dividend = divisor * quotient;
+      runningResultRef.current = quotient;
+      return { num: dividend, isAdd: true, isDivide: true, secondNum: divisor };
+    }
+    
     const lastDigit = Math.abs(currentResult) % 10;
-    const rules = FORMULA_RULES[formulaType][lastDigit];
+    const rules = FORMULA_RULES[formulaType]?.[lastDigit];
 
     if (!rules) return null;
 
@@ -461,6 +519,48 @@ export const NumberTrainer = () => {
 
   // O'yinni boshlash
   const startGame = useCallback(() => {
+    // Ko'paytirish yoki Bo'lish rejimida boshqacha boshlanadi
+    if (formulaType === 'kopaytirish' || formulaType === 'bolish') {
+      runningResultRef.current = 0;
+      countRef.current = 0;
+      startTimeRef.current = Date.now();
+
+      setDisplayedNumbers([]);
+      setIsRunning(true);
+      setIsFinished(false);
+      setIsAddition(true);
+      setUserAnswer('');
+      setShowResult(false);
+      setIsCorrect(null);
+      setElapsedTime(0);
+      setAnswerTime(0);
+
+      playSound('start');
+
+      timerRef.current = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - startTimeRef.current) / 100) / 10);
+      }, 100);
+
+      // Birinchi misolni ko'rsatish
+      const result = generateNextNumber();
+      if (result !== null) {
+        if ('isMultiply' in result) {
+          setCurrentDisplay(`${result.num} × ${result.secondNum}`);
+          setDisplayedNumbers([{ num: `${result.num} × ${result.secondNum}`, isAdd: true }]);
+        } else if ('isDivide' in result) {
+          setCurrentDisplay(`${result.num} ÷ ${result.secondNum}`);
+          setDisplayedNumbers([{ num: `${result.num} ÷ ${result.secondNum}`, isAdd: true }]);
+        }
+        playSound('tick');
+      }
+
+      // Ko'paytirish/Bo'lish rejimida har bir misol alohida - faqat bitta misol
+      answerStartTimeRef.current = Date.now();
+      setIsRunning(false);
+      setIsFinished(true);
+      return;
+    }
+
     const maxInitial = Math.pow(10, digitCount) - 1;
     const minInitial = digitCount === 1 ? 1 : Math.pow(10, digitCount - 1);
     const initialResult = Math.floor(Math.random() * (maxInitial - minInitial + 1)) + minInitial;
@@ -524,7 +624,7 @@ export const NumberTrainer = () => {
         }
       }
     }, speedMs);
-  }, [digitCount, speed, problemCount, generateNextNumber, voiceEnabled, playSound, speakNumber]);
+  }, [formulaType, digitCount, speed, problemCount, generateNextNumber, voiceEnabled, playSound, speakNumber]);
 
   // To'xtatish
   const stopGame = useCallback(() => {
@@ -1195,31 +1295,17 @@ export const NumberTrainer = () => {
                   <CardContent className="pt-2 sm:pt-3 px-3 sm:px-4 md:px-6">
                     <RadioGroup
                       value={formulaType}
-                      onValueChange={(v) => {
-                        // Pro obunasi talab qilinadigan formulalar
-                        const proFormulas = ['formula10plus', 'formula10minus', 'hammasi'];
-                        if (proFormulas.includes(v)) {
-                          // Pro versiyaga yo'naltirish
-                          import('sonner').then(({ toast }) => {
-                            toast.info("Bu mavzu Pro obunada mavjud", {
-                              description: "Pro obunaga o'tish uchun Narxlar sahifasiga boring",
-                              action: {
-                                label: "Pro ga o'tish",
-                                onClick: () => navigate('/pricing'),
-                              },
-                            });
-                          });
-                          return;
-                        }
-                        setFormulaType(v as FormulaType);
-                      }}
-                      className="grid grid-cols-2 gap-1.5 sm:gap-2"
+                      onValueChange={(v) => setFormulaType(v as FormulaType)}
+                      className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2"
                     >
                       {[
-                        { value: 'oddiy', label: 'Formulasiz', icon: '📘', isPro: false },
-                        { value: 'formula5', label: 'Kichik formula (5)', icon: '🔢', isPro: false },
-                        { value: 'formula10plus', label: 'Katta formula (10)', icon: '➕', isPro: true },
-                        { value: 'hammasi', label: 'Mix formula', icon: '🎯', isPro: true },
+                        { value: 'oddiy', label: 'Formulasiz', icon: '📘', color: 'primary' },
+                        { value: 'formula5', label: 'Kichik formula (5)', icon: '🔢', color: 'primary' },
+                        { value: 'formula10plus', label: 'Katta formula (10)', icon: '➕', color: 'accent' },
+                        { value: 'hammasi', label: 'Mix formula', icon: '🎯', color: 'warning' },
+                        { value: 'manfiy', label: 'Manfiy sonlar', icon: '➖', color: 'destructive' },
+                        { value: 'kopaytirish', label: "Ko'paytirish", icon: '✖️', color: 'success' },
+                        { value: 'bolish', label: "Bo'lish", icon: '➗', color: 'blue' },
                       ].map((item) => (
                         <div key={item.value} className="flex items-center relative">
                           <RadioGroupItem
@@ -1230,18 +1316,18 @@ export const NumberTrainer = () => {
                           <Label
                             htmlFor={`formula-${item.value}`}
                             className={`flex items-center gap-1.5 sm:gap-2 w-full px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg sm:rounded-xl cursor-pointer transition-all duration-200 border-2 
-                              ${item.isPro 
-                                ? 'bg-muted/30 dark:bg-slate-800/30 border-dashed border-muted-foreground/30 opacity-70' 
-                                : formulaType === item.value 
-                                  ? 'bg-primary text-primary-foreground border-primary shadow-glow' 
-                                  : 'bg-muted/50 dark:bg-slate-800/50 border-transparent hover:bg-muted dark:hover:bg-slate-700 hover:border-border dark:hover:border-slate-600'
+                              ${formulaType === item.value 
+                                ? item.color === 'primary' ? 'bg-primary text-primary-foreground border-primary shadow-glow'
+                                  : item.color === 'accent' ? 'bg-accent text-accent-foreground border-accent shadow-accent-glow'
+                                  : item.color === 'warning' ? 'bg-warning text-warning-foreground border-warning'
+                                  : item.color === 'destructive' ? 'bg-destructive text-destructive-foreground border-destructive'
+                                  : item.color === 'success' ? 'bg-success text-success-foreground border-success'
+                                  : 'bg-blue-500 text-white border-blue-500'
+                                : 'bg-muted/50 dark:bg-slate-800/50 border-transparent hover:bg-muted dark:hover:bg-slate-700 hover:border-border dark:hover:border-slate-600'
                               }`}
                           >
                             <span className="text-sm sm:text-lg">{item.icon}</span>
                             <span className="font-medium text-xs sm:text-sm">{item.label}</span>
-                            {item.isPro && (
-                              <span className="ml-auto text-[9px] sm:text-[10px] px-1.5 py-0.5 bg-warning/20 text-warning rounded-full font-bold">PRO</span>
-                            )}
                           </Label>
                         </div>
                       ))}
