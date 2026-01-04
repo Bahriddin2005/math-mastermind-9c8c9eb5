@@ -22,6 +22,7 @@ import { UserBadges } from '@/components/UserBadges';
 import { ProgressVisualization } from '@/components/ProgressVisualization';
 import { BonusChallenge } from '@/components/BonusChallenge';
 import { useAdaptiveGamification } from '@/hooks/useAdaptiveGamification';
+import { GamificationDisplay } from '@/components/GamificationDisplay';
 import { PullToRefresh } from '@/components/PullToRefresh';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -313,6 +314,26 @@ const Dashboard = () => {
 
         <div className="container px-3 sm:px-4 py-4 sm:py-6 md:py-8">
           <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
+
+            {/* Gamification Display - Level, XP, Combo */}
+            {user && !gamification.isLoading && (
+              <div className="opacity-0 animate-slide-up" style={{ animationDelay: '50ms', animationFillMode: 'forwards' }}>
+                <GamificationDisplay
+                  level={gamification.level}
+                  currentXp={gamification.currentXp}
+                  requiredXp={gamification.requiredXp}
+                  levelProgress={gamification.levelProgress}
+                  energy={gamification.energy}
+                  maxEnergy={gamification.maxEnergy}
+                  combo={gamification.combo}
+                  comboMultiplier={gamification.comboMultiplier}
+                  difficultyLevel={gamification.difficultyLevel}
+                  xpUntilLevelUp={gamification.xpUntilLevelUp}
+                  isStruggling={gamification.isStruggling}
+                  isFlagged={gamification.isFlagged}
+                />
+              </div>
+            )}
 
             {/* Stats Overview - Mobile optimized Grid - Extended with new cards */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
