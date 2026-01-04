@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Trophy, Medal, Award, CalendarDays, CalendarRange, Sparkles, Flame, Calculator } from 'lucide-react';
+import { Trophy, Medal, Award, CalendarDays, CalendarRange, Sparkles, Flame, Calculator, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { PlayerProfileDialog } from './PlayerProfileDialog';
@@ -18,6 +18,8 @@ interface LeaderboardEntry {
   correct_count: number;
   accuracy: number;
   avatar_url: string | null;
+  level: number;
+  total_xp: number;
 }
 
 type TimeFilter = 'all' | 'weekly' | 'daily';
@@ -83,10 +85,17 @@ export const MentalArithmeticLeaderboard = () => {
         const userIds = Array.from(userScores.keys());
         
         if (userIds.length > 0) {
-          const { data: profilesData } = await supabase
-            .from('profiles')
-            .select('id, user_id, username, avatar_url')
-            .in('user_id', userIds);
+          const [profilesResult, gamificationResult] = await Promise.all([
+            supabase.from('profiles').select('id, user_id, username, avatar_url').in('user_id', userIds),
+            supabase.from('user_gamification').select('user_id, level, total_xp').in('user_id', userIds)
+          ]);
+
+          const profilesData = profilesResult.data;
+          const gamificationData = gamificationResult.data;
+
+          const gamificationMap = new Map(
+            gamificationData?.map(g => [g.user_id, { level: g.level, total_xp: g.total_xp }]) || []
+          );
 
           if (profilesData) {
             const leaderboardEntries: LeaderboardEntry[] = profilesData.map(profile => {
@@ -97,6 +106,7 @@ export const MentalArithmeticLeaderboard = () => {
                 incorrect: 0,
               };
               const total = scores.correct + scores.incorrect;
+              const gamification = gamificationMap.get(profile.user_id);
               return {
                 id: profile.id,
                 user_id: profile.user_id,
@@ -106,6 +116,8 @@ export const MentalArithmeticLeaderboard = () => {
                 correct_count: scores.correct,
                 accuracy: total > 0 ? Math.round((scores.correct / total) * 100) : 0,
                 avatar_url: profile.avatar_url,
+                level: gamification?.level || 1,
+                total_xp: gamification?.total_xp || 0,
               };
             });
 
@@ -312,16 +324,20 @@ export const MentalArithmeticLeaderboard = () => {
                           <Sparkles className="h-4 w-4 text-warning" />
                         )}
                       </div>
-                      <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-3 mt-1 flex-wrap">
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Flame className="h-3 w-3 text-accent" />
                           {entry.best_streak} seriya
                         </span>
-                        <span className="text-xs text-blue-500">
-                          {entry.accuracy}% aniqlik
+                        <span className="text-xs text-primary flex items-center gap-1 font-medium">
+                          <Star className="h-3 w-3 fill-primary" />
+                          Lv.{entry.level}
                         </span>
-                        <span className="text-xs text-green-500">
-                          {entry.correct_count} to'g'ri
+                        <span className="text-xs text-muted-foreground">
+                          {entry.total_xp.toLocaleString()} XP
+                        </span>
+                        <span className="text-xs text-blue-500">
+                          {entry.accuracy}%
                         </span>
                       </div>
                     </div>

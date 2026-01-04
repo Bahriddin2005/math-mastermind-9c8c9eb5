@@ -55,8 +55,10 @@ const Settings = () => {
 
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [dailyGoal, setDailyGoal] = useState(20);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingGoal, setSavingGoal] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   
@@ -116,7 +118,7 @@ const Settings = () => {
     const fetchProfile = async () => {
       const { data } = await supabase
         .from('profiles')
-        .select('username, avatar_url, total_problems_solved, best_streak, total_score, created_at')
+        .select('username, avatar_url, total_problems_solved, best_streak, total_score, created_at, daily_goal')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -124,6 +126,7 @@ const Settings = () => {
         setUsername(data.username || '');
         setAvatarUrl(data.avatar_url);
         setCreatedAt(data.created_at);
+        setDailyGoal(data.daily_goal || 20);
         setProfileStats({
           totalProblems: data.total_problems_solved || 0,
           bestStreak: data.best_streak || 0,
@@ -271,6 +274,27 @@ const Settings = () => {
       toast.error('Xatolik yuz berdi: ' + error.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveDailyGoal = async () => {
+    if (!user) return;
+    
+    setSavingGoal(true);
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ daily_goal: dailyGoal })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      toast.success('Kunlik maqsad yangilandi!');
+    } catch (error: any) {
+      toast.error('Xatolik yuz berdi: ' + error.message);
+    } finally {
+      setSavingGoal(false);
     }
   };
 
@@ -524,6 +548,87 @@ const Settings = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Daily Goal Section */}
+            <Card className="opacity-0 animate-slide-up overflow-hidden bg-card dark:bg-card/90 border-border/40 dark:border-border/20 backdrop-blur-sm" style={{ animationDelay: '175ms', animationFillMode: 'forwards' }}>
+              <CardHeader className="pb-2 sm:pb-3 bg-gradient-to-r from-green-500/10 to-transparent dark:from-green-500/20 dark:to-transparent px-4 sm:px-6">
+                <CardTitle className="text-sm sm:text-base md:text-lg flex items-center gap-2 text-foreground dark:text-foreground/95">
+                  <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-green-500/20 dark:bg-green-500/35 flex items-center justify-center">
+                    <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500" />
+                  </div>
+                  Kunlik maqsad
+                </CardTitle>
+                <CardDescription className="text-[10px] sm:text-xs md:text-sm text-muted-foreground dark:text-muted-foreground/80">
+                  Kunlik yechish kerak bo'lgan masalalar soni
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 sm:space-y-4 pt-3 sm:pt-4 px-4 sm:px-6">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="dailyGoal" className="text-xs sm:text-sm text-foreground dark:text-foreground/90">
+                      Masalalar soni
+                    </Label>
+                    <span className="text-lg sm:text-xl font-bold text-green-500">{dailyGoal}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDailyGoal(Math.max(5, dailyGoal - 5))}
+                      disabled={dailyGoal <= 5}
+                      className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+                    >
+                      -5
+                    </Button>
+                    <input
+                      type="range"
+                      id="dailyGoal"
+                      min={5}
+                      max={100}
+                      step={5}
+                      value={dailyGoal}
+                      onChange={(e) => setDailyGoal(Number(e.target.value))}
+                      className="flex-1 h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-green-500"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDailyGoal(Math.min(100, dailyGoal + 5))}
+                      disabled={dailyGoal >= 100}
+                      className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+                    >
+                      +5
+                    </Button>
+                  </div>
+                  
+                  <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
+                    <span>Min: 5</span>
+                    <span>Tavsiya: 20-30</span>
+                    <span>Max: 100</span>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={handleSaveDailyGoal} 
+                  disabled={savingGoal} 
+                  className="w-full sm:w-auto gap-2 h-9 sm:h-10 text-sm shadow-md dark:shadow-lg dark:shadow-green-500/10 bg-green-500 hover:bg-green-600"
+                >
+                  {savingGoal ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                      Saqlanmoqda...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Maqsadni saqlash
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Theme Section - Dark mode enhanced */}
             <Card className="opacity-0 animate-slide-up overflow-hidden bg-card dark:bg-card/90 border-border/40 dark:border-border/20 backdrop-blur-sm" style={{ animationDelay: '175ms', animationFillMode: 'forwards' }}>
               <CardHeader className="pb-2 sm:pb-3 bg-gradient-to-r from-yellow-500/10 to-transparent dark:from-yellow-500/20 dark:to-transparent px-4 sm:px-6">
