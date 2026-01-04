@@ -10,9 +10,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { usePresence } from "@/hooks/usePresence";
+import { GroupGameInvite } from "@/components/GroupGameInvite";
+import { FriendsStatsComparison } from "@/components/FriendsStatsComparison";
+import { FriendsChat } from "@/components/FriendsChat";
 import { 
   Users, UserPlus, UserCheck, UserX, Search, 
-  Clock, Check, X, Crown, Trophy, Star, Gamepad2, Loader2, Circle
+  Clock, Check, X, Crown, Trophy, Star, Gamepad2, Loader2, Circle, 
+  MessageCircle, BarChart3
 } from "lucide-react";
 
 interface Friend {
@@ -61,6 +65,9 @@ export const FriendsManager = () => {
   const [loading, setLoading] = useState(true);
   const [friendLeaderboard, setFriendLeaderboard] = useState<FriendLeaderboardEntry[]>([]);
   const [invitingFriend, setInvitingFriend] = useState<string | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const [chatFriend, setChatFriend] = useState<UserProfile | null>(null);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -335,44 +342,67 @@ export const FriendsManager = () => {
     );
   }
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-primary" />
-          Do'stlar
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="friends">
-          <TabsList className="w-full grid grid-cols-3 mb-4">
-            <TabsTrigger value="friends" className="text-xs sm:text-sm">
-              <UserCheck className="h-4 w-4 mr-1" />
-              Do'stlar ({friends.length})
-            </TabsTrigger>
-            <TabsTrigger value="requests" className="text-xs sm:text-sm">
-              <Clock className="h-4 w-4 mr-1" />
-              So'rovlar ({pendingRequests.length})
-            </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="text-xs sm:text-sm">
-              <Trophy className="h-4 w-4 mr-1" />
-              Reyting
-            </TabsTrigger>
-          </TabsList>
+  // Get friend user IDs for stats comparison
+  const friendUserIds = friends.map(f => f.friend_profile ? f.friend_id : f.user_id);
 
-          <TabsContent value="friends" className="space-y-4">
-            {/* Search */}
+  const openChat = (profile: UserProfile) => {
+    setChatFriend(profile);
+    setShowChat(true);
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Do'stlar
+            </CardTitle>
             <div className="flex gap-2">
-              <Input
-                placeholder="Foydalanuvchi qidirish..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && searchUsers()}
-              />
-              <Button onClick={searchUsers} disabled={searching}>
-                <Search className="h-4 w-4" />
+              <GroupGameInvite friends={friends} />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowStats(!showStats)}
+                className="gap-1"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Taqqoslash</span>
               </Button>
             </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="friends">
+            <TabsList className="w-full grid grid-cols-3 mb-4">
+              <TabsTrigger value="friends" className="text-xs sm:text-sm">
+                <UserCheck className="h-4 w-4 mr-1" />
+                Do'stlar ({friends.length})
+              </TabsTrigger>
+              <TabsTrigger value="requests" className="text-xs sm:text-sm">
+                <Clock className="h-4 w-4 mr-1" />
+                So'rovlar ({pendingRequests.length})
+              </TabsTrigger>
+              <TabsTrigger value="leaderboard" className="text-xs sm:text-sm">
+                <Trophy className="h-4 w-4 mr-1" />
+                Reyting
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="friends" className="space-y-4">
+              {/* Search */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Foydalanuvchi qidirish..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && searchUsers()}
+                />
+                <Button onClick={searchUsers} disabled={searching}>
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
 
             {/* Search results */}
             {searchResults.length > 0 && (
@@ -455,7 +485,22 @@ export const FriendsManager = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        {/* Chat button */}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => profile && openChat({
+                            user_id: friendUserId,
+                            username: profile.username,
+                            avatar_url: profile.avatar_url,
+                            vip_expires_at: profile.vip_expires_at || null,
+                          })}
+                          className="text-muted-foreground hover:text-primary"
+                          title="Xabar yozish"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
                         <Button
                           size="sm"
                           variant="default"
@@ -591,6 +636,24 @@ export const FriendsManager = () => {
         </Tabs>
       </CardContent>
     </Card>
+
+      {/* Stats comparison */}
+      {showStats && friendUserIds.length > 0 && (
+        <FriendsStatsComparison friendIds={friendUserIds} />
+      )}
+
+      {/* Chat dialog */}
+      {chatFriend && (
+        <FriendsChat
+          friend={chatFriend}
+          open={showChat}
+          onOpenChange={(open) => {
+            setShowChat(open);
+            if (!open) setChatFriend(null);
+          }}
+        />
+      )}
+    </>
   );
 };
 
