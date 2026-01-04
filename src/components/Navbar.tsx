@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Volume2, VolumeX, User, LogOut, Play, Home, Settings, Moon, Sun, ShieldCheck, GraduationCap, Sparkles, ChevronDown, Trophy, Menu, X, BookOpen, Calendar, MessageCircle } from 'lucide-react';
+import { Volume2, VolumeX, User, LogOut, Play, Home, Settings, Moon, Sun, ShieldCheck, GraduationCap, Sparkles, ChevronDown, Trophy, Menu, X, BookOpen, Calendar, MessageCircle, BarChart3 } from 'lucide-react';
 import { Logo } from './Logo';
 import { Button } from './ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -118,6 +118,7 @@ export const Navbar = ({ soundEnabled, onToggleSound }: NavbarProps) => {
     { path: '/train', icon: Play, label: "Mashq", highlight: true },
     { path: '/courses', icon: GraduationCap, label: "Darslar" },
     { path: '/weekly-game', icon: Trophy, label: "Musobaqa" },
+    { path: '/challenge-stats', icon: BarChart3, label: "Statistika" },
     { path: '/blog', icon: BookOpen, label: "Blog" },
     { path: '/contact', icon: MessageCircle, label: "Aloqa" },
   ];
