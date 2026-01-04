@@ -7,8 +7,9 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Trophy, Target, Flame, TrendingUp, User, Calendar, Award } from 'lucide-react';
+import { Trophy, Target, Flame, TrendingUp, User, Calendar, Award, Zap, Star } from 'lucide-react';
 import { Badge } from './ui/badge';
+import { Progress } from './ui/progress';
 
 interface PlayerProfile {
   id: string;
@@ -19,6 +20,17 @@ interface PlayerProfile {
   best_streak: number;
   avatar_url: string | null;
   created_at: string;
+}
+
+interface PlayerGamification {
+  level: number;
+  current_xp: number;
+  total_xp: number;
+  energy: number;
+  max_energy: number;
+  max_combo: number;
+  total_correct: number;
+  total_incorrect: number;
 }
 
 interface PlayerStats {
@@ -41,6 +53,10 @@ interface PlayerProfileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const getRequiredXP = (level: number): number => {
+  return Math.floor(100 * Math.pow(1.5, level - 1));
+};
 
 const BADGE_DEFINITIONS: Record<string, { icon: string; name: string; color: string }> = {
   daily_winner: { icon: "🥇", name: "Kunlik g'olib", color: "from-yellow-500 to-amber-500" },
@@ -71,6 +87,7 @@ const BADGE_DEFINITIONS: Record<string, { icon: string; name: string; color: str
 
 export const PlayerProfileDialog = ({ userId, open, onOpenChange }: PlayerProfileDialogProps) => {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
+  const [gamification, setGamification] = useState<PlayerGamification | null>(null);
   const [stats, setStats] = useState<PlayerStats>({ totalGames: 0, avgAccuracy: 0, recentGames: 0 });
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,12 +98,17 @@ export const PlayerProfileDialog = ({ userId, open, onOpenChange }: PlayerProfil
     const fetchPlayerData = async () => {
       setLoading(true);
 
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
+      // Fetch profile and gamification in parallel
+      const [profileResult, gamificationResult] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
+        supabase.from('user_gamification').select('level, current_xp, total_xp, energy, max_energy, max_combo, total_correct, total_incorrect').eq('user_id', userId).maybeSingle()
+      ]);
+
+      const profileData = profileResult.data;
+
+      if (gamificationResult.data) {
+        setGamification(gamificationResult.data);
+      }
 
       if (profileData) {
         setProfile(profileData);
@@ -173,6 +195,59 @@ export const PlayerProfileDialog = ({ userId, open, onOpenChange }: PlayerProfil
                 </p>
               </div>
             </div>
+
+            {/* Level & XP Section */}
+            {gamification && (
+              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-xl p-4 space-y-3 border border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Star className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg">Level {gamification.level}</p>
+                      <p className="text-xs text-muted-foreground">{gamification.total_xp.toLocaleString()} jami XP</p>
+                    </div>
+                  </div>
+                  <Badge className="bg-primary/20 text-primary">
+                    <Zap className="h-3 w-3 mr-1" />
+                    {gamification.max_combo} max combo
+                  </Badge>
+                </div>
+                
+                {/* XP Progress Bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">Keyingi levelgacha</span>
+                    <span className="font-medium">{gamification.current_xp} / {getRequiredXP(gamification.level)} XP</span>
+                  </div>
+                  <Progress 
+                    value={(gamification.current_xp / getRequiredXP(gamification.level)) * 100} 
+                    className="h-2"
+                  />
+                </div>
+
+                {/* Gamification Stats */}
+                <div className="grid grid-cols-3 gap-2 pt-2">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-green-500">{gamification.total_correct}</p>
+                    <p className="text-[10px] text-muted-foreground">To'g'ri</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-red-500">{gamification.total_incorrect}</p>
+                    <p className="text-[10px] text-muted-foreground">Noto'g'ri</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-primary">
+                      {gamification.total_correct + gamification.total_incorrect > 0 
+                        ? Math.round((gamification.total_correct / (gamification.total_correct + gamification.total_incorrect)) * 100) 
+                        : 0}%
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">Aniqlik</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-3">
