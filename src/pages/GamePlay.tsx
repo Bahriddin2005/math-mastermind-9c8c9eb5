@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { 
   Coins, Heart, Star, X, 
   Check, Trophy, Home, RotateCcw, Zap,
-  Lightbulb, Pause, Sparkles
+  Lightbulb, Pause, Sparkles, Clock
 } from "lucide-react";
 
 interface GameLevel {
@@ -70,6 +70,11 @@ const GamePlay = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [showHint, setShowHint] = useState(false);
   
+  // Timer state for per-problem time limit
+  const [problemTimeLeft, setProblemTimeLeft] = useState(10);
+  const [showTimer, setShowTimer] = useState(false);
+  const problemTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Animation states
   const [numberAnimation, setNumberAnimation] = useState<'enter' | 'exit' | 'idle'>('idle');
   const [scorePopup, setScorePopup] = useState<{ score: number; show: boolean }>({ score: 0, show: false });
@@ -83,6 +88,7 @@ const GamePlay = () => {
     loadPowerUps();
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (problemTimerRef.current) clearInterval(problemTimerRef.current);
     };
   }, [levelId, user]);
 
@@ -259,6 +265,8 @@ const GamePlay = () => {
       }, 600);
     } else {
       setStartTime(Date.now());
+      setShowTimer(true);
+      setProblemTimeLeft(10);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
 
@@ -267,8 +275,56 @@ const GamePlay = () => {
     };
   }, [displayIndex, numbers, gameState, playSound, isPaused]);
 
+  // Per-problem timer countdown
+  useEffect(() => {
+    if (!showTimer || gameState !== 'playing' || isPaused) return;
+
+    problemTimerRef.current = setInterval(() => {
+      setProblemTimeLeft(prev => {
+        if (prev <= 1) {
+          // Time's up - auto submit wrong answer
+          handleTimeUp();
+          return 10;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (problemTimerRef.current) clearInterval(problemTimerRef.current);
+    };
+  }, [showTimer, gameState, isPaused]);
+
+  const handleTimeUp = () => {
+    if (gameState !== 'playing' || displayIndex < numbers.length) return;
+    
+    playSound('incorrect');
+    setIsCorrect(false);
+    setGameState('feedback');
+    setStreak(0);
+    setShakeInput(true);
+    setShowTimer(false);
+    setTimeout(() => setShakeInput(false), 500);
+
+    setTimeout(() => {
+      const nextProblem = currentProblem + 1;
+      
+      if (level && nextProblem >= level.problem_count) {
+        finishGame();
+      } else {
+        setCurrentProblem(nextProblem);
+        generateProblem();
+        setGameState('playing');
+      }
+    }, 2000);
+  };
+
   const checkAnswer = () => {
     if (!level) return;
+
+    // Stop the timer
+    setShowTimer(false);
+    if (problemTimerRef.current) clearInterval(problemTimerRef.current);
 
     const answer = parseInt(userAnswer);
     const correct = answer === correctAnswer;
@@ -541,12 +597,26 @@ const GamePlay = () => {
                 </div>
               )}
 
-              {/* Score & Streak */}
+              {/* Timer & Score & Streak */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 bg-gradient-to-r from-primary/20 to-purple-500/20 px-4 py-2 rounded-full border border-primary/30">
                   <Trophy className="h-5 w-5 text-primary" />
                   <span className="font-bold text-lg">{score}</span>
                 </div>
+
+                {/* Timer display */}
+                {showTimer && displayIndex >= numbers.length && gameState === 'playing' && (
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${
+                    problemTimeLeft <= 3 
+                      ? 'bg-red-500/20 border-red-500 animate-pulse' 
+                      : 'bg-blue-500/10 border-blue-500/30'
+                  }`}>
+                    <span className={`font-bold text-xl ${problemTimeLeft <= 3 ? 'text-red-500' : 'text-blue-500'}`}>
+                      {problemTimeLeft}s
+                    </span>
+                  </div>
+                )}
+
                 {streak > 0 && (
                   <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${
                     streak >= 5 ? 'bg-gradient-to-r from-orange-500/30 to-red-500/30 border-orange-500 animate-pulse' :

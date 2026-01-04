@@ -142,8 +142,10 @@ const GameShop = () => {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'powerup': return <Zap className="h-4 w-4" />;
-      case 'avatar': return <Crown className="h-4 w-4" />;
-      case 'badge': return <Sparkles className="h-4 w-4" />;
+      case 'cosmetic': return <Crown className="h-4 w-4" />;
+      case 'tech': return <Package className="h-4 w-4" />;
+      case 'effect': return <Sparkles className="h-4 w-4" />;
+      case 'vip': return <Crown className="h-4 w-4" />;
       default: return <Package className="h-4 w-4" />;
     }
   };
@@ -151,8 +153,10 @@ const GameShop = () => {
   const getCategoryLabel = (category: string) => {
     switch (category) {
       case 'powerup': return "Kuchlar";
-      case 'avatar': return "Avatar";
-      case 'badge': return "Belgilar";
+      case 'cosmetic': return "Ramkalar";
+      case 'tech': return "Texnika";
+      case 'effect': return "Effektlar";
+      case 'vip': return "VIP";
       default: return "Boshqa";
     }
   };
@@ -202,9 +206,13 @@ const GameShop = () => {
 
         {/* Shop Items */}
         <Tabs defaultValue={categories[0] || 'powerup'} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsList className={`grid w-full mb-4 ${
+            categories.length <= 3 ? 'grid-cols-3' : 
+            categories.length === 4 ? 'grid-cols-4' :
+            'grid-cols-5'
+          }`}>
             {categories.map(cat => (
-              <TabsTrigger key={cat} value={cat} className="flex items-center gap-1.5">
+              <TabsTrigger key={cat} value={cat} className="flex items-center gap-1 px-2 text-xs">
                 {getCategoryIcon(cat)}
                 <span className="hidden sm:inline">{getCategoryLabel(cat)}</span>
               </TabsTrigger>
