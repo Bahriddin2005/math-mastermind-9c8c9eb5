@@ -13,6 +13,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { PageTransition } from "./components/PageTransition";
 import { PageLoader } from "./components/PageLoader";
 import { PullToRefresh } from "./components/PullToRefresh";
+import { GameInvitations } from "./components/GameInvitations";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -94,6 +95,7 @@ const App = () => (
             <MobileBottomNav />
             <PWAInstallBanner />
             <HelpChatWidget />
+            <GameInvitations />
           </BrowserRouter>
         </AuthProvider>
       </TooltipProvider>
