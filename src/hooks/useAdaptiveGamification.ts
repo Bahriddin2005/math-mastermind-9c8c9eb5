@@ -460,6 +460,36 @@ export const useAdaptiveGamification = (options: UseAdaptiveGamificationOptions)
     return Math.min(100, (state.currentXp / required) * 100);
   }, [state.level, state.currentXp]);
 
+  // Track level up for modal
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [newLevelForModal, setNewLevelForModal] = useState(1);
+  const [levelUpRewards, setLevelUpRewards] = useState<{ xp?: number; coins?: number; energy?: number }>({});
+
+  // Enhanced processAnswer to trigger level up modal
+  const processAnswerWithModal = useCallback(async (
+    isCorrect: boolean,
+    responseTimeMs: number,
+    problemDifficulty: number = 1
+  ): Promise<{ xpEarned: number; scoreEarned: number; leveledUp: boolean }> => {
+    const result = await processAnswer(isCorrect, responseTimeMs, problemDifficulty);
+    
+    if (result.leveledUp) {
+      setNewLevelForModal(state.level + 1);
+      setLevelUpRewards({
+        xp: result.xpEarned,
+        coins: Math.floor(result.xpEarned * 0.5),
+        energy: 1,
+      });
+      setShowLevelUpModal(true);
+    }
+    
+    return result;
+  }, [processAnswer, state.level]);
+
+  const closeLevelUpModal = useCallback(() => {
+    setShowLevelUpModal(false);
+  }, []);
+
   return {
     // State
     level: state.level,
@@ -475,13 +505,19 @@ export const useAdaptiveGamification = (options: UseAdaptiveGamificationOptions)
     isStruggling,
     xpUntilLevelUp,
     
+    // Level Up Modal state
+    showLevelUpModal,
+    newLevelForModal,
+    levelUpRewards,
+    closeLevelUpModal,
+    
     // Computed
     comboMultiplier: getComboMultiplier(state.combo),
     levelProgress: getLevelProgress(),
     requiredXp: getRequiredXP(state.level),
     
     // Methods
-    processAnswer,
+    processAnswer: processAnswerWithModal,
     useEnergy,
     checkBonusAvailability,
     completeBonusChallenge,

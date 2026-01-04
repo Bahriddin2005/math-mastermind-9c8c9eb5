@@ -12,6 +12,7 @@ import { useAdaptiveGamification } from '@/hooks/useAdaptiveGamification';
 import { useGameCurrency } from '@/hooks/useGameCurrency';
 import { useConfetti } from '@/hooks/useConfetti';
 import { toast } from 'sonner';
+import { LevelUpModal } from '@/components/LevelUpModal';
 
 // Home components
 import { HeroCharacter } from '@/components/home/HeroCharacter';
@@ -65,7 +66,7 @@ const KidsHome = () => {
     ? new Date(profile.vip_expires_at) > new Date() 
     : false;
 
-  // Load user data
+  // Load user data and check for onboarding
   useEffect(() => {
     if (!authLoading && !user) {
       setLoading(false);
@@ -94,6 +95,17 @@ const KidsHome = () => {
             daily_goal: profileData.daily_goal || 20,
             vip_expires_at: profileData.vip_expires_at,
           });
+
+          // Check if user needs onboarding (no avatar selected yet)
+          if (!profileData.avatar_url || !profileData.avatar_url.startsWith('avatar:')) {
+            // Redirect to avatar selection for new users
+            navigate('/avatar-select');
+            return;
+          }
+        } else {
+          // No profile at all, redirect to avatar selection
+          navigate('/avatar-select');
+          return;
         }
 
         // Fetch today's stats
@@ -121,7 +133,7 @@ const KidsHome = () => {
     };
 
     fetchData();
-  }, [user, authLoading]);
+  }, [user, authLoading, navigate]);
 
   // Refresh handler
   const handleRefresh = useCallback(async () => {
@@ -338,6 +350,14 @@ const KidsHome = () => {
         </main>
 
         <Footer />
+
+        {/* Level Up Modal */}
+        <LevelUpModal
+          isOpen={gamification.showLevelUpModal}
+          onClose={gamification.closeLevelUpModal}
+          newLevel={gamification.newLevelForModal}
+          rewards={gamification.levelUpRewards}
+        />
       </PageBackground>
     </PullToRefresh>
   );

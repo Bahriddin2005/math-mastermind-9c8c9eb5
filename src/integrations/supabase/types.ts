@@ -627,6 +627,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ghost_battle_results: {
+        Row: {
+          created_at: string
+          ghost_correct: number
+          ghost_score: number
+          ghost_time: number
+          ghost_user_id: string
+          ghost_username: string
+          id: string
+          is_winner: boolean
+          user_correct: number
+          user_id: string
+          user_score: number
+          user_time: number
+        }
+        Insert: {
+          created_at?: string
+          ghost_correct?: number
+          ghost_score?: number
+          ghost_time?: number
+          ghost_user_id: string
+          ghost_username: string
+          id?: string
+          is_winner?: boolean
+          user_correct?: number
+          user_id: string
+          user_score?: number
+          user_time?: number
+        }
+        Update: {
+          created_at?: string
+          ghost_correct?: number
+          ghost_score?: number
+          ghost_time?: number
+          ghost_user_id?: string
+          ghost_username?: string
+          id?: string
+          is_winner?: boolean
+          user_correct?: number
+          user_id?: string
+          user_score?: number
+          user_time?: number
+        }
+        Relationships: []
+      }
       lesson_questions: {
         Row: {
           content: string

@@ -228,6 +228,33 @@ export const GhostBattle = () => {
     }
   }, [currentProblemIndex, problems, userAnswer, playSound, showProblem]);
 
+  // Save battle result to database
+  const saveBattleResult = useCallback(async (
+    finalScore: number,
+    finalCorrect: number,
+    finalTime: number,
+    isWinner: boolean
+  ) => {
+    if (!user || !selectedGhost) return;
+
+    try {
+      await supabase.from('ghost_battle_results').insert({
+        user_id: user.id,
+        ghost_user_id: selectedGhost.id,
+        ghost_username: selectedGhost.username,
+        user_score: finalScore,
+        ghost_score: selectedGhost.score,
+        user_correct: finalCorrect,
+        ghost_correct: selectedGhost.correct,
+        user_time: finalTime,
+        ghost_time: selectedGhost.total_time,
+        is_winner: isWinner,
+      });
+    } catch (error) {
+      console.error('Error saving battle result:', error);
+    }
+  }, [user, selectedGhost]);
+
   // Finish game
   const finishGame = useCallback((lastCorrect: boolean) => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -235,6 +262,7 @@ export const GhostBattle = () => {
     
     const finalCorrect = userCorrect + (lastCorrect ? 1 : 0);
     const finalScore = userScore + (lastCorrect ? 10 : 0);
+    const finalTime = (Date.now() - startTimeRef.current) / 1000;
     const userWon = finalScore > (selectedGhost?.score || 0);
     
     playSound(userWon ? 'winner' : 'incorrect');
@@ -242,12 +270,15 @@ export const GhostBattle = () => {
     setUserCorrect(finalCorrect);
     setUserScore(finalScore);
     
+    // Save result to database
+    saveBattleResult(finalScore, finalCorrect, finalTime, userWon);
+    
     if (userWon) {
       toast.success("🏆 Siz g'olib bo'ldingiz!", { duration: 3000 });
     } else {
       toast.info("Keyingi safar yutasiz! 💪", { duration: 3000 });
     }
-  }, [userCorrect, userScore, selectedGhost, playSound]);
+  }, [userCorrect, userScore, selectedGhost, playSound, saveBattleResult]);
 
   // Reset game
   const resetGame = useCallback(() => {
