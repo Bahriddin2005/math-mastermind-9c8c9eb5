@@ -15,10 +15,12 @@ import { GroupGameInvite } from "@/components/GroupGameInvite";
 import { FriendsStatsComparison } from "@/components/FriendsStatsComparison";
 import { FriendsChat } from "@/components/FriendsChat";
 import { VoiceChat } from "@/components/VoiceChat";
+import { VideoChat } from "@/components/VideoChat";
+import { GroupVoiceChat } from "@/components/GroupVoiceChat";
 import { 
   Users, UserPlus, UserCheck, UserX, Search, 
   Clock, Check, X, Crown, Trophy, Star, Gamepad2, Loader2, Circle, 
-  MessageCircle, BarChart3, Phone
+  MessageCircle, BarChart3, Phone, Video, UsersRound
 } from "lucide-react";
 
 interface Friend {
@@ -72,6 +74,10 @@ export const FriendsManager = () => {
   const [showChat, setShowChat] = useState(false);
   const [voiceFriend, setVoiceFriend] = useState<UserProfile | null>(null);
   const [showVoice, setShowVoice] = useState(false);
+  const [videoFriend, setVideoFriend] = useState<UserProfile | null>(null);
+  const [showVideo, setShowVideo] = useState(false);
+  const [showGroupVoice, setShowGroupVoice] = useState(false);
+  const [groupVoiceParticipants, setGroupVoiceParticipants] = useState<UserProfile[]>([]);
   const { getUnreadCount, markAsRead, totalUnread } = useMessageNotifications();
 
   useEffect(() => {
@@ -362,6 +368,34 @@ export const FriendsManager = () => {
     setShowVoice(true);
   };
 
+  const openVideoChat = (profile: UserProfile) => {
+    setVideoFriend(profile);
+    setShowVideo(true);
+  };
+
+  const startGroupVoice = () => {
+    const onlineFriends = friends
+      .map(f => {
+        const profile = f.friend_profile || f.user_profile;
+        const friendUserId = f.friend_profile ? f.friend_id : f.user_id;
+        return profile && isUserOnline(friendUserId) ? {
+          user_id: friendUserId,
+          username: profile.username,
+          avatar_url: profile.avatar_url,
+          vip_expires_at: profile.vip_expires_at || null,
+        } : null;
+      })
+      .filter((p): p is UserProfile => p !== null);
+
+    if (user) {
+      setGroupVoiceParticipants([
+        { user_id: user.id, username: 'Siz', avatar_url: null, vip_expires_at: null },
+        ...onlineFriends.slice(0, 5),
+      ]);
+    }
+    setShowGroupVoice(true);
+  };
+
   return (
     <>
       <Card>
@@ -377,6 +411,16 @@ export const FriendsManager = () => {
               )}
             </CardTitle>
             <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={startGroupVoice}
+                className="gap-1"
+                title="Guruh suhbati"
+              >
+                <UsersRound className="h-4 w-4" />
+                <span className="hidden sm:inline">Guruh</span>
+              </Button>
               <GroupGameInvite friends={friends} />
               <Button
                 variant="outline"
@@ -538,6 +582,22 @@ export const FriendsManager = () => {
                           title={isOnline ? "Ovozli qo'ng'iroq" : "Foydalanuvchi offline"}
                         >
                           <Phone className="h-4 w-4" />
+                        </Button>
+                        {/* Video chat button */}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => profile && openVideoChat({
+                            user_id: friendUserId,
+                            username: profile.username,
+                            avatar_url: profile.avatar_url,
+                            vip_expires_at: profile.vip_expires_at || null,
+                          })}
+                          disabled={!isOnline}
+                          className="text-muted-foreground hover:text-blue-500 disabled:opacity-50"
+                          title={isOnline ? "Video qo'ng'iroq" : "Foydalanuvchi offline"}
+                        >
+                          <Video className="h-4 w-4" />
                         </Button>
                         <Button
                           size="sm"
@@ -702,6 +762,29 @@ export const FriendsManager = () => {
             setShowVoice(open);
             if (!open) setVoiceFriend(null);
           }}
+        />
+      )}
+
+      {/* Video chat dialog */}
+      {videoFriend && (
+        <VideoChat
+          friend={videoFriend}
+          isOnline={isUserOnline(videoFriend.user_id)}
+          open={showVideo}
+          onOpenChange={(open) => {
+            setShowVideo(open);
+            if (!open) setVideoFriend(null);
+          }}
+        />
+      )}
+
+      {/* Group voice chat */}
+      {showGroupVoice && (
+        <GroupVoiceChat
+          roomId={`group-${user?.id}-${Date.now()}`}
+          participants={groupVoiceParticipants}
+          open={showGroupVoice}
+          onOpenChange={setShowGroupVoice}
         />
       )}
     </>
