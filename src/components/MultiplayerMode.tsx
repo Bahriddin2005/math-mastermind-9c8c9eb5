@@ -6,11 +6,13 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Crown, Play, Copy, Check, Clock, Trophy, ArrowLeft, Loader2 } from 'lucide-react';
+import { Users, Crown, Play, Copy, Check, Clock, Trophy, ArrowLeft, Loader2, Star, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import confetti from 'canvas-confetti';
+import { useAdaptiveGamification } from '@/hooks/useAdaptiveGamification';
+import { GamificationDisplay } from '@/components/GamificationDisplay';
 
 type FormulaType = 'oddiy' | 'formula5' | 'formula10plus' | 'formula10minus' | 'hammasi';
 
@@ -67,6 +69,13 @@ export const MultiplayerMode = ({ onBack }: MultiplayerModeProps) => {
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<{ username: string; avatar_url: string | null } | null>(null);
   
+  // Gamification hook
+  const gamification = useAdaptiveGamification({
+    gameType: 'multiplayer',
+    baseScore: 15,
+    enabled: !!user,
+  });
+  
   // O'yin sozlamalari
   const [formulaType, setFormulaType] = useState<FormulaType>('oddiy');
   const [digitCount, setDigitCount] = useState(1);
@@ -80,6 +89,8 @@ export const MultiplayerMode = ({ onBack }: MultiplayerModeProps) => {
   const [userAnswer, setUserAnswer] = useState('');
   const [elapsedTime, setElapsedTime] = useState(0);
   const [hasAnswered, setHasAnswered] = useState(false);
+  const [lastXpEarned, setLastXpEarned] = useState(0);
+  const [lastScoreEarned, setLastScoreEarned] = useState(0);
   
   const runningResultRef = useRef(0);
   const countRef = useRef(0);
@@ -406,7 +417,7 @@ export const MultiplayerMode = ({ onBack }: MultiplayerModeProps) => {
     const userNum = parseInt(userAnswer, 10);
     const correctAnswer = runningResultRef.current;
     const isCorrect = userNum === correctAnswer;
-    const answerTime = (Date.now() - startTimeRef.current) / 1000;
+    const answerTime = (Date.now() - startTimeRef.current);
     
     setHasAnswered(true);
     
@@ -414,21 +425,34 @@ export const MultiplayerMode = ({ onBack }: MultiplayerModeProps) => {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+
+    // Process gamification
+    const { xpEarned, scoreEarned } = await gamification.processAnswer(
+      isCorrect,
+      answerTime,
+      room.digit_count
+    );
     
-    // Javobni saqlash
+    setLastXpEarned(xpEarned);
+    setLastScoreEarned(scoreEarned);
+    
+    // Javobni saqlash - gamification score bilan
+    const finalScore = isCorrect ? scoreEarned : 0;
     await supabase
       .from('multiplayer_participants')
       .update({
         answer: userNum,
         is_correct: isCorrect,
-        answer_time: answerTime,
-        score: isCorrect ? 10 : 0,
+        answer_time: answerTime / 1000,
+        score: finalScore,
       })
       .eq('room_id', room.id)
       .eq('user_id', user.id);
     
     toast(isCorrect ? "To'g'ri javob!" : "Noto'g'ri", {
-      description: `To'g'ri javob: ${correctAnswer}`,
+      description: isCorrect 
+        ? `+${scoreEarned} ball, +${xpEarned} XP` 
+        : `To'g'ri javob: ${correctAnswer}`,
     });
     
     // Natijalarni ko'rsatish
@@ -508,6 +532,23 @@ export const MultiplayerMode = ({ onBack }: MultiplayerModeProps) => {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Gamification Display - Compact */}
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2">
+          <GamificationDisplay
+            level={gamification.level}
+            currentXp={gamification.currentXp}
+            requiredXp={gamification.requiredXp}
+            levelProgress={gamification.levelProgress}
+            energy={gamification.energy}
+            maxEnergy={gamification.maxEnergy}
+            combo={gamification.combo}
+            comboMultiplier={gamification.comboMultiplier}
+            difficultyLevel={gamification.difficultyLevel}
+            xpUntilLevelUp={gamification.xpUntilLevelUp}
+            compact
+          />
         </div>
 
         {/* Problem Counter */}
