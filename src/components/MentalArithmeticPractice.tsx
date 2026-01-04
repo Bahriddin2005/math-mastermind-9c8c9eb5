@@ -12,10 +12,12 @@ import { MentalArithmeticLeaderboard } from './MentalArithmeticLeaderboard';
 import { AbacusFlashCard } from './AbacusFlashCard';
 import { GhostBattle } from './GhostBattle';
 import { GhostBattleStats } from './GhostBattleStats';
+import { GhostBattleRanking } from './GhostBattleRanking';
+import { AIGhostBattle } from './AIGhostBattle';
 import { MultiplayerCompetition } from './MultiplayerCompetition';
 import { ComboEffect } from './ComboEffect';
 import { LevelUpModal } from './LevelUpModal';
-import { Play, RotateCcw, Check, Settings2, Zap, BarChart3, Trophy, Lightbulb, Swords, Ghost } from 'lucide-react';
+import { Play, RotateCcw, Check, Settings2, Zap, BarChart3, Trophy, Lightbulb, Swords, Ghost, Bot } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSound } from '@/hooks/useSound';
@@ -596,41 +598,48 @@ export const MentalArithmeticPractice = () => {
 
       {/* Tabs - Chiroyli dizayn - Dark mode enhanced */}
       <Tabs defaultValue="flashcard" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 h-auto p-1 sm:p-1.5 bg-muted/50 dark:bg-muted/30 backdrop-blur-sm rounded-xl border border-border/50 dark:border-border/30">
+        <TabsList className="grid w-full grid-cols-6 h-auto p-1 sm:p-1.5 bg-muted/50 dark:bg-muted/30 backdrop-blur-sm rounded-xl border border-border/50 dark:border-border/30">
           <TabsTrigger 
             value="flashcard" 
-            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-1 sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md transition-all"
           >
             <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[10px] sm:text-sm font-medium">Flash</span>
+            <span className="text-[9px] sm:text-sm font-medium">Flash</span>
           </TabsTrigger>
           <TabsTrigger 
             value="ghost" 
-            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-purple-500/10 data-[state=active]:border-purple-500/20 dark:data-[state=active]:border-purple-500/30 transition-all"
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-1 sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md transition-all"
           >
             <Ghost className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[10px] sm:text-sm font-medium">Ghost</span>
+            <span className="text-[9px] sm:text-sm font-medium">Ghost</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="ai" 
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-1 sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md transition-all"
+          >
+            <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[9px] sm:text-sm font-medium">AI</span>
           </TabsTrigger>
           <TabsTrigger 
             value="multiplayer" 
-            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-1 sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md transition-all"
           >
             <Swords className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[10px] sm:text-sm font-medium">Battle</span>
+            <span className="text-[9px] sm:text-sm font-medium">Battle</span>
           </TabsTrigger>
           <TabsTrigger 
             value="leaderboard" 
-            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-1 sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md transition-all"
           >
             <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[10px] sm:text-sm font-medium">Reyting</span>
+            <span className="text-[9px] sm:text-sm font-medium">Reyting</span>
           </TabsTrigger>
           <TabsTrigger 
             value="history" 
-            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-1 sm:px-3 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md transition-all"
           >
             <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="text-[10px] sm:text-sm font-medium">Tarix</span>
+            <span className="text-[9px] sm:text-sm font-medium">Tarix</span>
           </TabsTrigger>
         </TabsList>
 
@@ -641,6 +650,11 @@ export const MentalArithmeticPractice = () => {
         <TabsContent value="ghost" className="mt-4 sm:mt-6 space-y-4">
           <GhostBattle />
           <GhostBattleStats />
+          <GhostBattleRanking />
+        </TabsContent>
+
+        <TabsContent value="ai" className="mt-4 sm:mt-6">
+          <AIGhostBattle />
         </TabsContent>
 
         <TabsContent value="multiplayer" className="mt-4 sm:mt-6">
