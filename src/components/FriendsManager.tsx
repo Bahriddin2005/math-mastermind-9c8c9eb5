@@ -8,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { 
   Users, UserPlus, UserCheck, UserX, Search, 
-  Clock, Check, X, Crown, Trophy, Star
+  Clock, Check, X, Crown, Trophy, Star, Gamepad2, Loader2
 } from "lucide-react";
 
 interface Friend {
@@ -49,6 +50,7 @@ interface FriendLeaderboardEntry {
 
 export const FriendsManager = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<Friend[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,6 +58,7 @@ export const FriendsManager = () => {
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
   const [friendLeaderboard, setFriendLeaderboard] = useState<FriendLeaderboardEntry[]>([]);
+  const [invitingFriend, setInvitingFriend] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -283,6 +286,39 @@ export const FriendsManager = () => {
     }
   };
 
+  const inviteToGame = async (friendUserId: string, friendUsername: string) => {
+    if (!user) return;
+    
+    setInvitingFriend(friendUserId);
+    
+    try {
+      // Generate a room code
+      const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      // Create invitation
+      const { error } = await supabase.from('game_invitations').insert({
+        sender_id: user.id,
+        receiver_id: friendUserId,
+        room_code: roomCode,
+        game_type: 'mental-arithmetic',
+      });
+
+      if (error) throw error;
+
+      toast.success(`${friendUsername}ga o'yin taklifnomasi yuborildi!`, {
+        icon: '🎮',
+      });
+
+      // Navigate to multiplayer with room code
+      navigate(`/mental-arithmetic?mode=multiplayer&room=${roomCode}&host=true`);
+    } catch (error) {
+      console.error('Error inviting friend:', error);
+      toast.error("Taklifnoma yuborishda xatolik");
+    } finally {
+      setInvitingFriend(null);
+    }
+  };
+
   const isVip = (vipExpires: string | null) => {
     return vipExpires && new Date(vipExpires) > new Date();
   };
@@ -397,14 +433,32 @@ export const FriendsManager = () => {
                           <p className="text-xs text-muted-foreground">Do'st</p>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFriend(friend.id)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <UserX className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={() => inviteToGame(
+                            friend.friend_profile ? friend.friend_id : friend.user_id,
+                            profile?.username || ''
+                          )}
+                          disabled={invitingFriend === (friend.friend_profile ? friend.friend_id : friend.user_id)}
+                          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                        >
+                          {invitingFriend === (friend.friend_profile ? friend.friend_id : friend.user_id) ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Gamepad2 className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFriend(friend.id)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <UserX className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   );
                 })}
