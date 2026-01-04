@@ -787,6 +787,35 @@ export const MultiplayerMode = ({ onBack }: MultiplayerModeProps) => {
           <p className="text-muted-foreground mt-1">To'g'ri javob: <span className="font-mono font-bold text-foreground text-xl">{runningResultRef.current}</span></p>
         </div>
 
+        {/* Your Gamification Results */}
+        <Card className="bg-gradient-to-br from-primary/10 to-accent/10 border-primary/30">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <Star className="h-4 w-4 text-warning" />
+                Sizning natijangiz
+              </h3>
+              <Badge className="bg-primary/20 text-primary">
+                Level {gamification.level}
+              </Badge>
+            </div>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-primary">{lastScoreEarned}</p>
+                <p className="text-xs text-muted-foreground">Ball</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-green-500">+{lastXpEarned}</p>
+                <p className="text-xs text-muted-foreground">XP</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-warning">{gamification.totalXp.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Jami XP</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Podium */}
         <div className="flex items-end justify-center gap-2 md:gap-4 h-64 px-4">
           {/* 2nd Place */}
