@@ -408,6 +408,7 @@ export type Database = {
           correct: number | null
           created_at: string
           difficulty: string
+          formula_type: string | null
           id: string
           incorrect: number | null
           mode: string
@@ -424,6 +425,7 @@ export type Database = {
           correct?: number | null
           created_at?: string
           difficulty: string
+          formula_type?: string | null
           id?: string
           incorrect?: number | null
           mode: string
@@ -440,6 +442,7 @@ export type Database = {
           correct?: number | null
           created_at?: string
           difficulty?: string
+          formula_type?: string | null
           id?: string
           incorrect?: number | null
           mode?: string
