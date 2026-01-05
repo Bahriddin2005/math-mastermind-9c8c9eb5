@@ -1,19 +1,27 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { ComboEffect } from './ComboEffect';
-import { LevelUpModal } from './LevelUpModal';
-import { Play, RotateCcw, Zap, Star, Trophy, Check, X } from 'lucide-react';
+import { AbacusDisplay } from './AbacusDisplay';
+import { MentalArithmeticHistory } from './MentalArithmeticHistory';
+import { MentalArithmeticLeaderboard } from './MentalArithmeticLeaderboard';
+import { AbacusFlashCard } from './AbacusFlashCard';
+
+import { MultiplayerCompetition } from './MultiplayerCompetition';
+import { Play, RotateCcw, Check, Settings2, Zap, BarChart3, Trophy, Lightbulb, Swords } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSound } from '@/hooks/useSound';
 import { toast } from 'sonner';
 import { useAdaptiveGamification } from '@/hooks/useAdaptiveGamification';
-import { cn } from '@/lib/utils';
+import { GamificationDisplay } from './GamificationDisplay';
 
-// Soroban rules engine (hidden from user)
-const RULES: Record<number, { add: number[]; subtract: number[] }> = {
+// Formulasiz qoidalar: har bir natija uchun qo'shish/ayirish mumkin bo'lgan sonlar
+const RULES_BASIC: Record<number, { add: number[]; subtract: number[] }> = {
   0: { add: [1, 2, 3, 4, 5, 6, 7, 8, 9], subtract: [] },
   1: { add: [1, 2, 3, 5, 6, 7, 8], subtract: [1] },
   2: { add: [1, 2, 5, 6, 7], subtract: [1, 2] },
@@ -26,128 +34,342 @@ const RULES: Record<number, { add: number[]; subtract: number[] }> = {
   9: { add: [], subtract: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
 };
 
-// Generate wrong answers for balloon game
-const generateWrongAnswers = (correct: number, count: number = 3): number[] => {
-  const wrongs: number[] = [];
-  const offsets = [-3, -2, -1, 1, 2, 3, -4, 4, -5, 5];
-  
-  for (const offset of offsets) {
-    const wrong = correct + offset;
-    if (wrong >= 0 && wrong !== correct && !wrongs.includes(wrong)) {
-      wrongs.push(wrong);
-      if (wrongs.length >= count) break;
-    }
-  }
-  
-  while (wrongs.length < count) {
-    const random = Math.floor(Math.random() * 20);
-    if (random !== correct && !wrongs.includes(random)) {
-      wrongs.push(random);
-    }
-  }
-  
-  return wrongs;
+// Kichik do'st +2/-2 formulasi
+const RULES_SMALL_FRIEND_2: Record<number, { add: number[]; subtract: number[] }> = {
+  0: { add: [], subtract: [] },
+  1: { add: [], subtract: [] },
+  2: { add: [], subtract: [] },
+  3: { add: [2], subtract: [] },
+  4: { add: [2], subtract: [] },
+  5: { add: [], subtract: [2] },
+  6: { add: [], subtract: [2] },
+  7: { add: [], subtract: [] },
+  8: { add: [], subtract: [] },
+  9: { add: [], subtract: [] },
 };
 
-// Shuffle array
-const shuffleArray = <T,>(array: T[]): T[] => {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
+// Kichik do'st +1/-1 formulasi
+const RULES_SMALL_FRIEND_1: Record<number, { add: number[]; subtract: number[] }> = {
+  0: { add: [], subtract: [] },
+  1: { add: [], subtract: [] },
+  2: { add: [], subtract: [] },
+  3: { add: [], subtract: [] },
+  4: { add: [1], subtract: [] },
+  5: { add: [], subtract: [1] },
+  6: { add: [], subtract: [] },
+  7: { add: [], subtract: [] },
+  8: { add: [], subtract: [] },
+  9: { add: [], subtract: [] },
 };
+
+// Katta do'st +3/-3 formulasi
+const RULES_BIG_FRIEND_3: Record<number, { add: number[]; subtract: number[] }> = {
+  0: { add: [], subtract: [] },
+  1: { add: [], subtract: [] },
+  2: { add: [3], subtract: [] },
+  3: { add: [3], subtract: [] },
+  4: { add: [], subtract: [] },
+  5: { add: [], subtract: [] },
+  6: { add: [], subtract: [3] },
+  7: { add: [], subtract: [3] },
+  8: { add: [], subtract: [] },
+  9: { add: [], subtract: [] },
+};
+
+// Katta do'st +4/-4 formulasi
+const RULES_BIG_FRIEND_4: Record<number, { add: number[]; subtract: number[] }> = {
+  0: { add: [], subtract: [] },
+  1: { add: [4], subtract: [] },
+  2: { add: [4], subtract: [] },
+  3: { add: [4], subtract: [] },
+  4: { add: [], subtract: [] },
+  5: { add: [], subtract: [] },
+  6: { add: [], subtract: [4] },
+  7: { add: [], subtract: [4] },
+  8: { add: [], subtract: [4] },
+  9: { add: [], subtract: [] },
+};
+
+// Aralash formula - barcha formulalarni birlashtiradi
+const RULES_MIXED: Record<number, { add: number[]; subtract: number[] }> = {
+  0: { add: [1, 2, 3, 4, 5, 6, 7, 8, 9], subtract: [] },
+  1: { add: [1, 2, 3, 4, 5, 6, 7, 8], subtract: [1] },
+  2: { add: [1, 2, 3, 4, 5, 6, 7], subtract: [1, 2] },
+  3: { add: [1, 2, 3, 5, 6], subtract: [1, 2, 3] },
+  4: { add: [1, 2, 5], subtract: [1, 2, 3, 4] },
+  5: { add: [1, 2, 3, 4], subtract: [1, 2, 5] },
+  6: { add: [1, 2, 3], subtract: [1, 2, 3, 5, 6] },
+  7: { add: [1, 2], subtract: [1, 2, 3, 4, 5, 7] },
+  8: { add: [1], subtract: [1, 2, 3, 4, 5, 8] },
+  9: { add: [], subtract: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
+};
+
+// Formula turlari
+type FormulaType = 'basic' | 'small_friend_1' | 'small_friend_2' | 'big_friend_3' | 'big_friend_4' | 'mixed';
+
+const FORMULA_CONFIG = {
+  basic: { 
+    label: "Formulasiz", 
+    rules: RULES_BASIC,
+    example: "Natija 4 → +5, -1, -2, -3, -4 | Natija 6 → +1, +2, +3, -1, -5, -6",
+    description: "Abakusda formulasiz asosiy qo'shish va ayirish amallari"
+  },
+  small_friend_1: { 
+    label: "Kichik do'st +1/-1", 
+    rules: RULES_SMALL_FRIEND_1,
+    example: "Natija 4 → +1 (5-4=1) | Natija 5 → -1 (4+1=5)",
+    description: "4+1=5 yoki 5-1=4 formulasi orqali amal bajariladi"
+  },
+  small_friend_2: { 
+    label: "Kichik do'st +2/-2", 
+    rules: RULES_SMALL_FRIEND_2,
+    example: "Natija 3 → +2 (5-3=2) | Natija 6 → -2 (5+1=6)",
+    description: "3+2=5 yoki 6-2=4 formulasi orqali amal bajariladi"
+  },
+  big_friend_3: { 
+    label: "Katta do'st +3/-3", 
+    rules: RULES_BIG_FRIEND_3,
+    example: "Natija 2 → +3 (5-2=3) | Natija 7 → -3 (5+2=7)",
+    description: "2+3=5 yoki 7-3=4 formulasi orqali amal bajariladi"
+  },
+  big_friend_4: { 
+    label: "Katta do'st +4/-4", 
+    rules: RULES_BIG_FRIEND_4,
+    example: "Natija 1 → +4 (5-1=4) | Natija 8 → -4 (5+3=8)",
+    description: "1+4=5 yoki 8-4=4 formulasi orqali amal bajariladi"
+  },
+  mixed: { 
+    label: "Aralash (barcha formulalar)", 
+    rules: RULES_MIXED,
+    example: "Barcha formulalar aralashtirilgan holda",
+    description: "Formulasiz + Kichik do'st + Katta do'st formulalari birgalikda"
+  },
+};
+
+// Qiyinlik darajalari
+const DIFFICULTY_CONFIG = {
+  easy: { label: "Oson", count: 3, speed: 1500 },
+  medium: { label: "O'rta", count: 5, speed: 1000 },
+  hard: { label: "Qiyin", count: 10, speed: 700 },
+};
+
+type DifficultyLevel = keyof typeof DIFFICULTY_CONFIG;
+
+interface PracticeStats {
+  totalProblems: number;
+  correctAnswers: number;
+  incorrectAnswers: number;
+  bestStreak: number;
+  averageTime: number;
+}
 
 export const MentalArithmeticPractice = () => {
   const { user } = useAuth();
   const { playSound } = useSound();
   
+  // Adaptive Gamification hook
   const gamification = useAdaptiveGamification({
     gameType: 'mental-arithmetic',
     baseScore: 15,
     enabled: !!user,
   });
   
-  // Game state
-  const [gamePhase, setGamePhase] = useState<'ready' | 'showing' | 'choosing' | 'result'>('ready');
+  // Sozlamalar
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium');
+  const [formulaType, setFormulaType] = useState<FormulaType>('basic');
+  const [customSpeed, setCustomSpeed] = useState(500); // ms - default 0.5 sekund
+  const [customCount, setCustomCount] = useState(5); // sonlar soni
+  const [showAbacus, setShowAbacus] = useState(true);
+  const [showSettings, setShowSettings] = useState(true);
+  const [abacusColumns, setAbacusColumns] = useState(1);
+  const [continuousMode, setContinuousMode] = useState(false); // To'xtovsiz mashq rejimi
+  const [currentProgress, setCurrentProgress] = useState(0);
+  const [bonusAvailable, setBonusAvailable] = useState(false);
+  
+  // Check bonus availability
+  useEffect(() => {
+    const checkBonus = async () => {
+      if (user) {
+        const available = await gamification.checkBonusAvailability();
+        setBonusAvailable(available);
+      }
+    };
+    checkBonus();
+  }, [user, gamification.checkBonusAvailability]);
+  
+  // O'yin holati
+  const [isRunning, setIsRunning] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   const [currentNumber, setCurrentNumber] = useState<number | null>(null);
   const [displayedNumbers, setDisplayedNumbers] = useState<number[]>([]);
-  const [choices, setChoices] = useState<number[]>([]);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [userAnswer, setUserAnswer] = useState('');
+  const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [showResult, setShowResult] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
-  const [showComboEffect, setShowComboEffect] = useState(false);
-  const [score, setScore] = useState(0);
-  const [problemsPlayed, setProblemsPlayed] = useState(0);
+  const [refreshHistory, setRefreshHistory] = useState(0);
   
-  // Game settings (adaptive)
-  const operationCount = Math.min(3 + Math.floor(gamification.level / 3), 10);
-  const showSpeed = Math.max(3000 - (gamification.difficultyLevel * 150), 800);
+  // Statistika
+  const [stats, setStats] = useState<PracticeStats>({
+    totalProblems: 0,
+    correctAnswers: 0,
+    incorrectAnswers: 0,
+    bestStreak: 0,
+    averageTime: 0,
+  });
   
   const runningResultRef = useRef(0);
   const countRef = useRef(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
 
+  // Statistikani yuklash
+  useEffect(() => {
+    if (!user) return;
+    
+    const loadStats = async () => {
+      const { data } = await supabase
+        .from('game_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('section', 'mental-arithmetic')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      
+      if (data && data.length > 0) {
+        const totalProblems = data.reduce((sum, s) => sum + (s.correct || 0) + (s.incorrect || 0), 0);
+        const correctAnswers = data.reduce((sum, s) => sum + (s.correct || 0), 0);
+        const incorrectAnswers = data.reduce((sum, s) => sum + (s.incorrect || 0), 0);
+        const bestStreak = Math.max(...data.map(s => s.best_streak || 0));
+        const totalTime = data.reduce((sum, s) => sum + (s.total_time || 0), 0);
+        
+        setStats({
+          totalProblems,
+          correctAnswers,
+          incorrectAnswers,
+          bestStreak,
+          averageTime: totalProblems > 0 ? totalTime / totalProblems : 0,
+        });
+      }
+    };
+    
+    loadStats();
+  }, [user, refreshHistory]);
+
+  // Boncuk harakati ovozi
+  const handleBeadMove = useCallback(() => {
+    playSound('bead');
+  }, [playSound]);
+
+  // Keyingi sonni generatsiya qilish
   const generateNextNumber = useCallback(() => {
     const currentResult = runningResultRef.current;
-    const lastDigit = Math.abs(currentResult) % 10;
-    const rules = RULES[lastDigit];
+    const selectedRules = FORMULA_CONFIG[formulaType].rules;
+    const rules = selectedRules[currentResult];
     
     if (!rules) return null;
 
-    const possibleOps: { num: number; isAdd: boolean }[] = [];
-    rules.add.forEach(num => possibleOps.push({ num, isAdd: true }));
-    rules.subtract.forEach(num => possibleOps.push({ num, isAdd: false }));
-
-    if (possibleOps.length === 0) return null;
-
-    const op = possibleOps[Math.floor(Math.random() * possibleOps.length)];
+    const possibleOperations: { number: number; isAdd: boolean }[] = [];
     
-    if (op.isAdd) {
-      runningResultRef.current += op.num;
-      return op.num;
-    } else {
-      runningResultRef.current -= op.num;
-      return -op.num;
-    }
-  }, []);
+    rules.add.forEach(num => {
+      possibleOperations.push({ number: num, isAdd: true });
+    });
+    
+    rules.subtract.forEach(num => {
+      possibleOperations.push({ number: num, isAdd: false });
+    });
 
+    if (possibleOperations.length === 0) return null;
+
+    const randomOp = possibleOperations[Math.floor(Math.random() * possibleOperations.length)];
+    
+    if (randomOp.isAdd) {
+      runningResultRef.current += randomOp.number;
+      return randomOp.number; // Musbat son (+)
+    } else {
+      runningResultRef.current -= randomOp.number;
+      return -randomOp.number; // Manfiy son (-) bilan qaytarish
+    }
+  }, [formulaType]);
+
+  // O'yinni boshlash
   const startGame = useCallback(() => {
-    // Initialize
-    const initial = Math.floor(Math.random() * 9) + 1;
-    runningResultRef.current = initial;
+    const initialResult = Math.floor(Math.random() * 10);
+    runningResultRef.current = initialResult;
     countRef.current = 1;
     startTimeRef.current = Date.now();
     
     playSound('start');
     
-    setCurrentNumber(initial);
-    setDisplayedNumbers([initial]);
-    setGamePhase('showing');
-    setSelectedAnswer(null);
-    setIsCorrect(null);
-    setChoices([]);
+    setCurrentNumber(initialResult);
+    setDisplayedNumbers([initialResult]);
+    setIsRunning(true);
+    setIsFinished(false);
+    setShowSettings(false);
+    setUserAnswer('');
+    setFeedback(null);
+    setShowResult(false);
+    setCurrentProgress((1 / customCount) * 100);
 
     intervalRef.current = setInterval(() => {
       countRef.current += 1;
       
-      if (countRef.current > operationCount) {
+      if (countRef.current > customCount) {
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
         }
-        
-        // Prepare choices
-        const correct = runningResultRef.current;
-        const wrongs = generateWrongAnswers(correct, 3);
-        const allChoices = shuffleArray([correct, ...wrongs]);
-        
-        setChoices(allChoices);
-        setCurrentNumber(null);
-        setGamePhase('choosing');
         playSound('complete');
+        setIsRunning(false);
+        setCurrentNumber(null);
+        setCurrentProgress(100);
+        
+        // To'xtovsiz rejimda avtomatik keyingi mashqqa o'tish
+        if (continuousMode) {
+          // 1.5 sekunddan keyin yangi mashq boshlash
+          setTimeout(() => {
+            const newInitialResult = Math.floor(Math.random() * 10);
+            runningResultRef.current = newInitialResult;
+            countRef.current = 1;
+            startTimeRef.current = Date.now();
+            
+            setCurrentNumber(newInitialResult);
+            setDisplayedNumbers([newInitialResult]);
+            setIsRunning(true);
+            setCurrentProgress((1 / customCount) * 100);
+
+            intervalRef.current = setInterval(() => {
+              countRef.current += 1;
+              
+              if (countRef.current > customCount) {
+                if (intervalRef.current) {
+                  clearInterval(intervalRef.current);
+                  intervalRef.current = null;
+                }
+                playSound('complete');
+                setIsRunning(false);
+                setCurrentNumber(null);
+                setCurrentProgress(100);
+                
+                // Rekursiv davom ettirish
+                if (continuousMode) {
+                  setTimeout(() => startGame(), 1500);
+                } else {
+                  setIsFinished(true);
+                }
+                return;
+              }
+
+              const nextNum = generateNextNumber();
+              if (nextNum !== null) {
+                setCurrentNumber(nextNum);
+                setDisplayedNumbers(prev => [...prev, nextNum]);
+                setCurrentProgress((countRef.current / customCount) * 100);
+              }
+            }, customSpeed);
+          }, 1500);
+        } else {
+          setIsFinished(true);
+        }
         return;
       }
 
@@ -155,81 +377,109 @@ export const MentalArithmeticPractice = () => {
       if (nextNum !== null) {
         setCurrentNumber(nextNum);
         setDisplayedNumbers(prev => [...prev, nextNum]);
+        setCurrentProgress((countRef.current / customCount) * 100);
       }
-    }, showSpeed);
-  }, [operationCount, showSpeed, generateNextNumber, playSound]);
+    }, customSpeed);
+  }, [customCount, customSpeed, generateNextNumber, playSound, continuousMode]);
 
-  const handleChooseAnswer = useCallback(async (answer: number) => {
+  // Javobni tekshirish va saqlash
+  const checkAnswer = useCallback(async () => {
+    const userNum = parseInt(userAnswer, 10);
     const correctAnswer = runningResultRef.current;
-    const correct = answer === correctAnswer;
+    const isCorrect = userNum === correctAnswer;
     const timeTaken = (Date.now() - startTimeRef.current) / 1000;
+    const responseTimeMs = Math.floor(timeTaken * 1000);
     
-    setSelectedAnswer(answer);
-    setIsCorrect(correct);
-    setGamePhase('result');
+    setFeedback(isCorrect ? 'correct' : 'incorrect');
+    setShowResult(true);
     
-    playSound(correct ? 'correct' : 'incorrect');
+    playSound(isCorrect ? 'correct' : 'incorrect');
     
-    const newStreak = correct ? currentStreak + 1 : 0;
+    const newStreak = isCorrect ? currentStreak + 1 : 0;
     setCurrentStreak(newStreak);
-    setProblemsPlayed(prev => prev + 1);
     
-    if (correct) {
-      const earnedScore = 10 + (newStreak * 2);
-      setScore(prev => prev + earnedScore);
-      
-      if (newStreak >= 2) {
-        setShowComboEffect(true);
-      }
-    }
+    // Statistikani yangilash
+    setStats(prev => ({
+      ...prev,
+      totalProblems: prev.totalProblems + 1,
+      correctAnswers: prev.correctAnswers + (isCorrect ? 1 : 0),
+      incorrectAnswers: prev.incorrectAnswers + (isCorrect ? 0 : 1),
+      bestStreak: Math.max(prev.bestStreak, newStreak),
+    }));
 
-    // Save to database
+    // Adaptive Gamification - process answer
+    if (user) {
+      const difficultyMultiplier = difficulty === 'hard' ? 2 : difficulty === 'medium' ? 1.5 : 1;
+      await gamification.processAnswer(isCorrect, responseTimeMs, difficultyMultiplier);
+    }
+    
+    // Supabase'ga saqlash
     if (user) {
       try {
-        await gamification.processAnswer(correct, Math.floor(timeTaken * 1000), 1);
+        const scoreEarned = isCorrect ? Math.floor(15 * gamification.comboMultiplier) : 0;
         
         await supabase.from('game_sessions').insert({
           user_id: user.id,
           section: 'mental-arithmetic',
-          difficulty: 'medium',
+          difficulty: difficulty,
           mode: 'practice',
-          correct: correct ? 1 : 0,
-          incorrect: correct ? 0 : 1,
+          correct: isCorrect ? 1 : 0,
+          incorrect: isCorrect ? 0 : 1,
           best_streak: Math.max(newStreak, gamification.maxCombo),
-          score: correct ? 10 + (newStreak * 2) : 0,
+          score: scoreEarned,
           total_time: timeTaken,
           problems_solved: 1,
         });
+        
+        // Profilni yangilash
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('total_score, total_problems_solved, best_streak')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (profile) {
+          await supabase
+            .from('profiles')
+            .update({
+              total_score: (profile.total_score || 0) + scoreEarned,
+              total_problems_solved: (profile.total_problems_solved || 0) + 1,
+              best_streak: Math.max(profile.best_streak || 0, newStreak, gamification.maxCombo),
+              last_active_date: new Date().toISOString().split('T')[0],
+            })
+            .eq('user_id', user.id);
+        }
+        
+        // Tarixni yangilash
+        setRefreshHistory(prev => prev + 1);
       } catch (error) {
-        console.error('Error saving:', error);
+        console.error('Error saving session:', error);
       }
     }
     
-    if (correct) {
-      toast.success("Zo'r! 🎉", { duration: 1500 });
+    if (isCorrect) {
+      toast.success("To'g'ri javob! 🎉", { duration: 2000 });
     }
-  }, [user, currentStreak, playSound, gamification]);
+  }, [userAnswer, user, difficulty, currentStreak, playSound, gamification]);
 
+  // Qayta boshlash
   const resetGame = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    setGamePhase('ready');
+    setIsRunning(false);
+    setIsFinished(false);
     setCurrentNumber(null);
     setDisplayedNumbers([]);
-    setChoices([]);
-    setSelectedAnswer(null);
-    setIsCorrect(null);
+    setUserAnswer('');
+    setFeedback(null);
+    setShowResult(false);
+    setShowSettings(true);
     runningResultRef.current = 0;
     countRef.current = 0;
     gamification.resetCombo();
   }, [gamification]);
-
-  const playAgain = useCallback(() => {
-    resetGame();
-    setTimeout(() => startGame(), 100);
-  }, [resetGame, startGame]);
 
   useEffect(() => {
     return () => {
@@ -239,205 +489,136 @@ export const MentalArithmeticPractice = () => {
     };
   }, []);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && isFinished && !showResult && userAnswer) {
+      checkAnswer();
+    }
+  };
+
+  const config = DIFFICULTY_CONFIG[difficulty];
+  const accuracy = stats.totalProblems > 0 
+    ? Math.round((stats.correctAnswers / stats.totalProblems) * 100) 
+    : 0;
+
   return (
-    <div className="space-y-4 max-w-lg mx-auto">
-      <ComboEffect
-        combo={currentStreak}
-        showEffect={showComboEffect}
-        onEffectComplete={() => setShowComboEffect(false)}
-      />
-
-      <LevelUpModal
-        isOpen={gamification.showLevelUpModal}
-        onClose={gamification.closeLevelUpModal}
-        newLevel={gamification.newLevelForModal}
-        rewards={gamification.levelUpRewards}
-      />
-
-      {/* Stats Bar */}
-      <Card className="p-3 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 text-amber-500" />
-              <span className="font-bold text-lg">{score}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Zap className="h-4 w-4 text-primary" />
-              <span className="text-sm text-muted-foreground">
-                {gamification.energy}/{gamification.maxEnergy}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10">
-            <Trophy className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-primary">Level {gamification.level}</span>
-          </div>
-        </div>
-      </Card>
-
-      {/* Main Game Area */}
-      <Card className="p-6 min-h-[400px] flex flex-col items-center justify-center bg-gradient-to-b from-card to-card/80 border-2 border-primary/20">
-        
-        {/* Ready Phase */}
-        {gamePhase === 'ready' && (
-          <div className="text-center space-y-6 animate-fade-in">
-            <div className="w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-xl shadow-primary/30">
-              <Play className="h-12 w-12 text-primary-foreground" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Tayyor!</h2>
-              <p className="text-muted-foreground">
-                Sonlarni yodda tuting va to'g'ri javobni tanlang
-              </p>
-            </div>
-            <Button
-              size="lg"
-              onClick={startGame}
-              disabled={gamification.energy <= 0}
-              className="h-14 px-8 text-lg font-bold rounded-2xl bg-gradient-to-r from-primary to-primary/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:scale-105 transition-all"
-            >
-              <Play className="h-6 w-6 mr-2" />
-              O'ynash
-            </Button>
-            {gamification.energy <= 0 && (
-              <p className="text-sm text-destructive">Energiya tugadi! Biroz kuting.</p>
-            )}
-          </div>
-        )}
-
-        {/* Showing Numbers Phase */}
-        {gamePhase === 'showing' && currentNumber !== null && (
-          <div className="text-center space-y-6 animate-scale-in">
-            <div className="text-8xl font-black tabular-nums text-primary drop-shadow-lg animate-pulse">
-              {currentNumber >= 0 ? `+${currentNumber}` : currentNumber}
-            </div>
-            <div className="flex items-center gap-2">
-              <Progress value={(countRef.current / operationCount) * 100} className="h-2 flex-1" />
-              <span className="text-sm text-muted-foreground">{countRef.current}/{operationCount}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Choosing Phase - Balloon Style */}
-        {gamePhase === 'choosing' && (
-          <div className="text-center space-y-6 w-full animate-fade-in">
-            <div className="text-xl font-bold text-muted-foreground">
-              Natija qancha? 🎈
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {choices.map((choice, index) => (
-                <button
-                  key={choice}
-                  onClick={() => handleChooseAnswer(choice)}
-                  className={cn(
-                    "relative p-6 rounded-3xl font-bold text-3xl transition-all duration-200",
-                    "hover:scale-105 active:scale-95 hover:shadow-xl",
-                    "bg-gradient-to-br shadow-lg",
-                    index === 0 && "from-blue-400 to-blue-500 text-white shadow-blue-500/30",
-                    index === 1 && "from-emerald-400 to-emerald-500 text-white shadow-emerald-500/30",
-                    index === 2 && "from-amber-400 to-amber-500 text-white shadow-amber-500/30",
-                    index === 3 && "from-pink-400 to-pink-500 text-white shadow-pink-500/30"
-                  )}
-                  style={{
-                    animation: `float ${2 + index * 0.3}s ease-in-out infinite`,
-                    animationDelay: `${index * 0.2}s`
-                  }}
-                >
-                  {choice}
-                  {/* Balloon shine */}
-                  <div className="absolute top-3 left-4 w-3 h-3 rounded-full bg-white/40" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Result Phase */}
-        {gamePhase === 'result' && (
-          <div className="text-center space-y-6 animate-bounce-in">
-            <div className={cn(
-              "w-24 h-24 mx-auto rounded-full flex items-center justify-center",
-              isCorrect 
-                ? "bg-gradient-to-br from-emerald-400 to-emerald-500 shadow-xl shadow-emerald-500/30" 
-                : "bg-gradient-to-br from-red-400 to-red-500 shadow-xl shadow-red-500/30"
-            )}>
-              {isCorrect ? (
-                <Check className="h-12 w-12 text-white" />
-              ) : (
-                <X className="h-12 w-12 text-white" />
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <h2 className="text-3xl font-black">
-                {isCorrect ? "Zo'r! 🎉" : "Xato 😅"}
-              </h2>
-              {!isCorrect && (
-                <p className="text-lg text-muted-foreground">
-                  To'g'ri javob: <span className="font-bold text-primary">{runningResultRef.current}</span>
-                </p>
-              )}
-              {isCorrect && currentStreak >= 2 && (
-                <p className="text-lg text-amber-500 font-bold">
-                  🔥 {currentStreak} Combo!
-                </p>
-              )}
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={resetGame}
-                className="flex-1 h-12 rounded-xl"
-              >
-                <RotateCcw className="h-5 w-5 mr-2" />
-                Bosh sahifa
-              </Button>
-              <Button
-                size="lg"
-                onClick={playAgain}
-                disabled={gamification.energy <= 0}
-                className="flex-1 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/90"
-              >
-                <Play className="h-5 w-5 mr-2" />
-                Yana
-              </Button>
-            </div>
-          </div>
-        )}
-      </Card>
-
-      {/* Session Stats */}
-      {problemsPlayed > 0 && gamePhase === 'ready' && (
-        <Card className="p-4 bg-muted/30">
-          <div className="flex items-center justify-around text-center">
-            <div>
-              <p className="text-2xl font-bold text-primary">{problemsPlayed}</p>
-              <p className="text-xs text-muted-foreground">O'yinlar</p>
-            </div>
-            <div className="w-px h-8 bg-border" />
-            <div>
-              <p className="text-2xl font-bold text-amber-500">{score}</p>
-              <p className="text-xs text-muted-foreground">Ball</p>
-            </div>
-            <div className="w-px h-8 bg-border" />
-            <div>
-              <p className="text-2xl font-bold text-emerald-500">{currentStreak}</p>
-              <p className="text-xs text-muted-foreground">Combo</p>
-            </div>
-          </div>
-        </Card>
+    <div className="space-y-4 sm:space-y-6 px-0">
+      {/* Gamification Display */}
+      {user && !gamification.isLoading && (
+        <GamificationDisplay
+          level={gamification.level}
+          currentXp={gamification.currentXp}
+          requiredXp={gamification.requiredXp}
+          levelProgress={gamification.levelProgress}
+          energy={gamification.energy}
+          maxEnergy={gamification.maxEnergy}
+          combo={gamification.combo}
+          comboMultiplier={gamification.comboMultiplier}
+          difficultyLevel={gamification.difficultyLevel}
+          xpUntilLevelUp={gamification.xpUntilLevelUp}
+          isStruggling={gamification.isStruggling}
+          isFlagged={gamification.isFlagged}
+          showBonusHint={bonusAvailable}
+        />
       )}
 
-      {/* CSS for floating animation */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-        }
-      `}</style>
+      {/* Statistika - Chiroyli gradient kartalar - Dark mode enhanced */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 dark:from-primary/30 dark:to-primary/10 rounded-xl blur-sm group-hover:blur-md transition-all" />
+          <Card className="relative p-3 sm:p-4 text-center border-primary/20 dark:border-primary/30 bg-card/80 dark:bg-card/60 backdrop-blur-sm shadow-sm dark:shadow-lg dark:shadow-primary/10">
+            <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
+              <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-primary/40 dark:text-primary/60" />
+            </div>
+            <div className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/80 font-medium uppercase tracking-wide">Jami</div>
+            <div className="text-xl sm:text-3xl font-bold text-primary mt-0.5">{stats.totalProblems}</div>
+          </Card>
+        </div>
+        
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-green-500/5 dark:from-green-500/30 dark:to-green-500/10 rounded-xl blur-sm group-hover:blur-md transition-all" />
+          <Card className="relative p-3 sm:p-4 text-center border-green-500/20 dark:border-green-500/30 bg-card/80 dark:bg-card/60 backdrop-blur-sm shadow-sm dark:shadow-lg dark:shadow-green-500/10">
+            <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
+              <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-500/40 dark:text-green-500/60" />
+            </div>
+            <div className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/80 font-medium uppercase tracking-wide">To'g'ri</div>
+            <div className="text-xl sm:text-3xl font-bold text-green-500 mt-0.5">{stats.correctAnswers}</div>
+          </Card>
+        </div>
+        
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-blue-500/5 dark:from-blue-500/30 dark:to-blue-500/10 rounded-xl blur-sm group-hover:blur-md transition-all" />
+          <Card className="relative p-3 sm:p-4 text-center border-blue-500/20 dark:border-blue-500/30 bg-card/80 dark:bg-card/60 backdrop-blur-sm shadow-sm dark:shadow-lg dark:shadow-blue-500/10">
+            <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
+              <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500/40 dark:text-blue-500/60" />
+            </div>
+            <div className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/80 font-medium uppercase tracking-wide">Aniqlik</div>
+            <div className="text-xl sm:text-3xl font-bold text-blue-500 mt-0.5">{accuracy}%</div>
+          </Card>
+        </div>
+        
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-amber-500/5 dark:from-amber-500/30 dark:to-amber-500/10 rounded-xl blur-sm group-hover:blur-md transition-all" />
+          <Card className="relative p-3 sm:p-4 text-center border-amber-500/20 dark:border-amber-500/30 bg-card/80 dark:bg-card/60 backdrop-blur-sm shadow-sm dark:shadow-lg dark:shadow-amber-500/10">
+            <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
+              <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-amber-500/40 dark:text-amber-500/60" />
+            </div>
+            <div className="text-[10px] sm:text-xs text-muted-foreground dark:text-muted-foreground/80 font-medium uppercase tracking-wide">Seriya</div>
+            <div className="text-xl sm:text-3xl font-bold text-amber-500 mt-0.5">{stats.bestStreak}</div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Tabs - Chiroyli dizayn - Dark mode enhanced */}
+      <Tabs defaultValue="flashcard" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1 sm:p-1.5 bg-muted/50 dark:bg-muted/30 backdrop-blur-sm rounded-xl border border-border/50 dark:border-border/30">
+          <TabsTrigger 
+            value="flashcard" 
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
+          >
+            <Lightbulb className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] sm:text-sm font-medium">Flash</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="multiplayer" 
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
+          >
+            <Swords className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] sm:text-sm font-medium">Musobaqa</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="leaderboard" 
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
+          >
+            <Trophy className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] sm:text-sm font-medium">Reyting</span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="history" 
+            className="gap-1 sm:gap-2 text-xs sm:text-sm py-2.5 sm:py-3 flex-col sm:flex-row px-2 sm:px-4 rounded-lg data-[state=active]:bg-card dark:data-[state=active]:bg-card/80 data-[state=active]:shadow-md dark:data-[state=active]:shadow-lg dark:data-[state=active]:shadow-primary/10 data-[state=active]:border-primary/20 dark:data-[state=active]:border-primary/30 transition-all"
+          >
+            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-[10px] sm:text-sm font-medium">Tarix</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="flashcard" className="mt-4 sm:mt-6">
+          <AbacusFlashCard onComplete={() => setRefreshHistory(prev => prev + 1)} />
+        </TabsContent>
+
+        <TabsContent value="multiplayer" className="mt-4 sm:mt-6">
+          <MultiplayerCompetition />
+        </TabsContent>
+
+        <TabsContent value="leaderboard" className="mt-4 sm:mt-6">
+          <MentalArithmeticLeaderboard />
+        </TabsContent>
+
+        <TabsContent value="history" className="mt-4 sm:mt-6">
+          <MentalArithmeticHistory refreshTrigger={refreshHistory} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
+
+export default MentalArithmeticPractice;

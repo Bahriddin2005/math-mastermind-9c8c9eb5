@@ -13,11 +13,9 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { PageTransition } from "./components/PageTransition";
 import { PageLoader } from "./components/PageLoader";
 import { PullToRefresh } from "./components/PullToRefresh";
-import { GameInvitations } from "./components/GameInvitations";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import KidsHome from "./pages/KidsHome";
 import Settings from "./pages/Settings";
 import ResetPassword from "./pages/ResetPassword";
 import Contact from "./pages/Contact";
@@ -35,11 +33,6 @@ import Install from "./pages/Install";
 import MentalArithmetic from "./pages/MentalArithmetic";
 import Achievements from "./pages/Achievements";
 import ChallengeStats from "./pages/ChallengeStats";
-import GameHub from "./pages/GameHub";
-import GameShop from "./pages/GameShop";
-import GamePlay from "./pages/GamePlay";
-import GameInventory from "./pages/GameInventory";
-import AvatarSelect from "./pages/AvatarSelect";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,8 +57,7 @@ const App = () => (
               <div className="pb-16 md:pb-0">
                 <PageTransition>
                   <Routes>
-                    <Route path="/" element={<KidsHome />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/" element={<Dashboard />} />
                     <Route path="/train" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
@@ -85,11 +77,6 @@ const App = () => (
                     <Route path="/mental-arithmetic" element={<ProtectedRoute><MentalArithmetic /></ProtectedRoute>} />
                     <Route path="/achievements" element={<ProtectedRoute><Achievements /></ProtectedRoute>} />
                     <Route path="/challenge-stats" element={<ChallengeStats />} />
-                    <Route path="/game-hub" element={<ProtectedRoute><GameHub /></ProtectedRoute>} />
-                    <Route path="/game-shop" element={<ProtectedRoute><GameShop /></ProtectedRoute>} />
-                    <Route path="/game-play/:levelId" element={<ProtectedRoute><GamePlay /></ProtectedRoute>} />
-                    <Route path="/game-inventory" element={<ProtectedRoute><GameInventory /></ProtectedRoute>} />
-                    <Route path="/avatar-select" element={<ProtectedRoute><AvatarSelect /></ProtectedRoute>} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
@@ -99,7 +86,6 @@ const App = () => (
             <MobileBottomNav />
             <PWAInstallBanner />
             <HelpChatWidget />
-            <GameInvitations />
           </BrowserRouter>
         </AuthProvider>
       </TooltipProvider>

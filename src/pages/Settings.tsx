@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Navbar } from '@/components/Navbar';
 import { Achievements } from '@/components/Achievements';
 import { DailyRemindersSettings } from '@/components/DailyRemindersSettings';
-import { NotificationSettings } from '@/components/NotificationSettings';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -817,13 +816,8 @@ const Settings = () => {
             </Card>
           </div>
 
-          {/* Notification Settings Section */}
-          <div className="opacity-0 animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
-            <NotificationSettings />
-          </div>
-
           {/* Daily Reminders Section */}
-          <div className="opacity-0 animate-slide-up" style={{ animationDelay: '250ms', animationFillMode: 'forwards' }}>
+          <div className="opacity-0 animate-slide-up" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
             <DailyRemindersSettings />
           </div>
 

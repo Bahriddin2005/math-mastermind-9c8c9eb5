@@ -942,8 +942,8 @@ export const NumberTrainer = () => {
           <div className="relative max-w-lg w-full space-y-4 sm:space-y-5 animate-fade-in mx-auto">
             {/* Header */}
             <div className="text-center mb-2">
-              <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground dark:text-white">Natijani ko'raylik! 🎯</h2>
-              <p className="text-muted-foreground dark:text-slate-400 text-xs sm:text-sm mt-1">Javobingni yoz va tekshir!</p>
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-foreground dark:text-white">Mashq tugadi!</h2>
+              <p className="text-muted-foreground dark:text-slate-400 text-xs sm:text-sm mt-1">Javobingizni kiriting</p>
             </div>
             
             {!showResult ? (
@@ -1497,55 +1497,35 @@ export const NumberTrainer = () => {
                         <span className="text-xs sm:text-sm text-muted-foreground dark:text-slate-400">s</span>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    <div className="flex flex-wrap gap-1 sm:gap-1.5">
                       {[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.5, 2, 2.5, 3].map((s) => {
-                        // Speed-based color logic - gradient from dark green to black
-                        const getSpeedTextColor = (speedVal: number) => {
-                          if (speedVal === 0.1) return 'text-green-800 dark:text-green-400';
-                          if (speedVal === 0.2) return 'text-green-700 dark:text-green-400';
-                          if (speedVal === 0.3) return 'text-green-600 dark:text-green-500';
-                          if (speedVal === 0.4) return 'text-green-500 dark:text-green-400';
-                          if (speedVal === 0.5) return 'text-lime-500 dark:text-lime-400';
-                          if (speedVal === 0.6) return 'text-yellow-500 dark:text-yellow-400';
-                          if (speedVal === 0.7) return 'text-yellow-600 dark:text-yellow-500';
-                          if (speedVal === 0.8) return 'text-orange-500 dark:text-orange-400';
-                          if (speedVal === 0.9) return 'text-orange-600 dark:text-orange-500';
-                          if (speedVal === 1) return 'text-red-500 dark:text-red-400';
-                          if (speedVal === 1.5) return 'text-red-700 dark:text-red-500';
-                          if (speedVal === 2) return 'text-red-800 dark:text-red-600';
-                          if (speedVal === 2.5) return 'text-red-900 dark:text-red-700';
-                          return 'text-stone-900 dark:text-stone-600';
+                        // Speed-based color logic
+                        const getSpeedColor = (speedVal: number, isSelected: boolean) => {
+                          if (isSelected) {
+                            if (speedVal <= 0.5) return 'bg-green-500 text-white shadow-green-500/30';
+                            if (speedVal <= 0.6) return 'bg-yellow-500 text-white shadow-yellow-500/30';
+                            if (speedVal <= 0.9) return 'bg-orange-500 text-white shadow-orange-500/30';
+                            if (speedVal === 1) return 'bg-red-500 text-white shadow-red-500/30';
+                            if (speedVal <= 1.5) return 'bg-red-600 text-white shadow-red-600/30';
+                            if (speedVal <= 2) return 'bg-red-700 text-white shadow-red-700/30';
+                            return 'bg-red-900 text-white shadow-red-900/30';
+                          }
+                          // Unselected state - subtle hint of color
+                          if (speedVal <= 0.5) return 'bg-green-500/20 text-green-700 dark:text-green-400 hover:bg-green-500/30';
+                          if (speedVal <= 0.6) return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-500/30';
+                          if (speedVal <= 0.9) return 'bg-orange-500/20 text-orange-700 dark:text-orange-400 hover:bg-orange-500/30';
+                          if (speedVal === 1) return 'bg-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-500/30';
+                          if (speedVal <= 1.5) return 'bg-red-600/20 text-red-700 dark:text-red-500 hover:bg-red-600/30';
+                          if (speedVal <= 2) return 'bg-red-700/20 text-red-800 dark:text-red-600 hover:bg-red-700/30';
+                          return 'bg-red-900/20 text-red-900 dark:text-red-700 hover:bg-red-900/30';
                         };
-
-                        const getSpeedBorderColor = (speedVal: number) => {
-                          if (speedVal === 0.1) return 'ring-green-800 shadow-green-500/40';
-                          if (speedVal === 0.2) return 'ring-green-700 shadow-green-500/40';
-                          if (speedVal === 0.3) return 'ring-green-600 shadow-green-500/40';
-                          if (speedVal === 0.4) return 'ring-green-500 shadow-green-500/40';
-                          if (speedVal === 0.5) return 'ring-lime-500 shadow-lime-500/40';
-                          if (speedVal === 0.6) return 'ring-yellow-500 shadow-yellow-500/40';
-                          if (speedVal === 0.7) return 'ring-yellow-600 shadow-yellow-500/40';
-                          if (speedVal === 0.8) return 'ring-orange-500 shadow-orange-500/40';
-                          if (speedVal === 0.9) return 'ring-orange-600 shadow-orange-500/40';
-                          if (speedVal === 1) return 'ring-red-500 shadow-red-500/40';
-                          if (speedVal === 1.5) return 'ring-red-700 shadow-red-600/40';
-                          if (speedVal === 2) return 'ring-red-800 shadow-red-700/40';
-                          if (speedVal === 2.5) return 'ring-red-900 shadow-red-800/40';
-                          return 'ring-stone-900 shadow-stone-700/40';
-                        };
-                        
-                        const isSelected = speed === s;
                         
                         return (
                           <button
                             key={s}
                             onClick={() => setSpeed(s)}
-                            className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-sm sm:text-base font-extrabold transition-all duration-300 
-                              ${getSpeedTextColor(s)}
-                              ${isSelected 
-                                ? `ring-2 ${getSpeedBorderColor(s)} bg-background dark:bg-slate-800 shadow-lg scale-110 animate-pulse` 
-                                : 'bg-secondary/60 dark:bg-slate-800/60 hover:bg-secondary dark:hover:bg-slate-700 hover:scale-105'
-                              }`}
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 shadow-sm
+                              ${getSpeedColor(s, speed === s)}`}
                           >
                             {s}
                           </button>

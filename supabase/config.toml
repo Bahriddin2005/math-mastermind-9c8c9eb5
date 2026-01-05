@@ -8,6 +8,3 @@ verify_jwt = false
 
 [functions.customer-portal]
 verify_jwt = false
-
-[functions.send-weekly-results]
-verify_jwt = false
