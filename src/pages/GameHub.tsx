@@ -130,10 +130,10 @@ const GameHub = () => {
   return (
     <PageBackground>
       <Navbar soundEnabled={soundEnabled} onToggleSound={toggleSound} />
-      <div className="container mx-auto px-4 py-6 max-w-lg">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-lg pb-20 md:pb-6">
         {/* Header Stats Bar */}
-        <Card className="mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 border-0 text-white overflow-hidden">
-          <div className="p-4">
+        <Card className="mb-4 sm:mb-6 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 border-0 text-white overflow-hidden">
+          <div className="p-3 sm:p-4">
             {/* Top row - Coins, Lives, Settings */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
@@ -181,7 +181,7 @@ const GameHub = () => {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-2 mb-6">
+        <div className="grid grid-cols-3 gap-2 mb-4 sm:mb-6">
           <Button 
             variant="outline" 
             className="h-auto py-3 flex-col gap-1.5 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border-amber-200 dark:border-amber-800 hover:border-amber-400"
@@ -209,13 +209,13 @@ const GameHub = () => {
         </div>
 
         {/* Levels Grid */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <Target className="h-5 w-5 text-primary" />
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+            <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             O'yin Levellari
           </h2>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             {levels.map((level) => {
               const unlocked = isLevelUnlocked(level);
               const progress = getLevelProgress(level.id);
