@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.jpg", "robots.txt"],
+      includeAssets: ["favicon.jpg", "robots.txt", "apple-touch-icon-180x180.png", "splash-1170x2532.png"],
       manifest: {
         name: "IQROMAX - Mental Matematika",
         short_name: "IQROMAX",
@@ -26,6 +26,7 @@ export default defineConfig(({ mode }) => ({
         orientation: "portrait",
         scope: "/",
         start_url: "/",
+        categories: ["education", "games", "kids"],
         icons: [
           {
             src: "/pwa-192x192.png",
@@ -42,6 +43,21 @@ export default defineConfig(({ mode }) => ({
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
+          },
+          {
+            src: "/apple-touch-icon-180x180.png",
+            sizes: "180x180",
+            type: "image/png",
+            purpose: "apple touch icon",
+          },
+        ],
+        screenshots: [
+          {
+            src: "/splash-1170x2532.png",
+            sizes: "1170x1920",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "IQROMAX - Mental Matematika",
           },
         ],
       },
