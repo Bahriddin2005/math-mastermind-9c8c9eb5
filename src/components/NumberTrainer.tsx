@@ -79,19 +79,41 @@ const RULES_FORMULA_5: Record<number, { add: number[]; subtract: number[] }> = {
 // MUHIM: Ayirish faqat o'nliklar > 0 bo'lganda ishlaydi (X>0)
 
 // Katta do'st qoidalari - har bir delta uchun qaysi birlik raqamida ishlashini ko'rsatadi
+// Sizning bergan jadvallaringiz asosida to'g'rilangan
+
+// +9 qoidasi: faqat x5 da (X=0 yoki X>0)
+// +8 qoidasi: x2 (X=0), x7 (X=0)
+// +7 qoidasi: x3 (X=0), x8 (X=0)
+// +6 qoidasi: x4 (X=0), x9 (X=0)
+// +5 qoidasi: x5 (X=0)
+// +4 qoidasi: x6 (X=0)
+// +3 qoidasi: x7 (X=0)
+// +2 qoidasi: x8 (X=0)
+// +1 qoidasi: x9 (X=0)
+
 const KATTA_DOST_ADD: Record<number, number[]> = {
   1: [9],           // +1: faqat x9 da
-  2: [8, 9],        // +2: x8, x9 da
-  3: [7, 8, 9],     // +3: x7, x8, x9 da
-  4: [6, 7, 8, 9],  // +4: x6, x7, x8, x9 da
-  5: [5, 6, 7, 8, 9], // +5: x5-x9 da
+  2: [8],           // +2: faqat x8 da
+  3: [7],           // +3: faqat x7 da
+  4: [6],           // +4: faqat x6 da
+  5: [5],           // +5: faqat x5 da
   6: [4, 9],        // +6: x4, x9 da
-  7: [3, 4, 8, 9],  // +7: x3, x4, x8, x9 da
-  8: [2, 3, 4, 7, 8, 9], // +8: x2-x4, x7-x9 da (x3,x4,x8,x9 faqat X>0)
-  9: [1, 2, 3, 4, 6, 7, 8, 9], // +9: x1-x4 (x4 X>0), x6-x9 (x9 X>0)
+  7: [3, 8],        // +7: x3, x8 da
+  8: [2, 7],        // +8: x2, x7 da
+  9: [5],           // +9: faqat x5 da (sizning jadvalingiz bo'yicha)
 };
 
-// Ayirish faqat o'nliklar mavjud bo'lganda ishlaydi
+// Ayirish faqat o'nliklar mavjud bo'lganda ishlaydi (X>0)
+// -9 qoidasi: faqat x4 da (X>0)
+// -8 qoidasi: x2, x3 (X>0)
+// -7 qoidasi: x1, x2, x6, x7 (X>0)
+// -6 qoidasi: x0, x1, x5, x6 (X>0)
+// -5 qoidasi: x0, x1, x2, x3, x4, x5 (X>0)
+// -4 qoidasi: x4, x5 (X>0)
+// -3 qoidasi: x3, x4, x5, x6, x7 (X>0)
+// -2 qoidasi: x2, x3, x4, x5, x6, x7, x8 (X>0)
+// -1 qoidasi: x1, x2, x3, x4, x5, x6, x7, x8, x9 (X>0)
+
 const KATTA_DOST_SUB: Record<number, number[]> = {
   1: [0],           // -1: x0 da (X>0)
   2: [0, 1],        // -2: x0, x1 da (X>0)
@@ -101,7 +123,7 @@ const KATTA_DOST_SUB: Record<number, number[]> = {
   6: [0, 5],        // -6: x0, x5 da (X>0)
   7: [0, 1, 5, 6],  // -7: x0, x1, x5, x6 da (X>0)
   8: [0, 1, 2, 5, 6, 7], // -8: x0-x2, x5-x7 da (X>0)
-  9: [0, 1, 2, 3, 5, 6, 7, 8], // -9: x0-x3, x5-x8 da (X>0)
+  9: [4],           // -9: faqat x4 da (X>0) - sizning jadvalingiz bo'yicha
 };
 
 // Formula 10+ (katta do'stlar qo'shish) - statik jadval
