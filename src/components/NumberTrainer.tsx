@@ -51,16 +51,24 @@ const RULES_BASIC: Record<number, { add: number[]; subtract: number[] }> = {
   9: { add: [], subtract: [1, 2, 3, 4, 5, 6, 7, 8, 9] },
 };
 
-// Formula 5 (kichik do'stlar)
+// Formula 5 (kichik do'stlar) - Yapon metodologiyasi
+// +4: -1, +5 (4+1=5 do'stligi) -> faqat 4 da ishlaydi
+// +3: -2, +5 (3+2=5 do'stligi) -> faqat 3 da ishlaydi
+// +2: -3, +5 (2+3=5 do'stligi) -> faqat 2 da ishlaydi
+// +1: -4, +5 (1+4=5 do'stligi) -> faqat 1 da ishlaydi
+// -4: -5, +1 -> faqat 5 da ishlaydi
+// -3: -5, +2 -> faqat 5 da ishlaydi
+// -2: -5, +3 -> faqat 6 da ishlaydi
+// -1: -5, +4 -> faqat 7 da ishlaydi
 const RULES_FORMULA_5: Record<number, { add: number[]; subtract: number[] }> = {
   0: { add: [], subtract: [] },
-  1: { add: [], subtract: [] },
-  2: { add: [], subtract: [] },
-  3: { add: [2], subtract: [] },
-  4: { add: [1, 2], subtract: [] },
-  5: { add: [], subtract: [1, 2] },
-  6: { add: [], subtract: [2] },
-  7: { add: [], subtract: [] },
+  1: { add: [4], subtract: [] },    // +4 qo'shish (1+4=5, keyin -1+5)
+  2: { add: [3], subtract: [] },    // +3 qo'shish (2+3=5, keyin -2+5)
+  3: { add: [2], subtract: [] },    // +2 qo'shish (3+2=5, keyin -3+5)
+  4: { add: [1], subtract: [] },    // +1 qo'shish (4+1=5, keyin -4+5)
+  5: { add: [], subtract: [1, 2] }, // -1, -2 ayirish (5-1=4: -5+4, 5-2=3: -5+3)
+  6: { add: [], subtract: [3] },    // -3 ayirish (6-3=3: -5+2)
+  7: { add: [], subtract: [4] },    // -4 ayirish (7-4=3: -5+1)
   8: { add: [], subtract: [] },
   9: { add: [], subtract: [] },
 };
