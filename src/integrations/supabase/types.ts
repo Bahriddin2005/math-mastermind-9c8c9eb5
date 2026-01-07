@@ -928,9 +928,11 @@ export type Database = {
           digit_count: number
           formula_type: string
           id: string
+          is_public: boolean | null
           operation_count: number
           problem_count: number
           problems: Json
+          share_code: string | null
           title: string
           updated_at: string
           user_id: string
@@ -941,9 +943,11 @@ export type Database = {
           digit_count?: number
           formula_type?: string
           id?: string
+          is_public?: boolean | null
           operation_count?: number
           problem_count?: number
           problems: Json
+          share_code?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -954,9 +958,11 @@ export type Database = {
           digit_count?: number
           formula_type?: string
           id?: string
+          is_public?: boolean | null
           operation_count?: number
           problem_count?: number
           problems?: Json
+          share_code?: string | null
           title?: string
           updated_at?: string
           user_id?: string
