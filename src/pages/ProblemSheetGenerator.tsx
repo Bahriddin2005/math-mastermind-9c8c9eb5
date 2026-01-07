@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { PageBackground } from '@/components/layout/PageBackground';
 import { useSound } from '@/hooks/useSound';
@@ -10,11 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Download, RefreshCw, Printer, FileText, Save, FolderOpen, Trash2, Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Download, RefreshCw, Printer, FileText, Save, FolderOpen, Trash2, Loader2, Share2, Link, Copy, Globe, Lock } from 'lucide-react';
 import { generateProblem, getLegacyFormulas, FORMULA_LABELS } from '@/lib/sorobanEngine';
 import { ProblemSheetTable } from '@/components/ProblemSheetTable';
 import { toast } from 'sonner';
-import iqromaxLogo from '@/assets/iqromax-logo-full.png';
+
+// Base64 encoded logo for PDF - will be set on mount
+let logoBase64 = '';
 
 interface Problem {
   id: number;
@@ -42,25 +46,14 @@ interface SavedSheet {
   columns_per_row: number;
   problems: Problem[];
   created_at: string;
-}
-
-interface GeneratedSheet {
-  problems: {
-    id: number;
-    sequence: number[];
-    answer: number;
-  }[];
-  settings: {
-    digitCount: number;
-    operationCount: number;
-    formulaType: string;
-    problemCount: number;
-  };
+  is_public: boolean;
+  share_code: string | null;
 }
 
 const ProblemSheetGenerator = () => {
   const { soundEnabled, toggleSound, playSound } = useSound();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   
   // Settings
   const [digitCount, setDigitCount] = useState(1);
@@ -80,8 +73,73 @@ const ProblemSheetGenerator = () => {
   const [sheetTitle, setSheetTitle] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [currentShareSheet, setCurrentShareSheet] = useState<SavedSheet | null>(null);
+  const [updatingShare, setUpdatingShare] = useState(false);
   
   const playClick = () => playSound('tick');
+  
+  // Load logo as base64 for PDF
+  useEffect(() => {
+    const loadLogoBase64 = async () => {
+      try {
+        const response = await fetch('/pwa-192x192.png');
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          logoBase64 = reader.result as string;
+        };
+        reader.readAsDataURL(blob);
+      } catch (error) {
+        console.error('Failed to load logo:', error);
+      }
+    };
+    loadLogoBase64();
+  }, []);
+  
+  // Load shared sheet from URL
+  useEffect(() => {
+    const shareCode = searchParams.get('code');
+    if (shareCode) {
+      loadSharedSheet(shareCode);
+    }
+  }, [searchParams]);
+  
+  // Load shared sheet by code
+  const loadSharedSheet = async (code: string) => {
+    setLoadingSaved(true);
+    const { data, error } = await supabase
+      .from('problem_sheets')
+      .select('*')
+      .eq('share_code', code)
+      .eq('is_public', true)
+      .single();
+    
+    if (error || !data) {
+      toast.error("Varaq topilmadi yoki yopiq");
+    } else {
+      const savedSheet = {
+        ...data,
+        problems: data.problems as unknown as Problem[],
+      };
+      setDigitCount(savedSheet.digit_count);
+      setOperationCount(savedSheet.operation_count);
+      setFormulaType(savedSheet.formula_type);
+      setProblemCount(savedSheet.problem_count);
+      setColumnsPerRow(savedSheet.columns_per_row);
+      setSheet({
+        problems: savedSheet.problems,
+        settings: {
+          digitCount: savedSheet.digit_count,
+          operationCount: savedSheet.operation_count,
+          formulaType: savedSheet.formula_type,
+          problemCount: savedSheet.problem_count,
+        },
+      });
+      toast.success(`"${savedSheet.title}" yuklandi`);
+    }
+    setLoadingSaved(false);
+  };
   
   // Fetch saved sheets
   const fetchSavedSheets = useCallback(async () => {
@@ -183,6 +241,55 @@ const ProblemSheetGenerator = () => {
     }
   };
   
+  // Generate share code
+  const generateShareCode = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  };
+  
+  // Toggle sheet public/private
+  const toggleSheetPublic = async (sheet: SavedSheet, makePublic: boolean) => {
+    setUpdatingShare(true);
+    
+    const shareCode = makePublic && !sheet.share_code ? generateShareCode() : sheet.share_code;
+    
+    const { error } = await supabase
+      .from('problem_sheets')
+      .update({ 
+        is_public: makePublic,
+        share_code: makePublic ? shareCode : sheet.share_code,
+      })
+      .eq('id', sheet.id);
+    
+    if (error) {
+      toast.error("Xatolik yuz berdi");
+    } else {
+      setSavedSheets(prev => prev.map(s => 
+        s.id === sheet.id ? { ...s, is_public: makePublic, share_code: shareCode } : s
+      ));
+      setCurrentShareSheet(prev => prev ? { ...prev, is_public: makePublic, share_code: shareCode } : null);
+      toast.success(makePublic ? "Varaq ommaviy qilindi" : "Varaq yopiq qilindi");
+    }
+    setUpdatingShare(false);
+  };
+  
+  // Copy share link
+  const copyShareLink = (shareCode: string) => {
+    const url = `${window.location.origin}/problem-sheet?code=${shareCode}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Havola nusxalandi!");
+  };
+  
+  // Open share dialog
+  const openShareDialog = (sheet: SavedSheet) => {
+    setCurrentShareSheet(sheet);
+    setShowShareDialog(true);
+  };
+  
   // Generate problems
   const generateSheet = useCallback(() => {
     playClick();
@@ -278,11 +385,10 @@ const ProblemSheetGenerator = () => {
       return html;
     };
     
-    // Generate answers HTML - on separate page with header
     const generateAnswersHTML = () => {
       let html = `
         <div class="answers-header">
-          <img src="${iqromaxLogo}" alt="IqroMax" class="logo" />
+          ${logoBase64 ? `<img src="${logoBase64}" alt="IqroMax" class="logo" />` : '<div class="logo-placeholder">IqroMax</div>'}
           <div>
             <div class="title">Javoblar</div>
             <div class="subtitle">${title} • ${sheet.settings.problemCount} ta misol</div>
@@ -473,7 +579,7 @@ const ProblemSheetGenerator = () => {
       </head>
       <body>
         <div class="header">
-          <img src="${iqromaxLogo}" alt="IqroMax" class="logo" />
+          ${logoBase64 ? `<img src="${logoBase64}" alt="IqroMax" class="logo" />` : '<div class="logo-placeholder">IqroMax</div>'}
           <div>
             <div class="title">${title}</div>
             <div class="subtitle">${sheet.settings.problemCount} ta misol • ${new Date().toLocaleDateString('uz-UZ')}</div>
@@ -663,7 +769,20 @@ const ProblemSheetGenerator = () => {
                               className="flex-1 cursor-pointer"
                               onClick={() => loadSheet(s)}
                             >
-                              <h4 className="font-semibold">{s.title}</h4>
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-semibold">{s.title}</h4>
+                                {s.is_public ? (
+                                  <span className="inline-flex items-center gap-1 text-xs bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full">
+                                    <Globe className="w-3 h-3" />
+                                    Ommaviy
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                                    <Lock className="w-3 h-3" />
+                                    Yopiq
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-sm text-muted-foreground">
                                 {s.digit_count} xona • {s.operation_count} ustun • {s.problem_count} misol • {FORMULA_LABELS[s.formula_type]?.label || s.formula_type}
                               </p>
@@ -671,17 +790,30 @@ const ProblemSheetGenerator = () => {
                                 {new Date(s.created_at).toLocaleDateString('uz-UZ')}
                               </p>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteSheet(s.id);
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-primary hover:text-primary hover:bg-primary/10"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openShareDialog(s);
+                                }}
+                              >
+                                <Share2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteSheet(s.id);
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -749,6 +881,69 @@ const ProblemSheetGenerator = () => {
               </div>
             </CardContent>
           </Card>
+          
+          {/* Share Dialog */}
+          <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Share2 className="w-5 h-5" />
+                  Varaqni ulashish
+                </DialogTitle>
+              </DialogHeader>
+              {currentShareSheet && (
+                <div className="space-y-4 pt-4">
+                  <div className="p-3 rounded-lg bg-muted/50">
+                    <h4 className="font-semibold">{currentShareSheet.title}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {currentShareSheet.digit_count} xona • {currentShareSheet.operation_count} ustun • {currentShareSheet.problem_count} misol
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {currentShareSheet.is_public ? (
+                        <Globe className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Lock className="w-4 h-4 text-muted-foreground" />
+                      )}
+                      <span className="text-sm">
+                        {currentShareSheet.is_public ? 'Ommaviy - hamma ko\'rishi mumkin' : 'Yopiq - faqat siz ko\'rasiz'}
+                      </span>
+                    </div>
+                    <Switch
+                      checked={currentShareSheet.is_public}
+                      onCheckedChange={(checked) => toggleSheetPublic(currentShareSheet, checked)}
+                      disabled={updatingShare}
+                    />
+                  </div>
+                  
+                  {currentShareSheet.is_public && currentShareSheet.share_code && (
+                    <div className="space-y-2">
+                      <Label>Ulashish havolasi</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          readOnly
+                          value={`${window.location.origin}/problem-sheet?code=${currentShareSheet.share_code}`}
+                          className="text-xs"
+                        />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyShareLink(currentShareSheet.share_code!)}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Bu havolani ulashing - har kim varaqni ko'rishi va PDF yuklab olishi mumkin
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
           
           {/* Generated Sheet Preview */}
           {sheet && (
