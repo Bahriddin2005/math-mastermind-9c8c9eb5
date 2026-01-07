@@ -137,9 +137,18 @@ const ProblemSheetGenerator = () => {
       return html;
     };
     
-    // Generate answers HTML
+    // Generate answers HTML - on separate page with header
     const generateAnswersHTML = () => {
-      let html = '<h2 class="answers-title">Javoblar</h2>';
+      let html = `
+        <div class="answers-header">
+          <img src="${iqromaxLogo}" alt="IqroMax" class="logo" />
+          <div>
+            <div class="title">Javoblar</div>
+            <div class="subtitle">${title} • ${sheet.settings.problemCount} ta misol</div>
+          </div>
+        </div>
+      `;
+      
       const totalRows = Math.ceil(sheet.problems.length / 10);
       
       for (let row = 0; row < totalRows; row++) {
@@ -249,6 +258,16 @@ const ProblemSheetGenerator = () => {
             border: 1px solid #fbc02d;
           }
           
+          .answers-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #4CAF50;
+          }
+          
           .answers-title {
             font-size: 18px;
             font-weight: bold;
@@ -286,6 +305,12 @@ const ProblemSheetGenerator = () => {
           
           .page-break {
             page-break-after: always;
+            break-after: page;
+          }
+          
+          .answers-page {
+            page-break-before: always;
+            break-before: page;
           }
           
           .footer {
@@ -316,12 +341,18 @@ const ProblemSheetGenerator = () => {
         
         ${generateTableHTML()}
         
-        <div class="page-break"></div>
-        
-        ${generateAnswersHTML()}
-        
         <div class="footer">
           IqroMax - Mental Arifmetika O'quv Platformasi • www.iqromax.uz
+        </div>
+        
+        <div class="page-break"></div>
+        
+        <div class="answers-page">
+          ${generateAnswersHTML()}
+          
+          <div class="footer">
+            IqroMax - Mental Arifmetika O'quv Platformasi • www.iqromax.uz
+          </div>
         </div>
       </body>
       </html>
