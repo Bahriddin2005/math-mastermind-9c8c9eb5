@@ -335,27 +335,19 @@ const ProblemSheetGenerator = () => {
     
     const formulaLabel = FORMULA_LABELS[formulaType]?.label || formulaType;
     const title = `${sheet.settings.operationCount} ustun ${formulaLabel} ${sheet.settings.digitCount}`;
-    
-    // Create print window
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      alert("Popup bloklangan. Iltimos, popup'ga ruxsat bering.");
-      return;
-    }
+    const fileName = `IqroMax_${title.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0, 10)}.html`;
     
     // Generate table HTML
     const generateTableHTML = () => {
       let html = '';
-      const problemsPerPage = columnsPerRow * 10; // 10 rows per page section
-      const totalPages = Math.ceil(sheet.problems.length / columnsPerRow);
+      const totalRows = Math.ceil(sheet.problems.length / columnsPerRow);
       
-      for (let row = 0; row < totalPages; row++) {
+      for (let row = 0; row < totalRows; row++) {
         const startIdx = row * columnsPerRow;
         const rowProblems = sheet.problems.slice(startIdx, startIdx + columnsPerRow);
         
         if (rowProblems.length === 0) continue;
         
-        // Find max operations in this row
         const maxOps = Math.max(...rowProblems.map(p => p.sequence.length));
         
         html += `
@@ -378,7 +370,7 @@ const ProblemSheetGenerator = () => {
               </tr>
             </tbody>
           </table>
-          <div style="height: 24px;"></div>
+          <div style="height: 16px;"></div>
         `;
       }
       
@@ -386,16 +378,7 @@ const ProblemSheetGenerator = () => {
     };
     
     const generateAnswersHTML = () => {
-      let html = `
-        <div class="answers-header">
-          ${logoBase64 ? `<img src="${logoBase64}" alt="IqroMax" class="logo" />` : '<div class="logo-placeholder">IqroMax</div>'}
-          <div>
-            <div class="title">Javoblar</div>
-            <div class="subtitle">${title} • ${sheet.settings.problemCount} ta misol</div>
-          </div>
-        </div>
-      `;
-      
+      let html = '';
       const totalRows = Math.ceil(sheet.problems.length / 10);
       
       for (let row = 0; row < totalRows; row++) {
@@ -424,11 +407,11 @@ const ProblemSheetGenerator = () => {
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>${title}</title>
+        <title>${title} - IqroMax</title>
         <style>
           @page {
             size: A4;
-            margin: 15mm;
+            margin: 12mm;
           }
           
           * {
@@ -439,60 +422,68 @@ const ProblemSheetGenerator = () => {
           
           body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 11px;
+            line-height: 1.3;
             color: #333;
+            padding: 10px;
           }
           
           .header {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 2px solid #2196F3;
           }
           
           .logo {
-            height: 50px;
+            height: 45px;
             width: auto;
           }
           
+          .logo-placeholder {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976D2;
+          }
+          
           .title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #1976D2;
           }
           
           .subtitle {
-            font-size: 14px;
+            font-size: 12px;
             color: #666;
-            margin-top: 4px;
+            margin-top: 2px;
           }
           
           .problem-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
           }
           
           .problem-table th {
             background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
             font-weight: bold;
-            padding: 8px 4px;
+            padding: 6px 3px;
             border: 1px solid #1565C0;
             text-align: center;
-            min-width: 40px;
+            min-width: 35px;
+            font-size: 11px;
           }
           
           .problem-table td {
             border: 1px solid #ddd;
-            padding: 6px 4px;
+            padding: 5px 3px;
             text-align: center;
-            min-width: 40px;
-            font-size: 13px;
+            min-width: 35px;
+            font-size: 12px;
           }
           
           .problem-table tbody tr:nth-child(even) {
@@ -500,73 +491,79 @@ const ProblemSheetGenerator = () => {
           }
           
           .problem-table .answer-row td {
-            height: 28px;
+            height: 24px;
             background-color: #fff9c4;
             border: 1px solid #fbc02d;
+          }
+          
+          .answers-section {
+            page-break-before: always;
+            margin-top: 20px;
           }
           
           .answers-header {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 2px solid #4CAF50;
-          }
-          
-          .answers-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1976D2;
-            text-align: center;
-            margin: 32px 0 16px 0;
-            padding-top: 16px;
-            border-top: 2px solid #2196F3;
           }
           
           .answers-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
           }
           
           .answers-table td {
             border: 1px solid #ddd;
-            padding: 6px 4px;
+            padding: 5px 3px;
             text-align: center;
-            min-width: 40px;
+            min-width: 35px;
           }
           
           .answers-table .answer-ids td {
             background: linear-gradient(135deg, #4CAF50, #388E3C);
             color: white;
             font-weight: bold;
+            font-size: 11px;
           }
           
           .answers-table .answer-values td {
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             background-color: #e8f5e9;
           }
           
-          .page-break {
-            page-break-after: always;
-            break-after: page;
-          }
-          
-          .answers-page {
-            page-break-before: always;
-            break-before: page;
-          }
-          
           .footer {
-            margin-top: 24px;
-            padding-top: 12px;
+            margin-top: 16px;
+            padding-top: 8px;
             border-top: 1px solid #ddd;
             text-align: center;
-            font-size: 10px;
+            font-size: 9px;
             color: #999;
+          }
+          
+          .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+            z-index: 1000;
+          }
+          
+          .print-btn:hover {
+            background: linear-gradient(135deg, #1976D2, #1565C0);
           }
           
           @media print {
@@ -574,10 +571,15 @@ const ProblemSheetGenerator = () => {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
+            .print-btn {
+              display: none !important;
+            }
           }
         </style>
       </head>
       <body>
+        <button class="print-btn" onclick="window.print()">🖨️ PDF sifatida saqlash</button>
+        
         <div class="header">
           ${logoBase64 ? `<img src="${logoBase64}" alt="IqroMax" class="logo" />` : '<div class="logo-placeholder">IqroMax</div>'}
           <div>
@@ -592,9 +594,15 @@ const ProblemSheetGenerator = () => {
           IqroMax - Mental Arifmetika O'quv Platformasi • www.iqromax.uz
         </div>
         
-        <div class="page-break"></div>
-        
-        <div class="answers-page">
+        <div class="answers-section">
+          <div class="answers-header">
+            ${logoBase64 ? `<img src="${logoBase64}" alt="IqroMax" class="logo" />` : '<div class="logo-placeholder">IqroMax</div>'}
+            <div>
+              <div class="title">Javoblar</div>
+              <div class="subtitle">${title} • ${sheet.settings.problemCount} ta misol</div>
+            </div>
+          </div>
+          
           ${generateAnswersHTML()}
           
           <div class="footer">
@@ -605,15 +613,26 @@ const ProblemSheetGenerator = () => {
       </html>
     `;
     
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
+    // Create blob and download
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     
-    // Wait for images to load then print
-    printWindow.onload = () => {
-      setTimeout(() => {
-        printWindow.print();
-      }, 500);
-    };
+    // Open in new tab
+    const newTab = window.open(url, '_blank');
+    if (newTab) {
+      toast.success("PDF yuklab olish oynasi ochildi. 'PDF sifatida saqlash' tugmasini bosing.");
+    } else {
+      // Fallback: download as HTML file
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success("HTML fayl yuklab olindi. Uni brauzerda ochib, PDF sifatida saqlang.");
+    }
+    
+    URL.revokeObjectURL(url);
   }, [sheet, formulaType, columnsPerRow, playClick]);
   
   return (
